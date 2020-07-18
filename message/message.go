@@ -55,7 +55,9 @@ var messages = map[messageType]messageInfo {
         }},
     134873094: messageInfo{size: 28, stype: "Pedal parameter",
         psinfo: &map[subMessageType]subMessageInfo {
-
+            754991104: subMessageInfo{stype: "Parameter change", parse: pedalParameterChange},
+            771768320: subMessageInfo{stype: "Parameter change", parse: nil},
+            788545536: subMessageInfo{stype: "Parameter change", parse: nil},
         }},
     134873093: messageInfo{size: 24, stype: "Setup",
         psinfo: &map[subMessageType]subMessageInfo {

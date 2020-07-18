@@ -21,15 +21,10 @@ package message
 import "lpedit/pedal"
 import "encoding/binary"
 import "fmt"
+import "bytes"
 
 func (m Message) getPedalID() uint32 {
     return binary.LittleEndian.Uint32(m.data[12:16])
-}
-
-func pedalTypeChange(m Message, pb *pedal.PedalBoard) error {
-    id := m.getPedalID()
-    ptype := pedal.PedalType(binary.LittleEndian.Uint32(m.data[16:]))
-    return pb.SetPedal(id, ptype)
 }
 
 func pedalActiveChange(m Message, pb *pedal.PedalBoard) error {
@@ -47,4 +42,25 @@ func pedalActiveChange(m Message, pb *pedal.PedalBoard) error {
     fmt.Printf("Active change on ID %d status %t\n", id, active)
     p.SetActive(active)
     return nil
+}
+
+func pedalParameterChange (m Message, pb *pedal.PedalBoard) error {
+    pid := m.getPedalID()
+    p := pb.GetPedal(pid)
+    if p == nil {
+        return fmt.Errorf("Pedal ID %d not found", pid)
+    }
+    id := binary.LittleEndian.Uint32(m.data[20:24]) - 1058013185
+    var v float32
+    err := binary.Read(bytes.NewReader(m.data[24:28]), binary.LittleEndian, &v)
+    if err != nil {
+        return err
+    }
+    return p.SetParameter(id, v)
+}
+
+func pedalTypeChange(m Message, pb *pedal.PedalBoard) error {
+    id := m.getPedalID()
+    ptype := pedal.PedalType(binary.LittleEndian.Uint32(m.data[16:]))
+    return pb.SetPedal(id, ptype)
 }

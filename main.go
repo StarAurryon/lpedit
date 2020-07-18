@@ -57,6 +57,7 @@ func main() {
       if err != nil {
           fmt.Println(err)
       }
+      m.PrintInfo()
       pb.PrintInfo()
   }
 
