@@ -911,12 +911,16 @@ type Pedal struct {
     name   string
     ptype  string
     params []Parameter
+    pb     *PedalBoard
+    plist  *[]*Pedal
 }
 
-func NewNonePedal(id uint32) Pedal {
+func NewNonePedal(id uint32, pb *PedalBoard, plist *[]*Pedal) {
     p := pedals[nonePedalType]
     p.id = id
-    return p
+    p.pb = pb
+    p.plist = plist
+    *plist = append(*plist, &p)
 }
 
 func (p Pedal) PrintInfo() {
@@ -934,10 +938,52 @@ func (p *Pedal) SetActive(active bool){
     p.active = active
 }
 
-func (p *Pedal) SetParameter(id uint32, v float32) error {
+func (p *Pedal) GetParam(id uint32) *Parameter {
     if id >= uint32(len(p.params)) {
-        return fmt.Errorf("The id %d does not exist as parameter", id)
+        return nil
     }
-    p.params[id].value = v
+    return &p.params[id]
+}
+
+func (p *Pedal) GetParamLen() uint32 {
+    return uint32(len(p.params))
+}
+
+func (p *Pedal) remove() {
+    for i, _p := range *p.plist {
+        if _p == p {
+            *p.plist = append((*p.plist)[:i], (*p.plist)[i+1:]...)
+            return
+        }
+    }
+}
+
+func (p *Pedal) SetLastPos(pos uint16, ptype uint8) error {
+    switch ptype {
+    case pedalPosStart:
+        p.remove()
+        p.pb.start = append(p.pb.start, p)
+        p.plist = &p.pb.start
+    case pedalPosA:
+        p.remove()
+        p.pb.pchan.a = append(p.pb.pchan.a, p)
+        p.plist = &p.pb.pchan.a
+    case pedalPosB:
+        p.remove()
+        p.pb.pchan.b = append(p.pb.pchan.b, p)
+        p.plist = &p.pb.pchan.b
+    case pedalPosEnd:
+        p.remove()
+        p.pb.end = append(p.pb.end, p)
+        p.plist = &p.pb.end
+    default:
+        return fmt.Errorf("Type %d is unsupported for pedal location", ptype)
+    }
     return nil
+}
+
+func (p *Parameter) SetValue(v float32) {
+    if len(p.name) != 0 {
+        p.value = v
+    }
 }

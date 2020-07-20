@@ -21,30 +21,41 @@ package pedal
 import "fmt"
 
 type PedalBoardChannel struct{
-    a    []Pedal
-    b    []Pedal
+    a    []*Pedal
+    b    []*Pedal
     aVol float32
     bVol float32
     aPan float32
     bPan float32
 }
 
+type pedalPos uint16
+
+const (
+    pedalPosStart = 0
+    pedalPosA     = 1
+    pedalPosB     = 2
+    pedalPosEnd   = 5
+)
+
 type PedalBoard struct {
-    start  []Pedal
-    end    []Pedal
+    start  []*Pedal
+    end    []*Pedal
     pchan  PedalBoardChannel
+    pname  string
 }
 
 func NewPedalBoard() *PedalBoard {
     p := &PedalBoard{}
     for id := uint32(4); id <= 11; id++ {
-        p.start = append(p.start, NewNonePedal(id))
+        NewNonePedal(id, p, &p.start)
     }
     return p
 }
 
 func (pb PedalBoard) PrintInfo() {
     fmt.Printf("PedalBoard info\n")
+    fmt.Printf("Preset name \"%s\"\n", pb.pname)
     fmt.Printf("PedalStart:\n")
     for _, p := range(pb.start) {
         p.PrintInfo()
@@ -68,10 +79,10 @@ func (pb PedalBoard) PrintInfo() {
 
 func (pb *PedalBoard) GetPedal(id uint32) *Pedal{
     var p *Pedal
-    ps := []*[]Pedal{&pb.start, &pb.pchan.a, &pb.pchan.b, &pb.end}
+    ps := []*[]*Pedal{&pb.start, &pb.pchan.a, &pb.pchan.b, &pb.end}
     for i, _ := range(ps) {
         for j, _ := range(*ps[i]) {
-            p = &(*ps[i])[j]
+            p = (*ps[i])[j]
             if p.id == id {
                 return p
             }
@@ -89,7 +100,14 @@ func (pb *PedalBoard) SetPedal(id uint32, ptype PedalType) error{
     if !found {
         return fmt.Errorf("Pedal type not found, code: %d", ptype)
     }
+    plist := p.plist
     *p = pt
     p.id = id
+    p.pb = pb
+    p.plist = plist
     return nil
+}
+
+func (pb *PedalBoard) SetPresetName(pname string) {
+    pb.pname = pname
 }

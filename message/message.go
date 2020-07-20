@@ -51,13 +51,13 @@ var messages = map[messageType]messageInfo {
         }},
     134874113: messageInfo{size: 4104, stype: "Preset",
         psinfo: &map[subMessageType]subMessageInfo {
-
+            16793600:  subMessageInfo{stype:"Load", parse: loadPreset},
         }},
     134873094: messageInfo{size: 28, stype: "Pedal parameter",
         psinfo: &map[subMessageType]subMessageInfo {
             754991104: subMessageInfo{stype: "Parameter change", parse: pedalParameterChange},
-            771768320: subMessageInfo{stype: "Parameter change", parse: nil},
-            788545536: subMessageInfo{stype: "Parameter change", parse: nil},
+            771768320: subMessageInfo{stype: "Parameter change 2 ", parse: nil},
+            788545536: subMessageInfo{stype: "Parameter change 3 ", parse: nil},
         }},
     134873093: messageInfo{size: 24, stype: "Setup",
         psinfo: &map[subMessageType]subMessageInfo {
