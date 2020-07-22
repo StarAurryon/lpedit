@@ -37,7 +37,9 @@ func NewRawMessage(data []byte) RawMessage {
     var m RawMessage
     m.size = binary.LittleEndian.Uint16(data[:2])
     m.mtype = rawMessageType(binary.LittleEndian.Uint16(data[2:4]))
-    m.data = data[4:len(data)]
+    if len(data) > 4 {
+        m.data = data[4:len(data)]
+    }
     return m
 }
 

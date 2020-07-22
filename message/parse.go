@@ -40,36 +40,53 @@ func (m Message) getPedalID() uint32 {
 }
 
 func loadPreset(m Message, pb *pedal.PedalBoard) error {
+    pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
     // ppos contains the position as key
     ppos := map[uint16]presetPedalPos{}
-    offset := 1072;
-
+    ampPos := uint16(0)
+    ampPosType := uint8(0)
     pb.SetPresetName(string(m.data[8:40]))
 
-    for i := uint32(4); i < 12; i++ {
-        ptype := pedal.PedalType(binary.LittleEndian.Uint32(m.data[offset:offset+4]))
-        pb.SetPedal(i, ptype)
-        p := pb.GetPedal(i)
+    offset := 48
 
-        // Position of the pedal
-        pos := binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
-        ppos[pos] = presetPedalPos{pid: i,
-            ptype: uint8(m.data[offset+6:offset+7][0])}
+    for i := 0; i < len(pbiOrder); i++ {
+        //Pedal Board Item Setup (Amp, Cab, Pedal)
+        pbi := pb.GetItem(pbiOrder[i])
+        itype := binary.LittleEndian.Uint32(m.data[offset:offset+4])
+        pbi.SetType(itype)
 
-        // Value of pedal parameters
-        vOffset := offset
-        for j := uint32(0); j < p.GetParamLen(); j++ {
-            vOffset += 20
-            var v float32
-            err := binary.Read(bytes.NewReader(m.data[vOffset:vOffset+4]), binary.LittleEndian, &v)
-            if err != nil {
-                return err
+        //Pedal Board Item order gathering
+        switch pbi.(type){
+        case *pedal.Pedal:
+            pos := binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
+            ppos[pos] = presetPedalPos{pid: pbiOrder[i],
+                ptype: uint8(m.data[offset+6:offset+7][0])}
+        case *pedal.Amp:
+            if i == 0 {
+                ampPos = binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
+                ampPosType = uint8(m.data[offset+6:offset+7][0])
             }
-            p.GetParam(j).SetValue(v)
         }
+
+        //Pedal Board Parameter Setup
+        poffset := offset
+        for j := uint16(0); j < pbi.GetParamLen(); j++ {
+            pidx := binary.LittleEndian.Uint16(m.data[poffset+16:poffset+18])
+            var v float32
+            binary.Read(bytes.NewReader(m.data[poffset+20:poffset+24]), binary.LittleEndian, &v)
+            param := pbi.GetParam(pidx)
+            if param != nil {
+                param.SetValue(v)
+            } else {
+                fmt.Printf("TODO: Parameter ID %d does not exist on pedal type %s\n",
+                    pidx, pbi.GetName())
+            }
+
+            poffset += 20
+        }
+
         offset += 256
     }
-
     // Position of the pedal setup
     pos := make(sUint16, 0, len(ppos))
     for k := range ppos {
@@ -77,19 +94,20 @@ func loadPreset(m Message, pb *pedal.PedalBoard) error {
     }
     sort.Sort(pos)
     for k := uint16(0); k < uint16(len(pos)); k++ {
-        err := pb.GetPedal(ppos[k].pid).SetLastPos(k, ppos[k].ptype)
+        err := pb.GetItem(ppos[k].pid).SetLastPos(k, ppos[k].ptype)
         if err != nil {
             return err
         }
     }
+    pb.GetItem(0).SetLastPos(ampPos, ampPosType)
     return nil
 }
 
-func pedalActiveChange(m Message, pb *pedal.PedalBoard) error {
+func itemActiveChange(m Message, pb *pedal.PedalBoard) error {
     id := m.getPedalID()
-    p := pb.GetPedal(id)
+    p := pb.GetItem(id)
     if p == nil {
-        return fmt.Errorf("Pedal ID %d not found", id)
+        return fmt.Errorf("Item ID %d not found", id)
     }
     var active bool
     if binary.LittleEndian.Uint32(m.data[16:]) > 0 {
@@ -102,18 +120,19 @@ func pedalActiveChange(m Message, pb *pedal.PedalBoard) error {
     return nil
 }
 
-func pedalParameterChange (m Message, pb *pedal.PedalBoard) error {
+func itemParameterChange (m Message, pb *pedal.PedalBoard) error {
     pid := m.getPedalID()
-    p := pb.GetPedal(pid)
+    p := pb.GetItem(pid)
     if p == nil {
-        return fmt.Errorf("Pedal ID %d not found", pid)
+        return fmt.Errorf("Item ID %d not found", pid)
     }
-    id := binary.LittleEndian.Uint32(m.data[20:24]) - 1058013185
+    id := binary.LittleEndian.Uint16(m.data[20:22])
     var v float32
     err := binary.Read(bytes.NewReader(m.data[24:28]), binary.LittleEndian, &v)
     if err != nil {
         return err
     }
+
     param := p.GetParam(id)
     if param == nil {
         return fmt.Errorf("Parameter ID %d not found", id)
@@ -122,8 +141,8 @@ func pedalParameterChange (m Message, pb *pedal.PedalBoard) error {
     return nil
 }
 
-func pedalTypeChange(m Message, pb *pedal.PedalBoard) error {
+func itemTypeChange(m Message, pb *pedal.PedalBoard) error {
     id := m.getPedalID()
-    ptype := pedal.PedalType(binary.LittleEndian.Uint32(m.data[16:]))
-    return pb.SetPedal(id, ptype)
+    ptype := binary.LittleEndian.Uint32(m.data[16:])
+    return pb.SetItem(id, ptype)
 }

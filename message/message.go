@@ -44,18 +44,27 @@ type subMessageInfo struct {
 }
 
 var messages = map[messageType]messageInfo {
-    134873092: messageInfo{size: 20, stype: "Pedal",
+    134873092: messageInfo{size: 20, stype: "PedalBoardItem",
         psinfo: &map[subMessageType]subMessageInfo {
-            285229056: subMessageInfo{stype: "Type change", parse: pedalTypeChange},
-            318783488: subMessageInfo{stype: "Active change", parse: pedalActiveChange},
+            285229056: subMessageInfo{stype: "Type change", parse: itemTypeChange},
+            318783488: subMessageInfo{stype: "Active change", parse: itemActiveChange},
         }},
     134874113: messageInfo{size: 4104, stype: "Preset",
         psinfo: &map[subMessageType]subMessageInfo {
             16793600:  subMessageInfo{stype:"Load", parse: loadPreset},
         }},
-    134873094: messageInfo{size: 28, stype: "Pedal parameter",
+    134873089: messageInfo{size: 8, stype: "Prepare preset change?",
         psinfo: &map[subMessageType]subMessageInfo {
-            754991104: subMessageInfo{stype: "Parameter change", parse: pedalParameterChange},
+            587218944: subMessageInfo{stype:"Event", parse: nil},
+        }},
+    134873090: messageInfo{size: 12, stype: "Prepare preset change?",
+        psinfo: &map[subMessageType]subMessageInfo {
+            738213888: subMessageInfo{stype:"Parameter 1", parse: nil},
+            654327808: subMessageInfo{stype:"Parameter 3", parse: nil},
+        }},
+    134873094: messageInfo{size: 28, stype: "Item parameter",
+        psinfo: &map[subMessageType]subMessageInfo {
+            754991104: subMessageInfo{stype: "Parameter change", parse: itemParameterChange},
             771768320: subMessageInfo{stype: "Parameter change 2 ", parse: nil},
             788545536: subMessageInfo{stype: "Parameter change 3 ", parse: nil},
         }},
@@ -103,7 +112,8 @@ func (m *Message) fillSubMessageInfo() error {
         return nil
     } else {
         m.sinfo = subMessageInfo{stype: "Unknown"}
-        return fmt.Errorf("Message subtype is unknwon, code: %d", smtype)
+        return fmt.Errorf("Type \"%s\": Message subtype is unknwon, code: %d",
+             m.info.stype, smtype)
     }
 }
 

@@ -20,13 +20,21 @@ package pedal
 
 import "fmt"
 
-type PedalType uint32
-
 const (
-    nonePedalType PedalType = 34471935
+    nonePedalType uint32 = 34471935
 )
 
-var pedals = map[PedalType]Pedal {
+type Pedal struct {
+    id     uint32
+    active bool
+    name   string
+    ptype  string
+    params []Parameter
+    pb     *PedalBoard
+    plist  *[]PedalBoardItem
+}
+
+var pedals = map[uint32]Pedal {
     nonePedalType: Pedal{active: true, ptype: "None", name: "None"},
     /*
      * Dynamics section
@@ -418,6 +426,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816605:      Pedal{active: true, ptype: "Reverb", name: "Spring",
@@ -425,6 +434,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816606:      Pedal{active: true, ptype: "Reverb", name: "Plate",
@@ -432,6 +442,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816607:      Pedal{active: true, ptype: "Reverb", name: "Room",
@@ -439,6 +450,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816608:      Pedal{active: true, ptype: "Reverb", name: "Chamber",
@@ -446,6 +458,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816609:      Pedal{active: true, ptype: "Reverb", name: "Hall",
@@ -453,6 +466,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816610:      Pedal{active: true, ptype: "Reverb", name: "Ducking",
@@ -460,6 +474,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816611:      Pedal{active: true, ptype: "Reverb", name: "Octo",
@@ -467,6 +482,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816612:      Pedal{active: true, ptype: "Reverb", name: "Cave",
@@ -474,6 +490,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816613:      Pedal{active: true, ptype: "Reverb", name: "Tile",
@@ -481,6 +498,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816614:      Pedal{active: true, ptype: "Reverb", name: "Echo",
@@ -488,6 +506,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Decay", value:0},
             Parameter{name: "Predelay", value:0},
             Parameter{name: "Tone", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     33816615:      Pedal{active: true, ptype: "Reverb", name: "Particle Verb",
@@ -495,6 +514,7 @@ var pedals = map[PedalType]Pedal {
             Parameter{name: "Dwell", value:0},
             Parameter{name: "Condition", value:0},
             Parameter{name: "Gain", value:0},
+            Parameter{},
             Parameter{name: "Mix", value:0},
             }},
     /*
@@ -900,53 +920,84 @@ var pedals = map[PedalType]Pedal {
             }},
 }
 
-type Parameter struct {
-    name  string
-    value float32
-}
-
-type Pedal struct {
-    id     uint32
-    active bool
-    name   string
-    ptype  string
-    params []Parameter
-    pb     *PedalBoard
-    plist  *[]*Pedal
-}
-
-func NewNonePedal(id uint32, pb *PedalBoard, plist *[]*Pedal) {
+func newNonePedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) {
     p := pedals[nonePedalType]
     p.id = id
     p.pb = pb
     p.plist = plist
-    *plist = append(*plist, &p)
+    *plist = append(*plist, PedalBoardItem(&p))
 }
 
-func (p Pedal) PrintInfo() {
-    fmt.Printf("Pedal Info\n")
-    fmt.Printf("Id %d\n", p.id)
-    fmt.Printf("Name %s, type %s\n", p.name, p.ptype)
-    fmt.Printf("Active %t\n", p.active)
-    fmt.Printf("Parameters:\n")
-    for i, param := range(p.params) {
-        fmt.Printf("----%d %s %f\n", i, param.name, param.value)
+func (p *Pedal) GetActive() bool {
+    return p.active
+}
+
+func (p *Pedal) GetID() uint32 {
+    return p.id
+}
+
+func (p *Pedal) GetName() string {
+    return p.name
+}
+
+func (p *Pedal) GetParam(id uint16) *Parameter {
+    if id > p.GetParamLen() || id == 0 {
+        return nil
     }
+    return &p.params[id-1]
+}
+
+func (p *Pedal) GetParamLen() uint16 {
+    return uint16(len(p.params)) //parameter start at 1
+}
+
+func (p *Pedal) SetLastPos(pos uint16, ptype uint8) error {
+    switch ptype {
+    case pedalPosStart:
+        p.remove()
+        p.pb.start = append(p.pb.start, p)
+        p.plist = &p.pb.start
+    case pedalPosAStart:
+        p.remove()
+        p.pb.pchan.aStart = append(p.pb.pchan.aStart, p)
+        p.plist = &p.pb.pchan.aStart
+    case pedalPosAEnd:
+        p.remove()
+        p.pb.pchan.aEnd = append(p.pb.pchan.aEnd, p)
+        p.plist = &p.pb.pchan.aEnd
+    case pedalPosBStart:
+        p.remove()
+        p.pb.pchan.bStart = append(p.pb.pchan.bStart, p)
+        p.plist = &p.pb.pchan.bStart
+    case pedalPosBEnd:
+        p.remove()
+        p.pb.pchan.bEnd = append(p.pb.pchan.bEnd, p)
+        p.plist = &p.pb.pchan.bEnd
+    case pedalPosEnd:
+        p.remove()
+        p.pb.end = append(p.pb.end, p)
+        p.plist = &p.pb.end
+    default:
+        return fmt.Errorf("Type %d is unsupported for pedal location", ptype)
+    }
+    return nil
 }
 
 func (p *Pedal) SetActive(active bool){
     p.active = active
 }
 
-func (p *Pedal) GetParam(id uint32) *Parameter {
-    if id >= uint32(len(p.params)) {
-        return nil
+func (p *Pedal) SetType(ptype uint32) error{
+    _p := *p
+    pt, found := pedals[ptype]
+    if !found {
+        return fmt.Errorf("Pedal type not found, code: %d", ptype)
     }
-    return &p.params[id]
-}
-
-func (p *Pedal) GetParamLen() uint32 {
-    return uint32(len(p.params))
+    *p = pt
+    p.id = _p.id
+    p.pb = _p.pb
+    p.plist = _p.plist
+    return nil
 }
 
 func (p *Pedal) remove() {
@@ -958,32 +1009,11 @@ func (p *Pedal) remove() {
     }
 }
 
-func (p *Pedal) SetLastPos(pos uint16, ptype uint8) error {
-    switch ptype {
-    case pedalPosStart:
-        p.remove()
-        p.pb.start = append(p.pb.start, p)
-        p.plist = &p.pb.start
-    case pedalPosA:
-        p.remove()
-        p.pb.pchan.a = append(p.pb.pchan.a, p)
-        p.plist = &p.pb.pchan.a
-    case pedalPosB:
-        p.remove()
-        p.pb.pchan.b = append(p.pb.pchan.b, p)
-        p.plist = &p.pb.pchan.b
-    case pedalPosEnd:
-        p.remove()
-        p.pb.end = append(p.pb.end, p)
-        p.plist = &p.pb.end
-    default:
-        return fmt.Errorf("Type %d is unsupported for pedal location", ptype)
-    }
-    return nil
-}
-
-func (p *Parameter) SetValue(v float32) {
-    if len(p.name) != 0 {
-        p.value = v
+func (p Pedal) PrintInfo() {
+    fmt.Printf("Id %d, Pedal Info, Name %s, Type %s, Active %t\n", p.id, p.name,
+         p.ptype, p.active)
+    fmt.Printf("Parameters:\n")
+    for i, param := range(p.params) {
+        fmt.Printf("----%d %s %f\n", i+1, param.name, param.value)
     }
 }
