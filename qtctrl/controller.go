@@ -16,18 +16,35 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package main
+package qtctrl
 
-import "os"
+import "github.com/therecipe/qt/core"
 
-import "github.com/therecipe/qt/widgets"
+import "lpedit/controller"
 
-import "lpedit/qtctrl"
-import "lpedit/ui"
+type Controller struct {
+    core.QObject
+    controller.Controller
+    _ func() `constructor:"init"`
+    _ func() `signal:"loop"`
+    _ func(string) `signal:"loopError"`
+    _ func() `signal:modelUpdated`
+}
 
-func main() {
-    app := widgets.NewQApplication(len(os.Args), os.Args)
-    c := qtctrl.NewController(app)
-    ui.NewLPEdit(c, nil).Show()
-    widgets.QApplication_Exec()
+func (c *Controller) init() {
+    c.Controller = *controller.NewController()
+    c.SetNotify(c.notif)
+}
+
+func (c *Controller) notif(err error, n controller.NotificationType) {
+    switch n {
+    case controller.NormalStart:
+        go c.Loop()
+    case controller.NormalStop:
+        go c.Loop()
+    case controller.ErrorStop:
+        go c.LoopError(err.Error())
+    case controller.MessageProcessed:
+        go c.ModelUpdated()
+    }
 }

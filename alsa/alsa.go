@@ -26,15 +26,46 @@ package alsa
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <alsa/asoundlib.h>
 #include <alsa/error.h>
 #include <alsa/hwdep.h>
+
 */
 import "C"
 import "fmt"
 import "unsafe"
 
+func ListHWDev() [][]string {
+    cardsName := [][]string{}
+    var card C.int = -1
+    iface := C.CString("pcm")
+    defer C.free(unsafe.Pointer(iface))
+    var handle *C.snd_ctl_t
+    var info *C.snd_ctl_card_info_t
+    C.snd_ctl_card_info_malloc(&info)
+
+    for C.snd_card_next(&card) >= 0 && card >= 0 {
+        name := C.CString(fmt.Sprintf("hw:%d", card))
+        if C.snd_ctl_open(&handle, name, 0) >= 0 {
+            if C.snd_ctl_card_info(handle, info) >= 0 {
+                cardName := C.GoString(C.snd_ctl_card_info_get_id(info))
+                cardFName := C.GoString(C.snd_ctl_card_info_get_name(info))
+                cardsName = append(cardsName, []string{
+                    fmt.Sprintf("hw:%s", cardName),
+                    fmt.Sprintf("%s (hw:%d)", cardFName, card),
+                })
+            }
+            C.snd_ctl_close(handle)
+        }
+        C.free(unsafe.Pointer(name))
+    }
+    C.snd_ctl_card_info_free(info)
+    return cardsName
+}
+
 type Hwdep struct {
-    hwdep *C.snd_hwdep_t
+    hwdep   *C.snd_hwdep_t
+    started bool
 }
 
 func (h *Hwdep) Close() error {
@@ -47,11 +78,16 @@ func (h *Hwdep) Close() error {
     return nil
 }
 
+func (h *Hwdep) IsOpen() bool {
+    if h.hwdep == nil { return false }
+    return true
+}
+
 func (h *Hwdep) Open(dev string) error {
-    if(h.hwdep != nil) {fmt.Errorf("Device is alreadw open")}
+    if(h.hwdep != nil) {fmt.Errorf("Device is already open")}
     c_dev := C.CString(dev)
     defer C.free(unsafe.Pointer(c_dev))
-    var err C.int = C.snd_hwdep_open(&h.hwdep, c_dev, C.O_RDWR)
+    var err C.int = C.snd_hwdep_open(&h.hwdep, c_dev, C.O_RDWR | C.O_NONBLOCK)
     if(err < 0) {
         return fmt.Errorf(C.GoString(C.snd_strerror(err)))
     }
