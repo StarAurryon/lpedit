@@ -18,6 +18,7 @@
 
 package ui
 
+import "github.com/therecipe/qt/core"
 import "github.com/therecipe/qt/gui"
 import "github.com/therecipe/qt/widgets"
 
@@ -28,6 +29,7 @@ type LPEdit struct {
     about      *AboutUI
     pbSelector *PBSelector
     ctrl       *qtctrl.Controller
+    pedals     []*Pedal
 }
 
 func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
@@ -41,8 +43,25 @@ func (l *LPEdit) init() {
     l.ActionAbout.ConnectTriggered(l.aboutClick)
     l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
     l.ctrl.ConnectModelUpdated(l.updateModel)
+
+    l.initPedals()
 }
 
+func (l *LPEdit) initPedals() {
+    pedalType := l.ctrl.GetPedalType()
+
+    for i := 0; i < 8; i++ {
+        p := NewPedal(l.ScrollPedalW, l.ctrl, pedalType, i)
+        l.PedalsLayout.AddWidget(p, 0, 0)
+        l.pedals = append(l.pedals, p)
+        if i != 8 {
+            line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
+            line.SetFrameShape(widgets.QFrame__HLine)
+            line.SetFrameShadow(widgets.QFrame__Sunken)
+            l.PedalsLayout.AddWidget(line, 0, 0)
+        }
+    }
+}
 
 func (l *LPEdit) aboutClick(vbo bool) {
     if l.about == nil {
@@ -69,7 +88,11 @@ func (l *LPEdit) pbSelectorClick(vbo bool) {
 }
 
 func (l *LPEdit) updateModel() {
-    
+    l.ctrl.LockData()
+    for _, p := range l.pedals {
+        p.updateModel()
+    }
+    l.ctrl.UnlockData()
 }
 
 func (l *LPEdit) windowClose(event *gui.QCloseEvent) {

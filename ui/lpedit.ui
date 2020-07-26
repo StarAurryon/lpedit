@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1118</width>
-    <height>864</height>
+    <width>1289</width>
+    <height>950</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,129 +16,147 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
+     <widget class="QWidget" name="leftWidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>0</height>
+       </size>
       </property>
-      <property name="leftMargin">
-       <number>6</number>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
       </property>
-      <property name="topMargin">
-       <number>6</number>
-      </property>
-      <property name="rightMargin">
-       <number>6</number>
-      </property>
-      <property name="bottomMargin">
-       <number>6</number>
-      </property>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="leftMargin">
-         <number>6</number>
-        </property>
-        <property name="topMargin">
-         <number>6</number>
-        </property>
-        <property name="rightMargin">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>6</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Input 1 Source</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboBox_2"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Input 2 Source</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboBox_3"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Tempo</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLineEdit" name="lineEdit"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="BPM">
-            <property name="text">
-             <string>Tap Tempo</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <property name="leftMargin">
-         <number>6</number>
-        </property>
-        <property name="topMargin">
-         <number>6</number>
-        </property>
-        <property name="rightMargin">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>6</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Set List</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboBox"/>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Preset</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListView" name="listView"/>
-        </item>
-       </layout>
-      </item>
-     </layout>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="leftLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <property name="leftMargin">
+          <number>6</number>
+         </property>
+         <property name="topMargin">
+          <number>6</number>
+         </property>
+         <property name="rightMargin">
+          <number>6</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+         <item>
+          <layout class="QVBoxLayout" name="setupLayout">
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="inputSource1Lbl">
+             <property name="text">
+              <string>Input 1 Source</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="inputSource2"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="inputSource2Lbl">
+             <property name="text">
+              <string>Input 2 Source</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_3"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="tempoLbl">
+             <property name="text">
+              <string>Tempo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="tempoLayout">
+             <item>
+              <widget class="QLineEdit" name="tempo"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="BPMButton">
+               <property name="text">
+                <string>Tap Tempo</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="setListLbl">
+             <property name="text">
+              <string>Set List</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="setList"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="presetLbl">
+             <property name="text">
+              <string>Preset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListView" name="presetList"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -146,16 +164,16 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <property name="leftMargin">
-       <number>6</number>
+       <number>12</number>
       </property>
       <property name="topMargin">
-       <number>6</number>
+       <number>12</number>
       </property>
       <property name="rightMargin">
-       <number>6</number>
+       <number>12</number>
       </property>
       <property name="bottomMargin">
-       <number>6</number>
+       <number>12</number>
       </property>
       <item>
        <widget class="QFrame" name="frame">
@@ -185,33 +203,46 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="Pedals">
+        <widget class="QWidget" name="PedalsTab">
          <attribute name="title">
           <string>Pedals</string>
          </attribute>
-         <widget class="QWidget" name="verticalLayoutWidget_5">
-          <property name="geometry">
-           <rect>
-            <x>110</x>
-            <y>140</y>
-            <width>160</width>
-            <height>80</height>
-           </rect>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5"/>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QScrollArea" name="scrollPedalA">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollPedalW">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>923</width>
+               <height>778</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <layout class="QVBoxLayout" name="pedalsLayout"/>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </widget>
-        <widget class="QWidget" name="Amps">
+        <widget class="QWidget" name="AmpsTab">
          <attribute name="title">
           <string>Amps</string>
          </attribute>
         </widget>
-        <widget class="QWidget" name="Mixer">
+        <widget class="QWidget" name="MixerTab">
          <attribute name="title">
           <string>Mixer</string>
          </attribute>
         </widget>
-        <widget class="QWidget" name="Controllers">
+        <widget class="QWidget" name="ControllersTab">
          <attribute name="title">
           <string>Controllers</string>
          </attribute>
@@ -232,7 +263,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1118</width>
+     <width>1289</width>
      <height>30</height>
     </rect>
    </property>

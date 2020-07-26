@@ -56,6 +56,18 @@ func NewController() *Controller {
     return c
 }
 
+func (c *Controller) GetPedal(id int) *pedal.Pedal {
+    if id < 0 || id > 7 {
+        return nil
+    }
+    p, _ := c.pb.GetItem(uint32(id + 4)).(*pedal.Pedal)
+    return p
+}
+
+func (c *Controller) GetPedalType() map[string][]string {
+    return pedal.GetPedalType()
+}
+
 func (c *Controller) ListDevices() [][]string {
     return alsa.ListHWDev()
 }
@@ -96,17 +108,13 @@ func (c *Controller) Start(dev string) {
     go c.readDevMsg(dev)
     go c.processMsg()
     go c.monitor()
-    fmt.Println("Starting")
 }
 
 func (c *Controller) monitor(){
     time.Sleep(100 * time.Millisecond)
     c.rWG.Wait()
     if !c.hwdep.IsOpen() {
-        fmt.Println("Error Stop")
         c.Stop()
-    } else {
-        fmt.Println("NormalStop")
     }
 }
 

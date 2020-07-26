@@ -58,7 +58,7 @@ func (pb *PBSelector) clickStop(bool) {
 }
 
 func (pb *PBSelector) loopError(err string) {
-    pb.update()
+    pb.updateButtons()
     mb := widgets.NewQMessageBox(pb)
     mb.Critical(pb, "An error occured", err, widgets.QMessageBox__Ok, 0)
 }
@@ -67,6 +67,7 @@ func (pb *PBSelector) update() {
     pb.updateButtons()
 
     //Populate dev list
+    pb.ListDev.Clear()
     devs := pb.ctrl.ListDevices()
     for _, dev := range devs {
         pb.ListDev.AddItem(dev[0], core.NewQVariant15(dev[1]))

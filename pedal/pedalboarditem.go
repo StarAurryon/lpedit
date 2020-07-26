@@ -18,6 +18,8 @@
 
 package pedal
 
+import "fmt"
+
 type PedalBoardItem interface {
     GetActive() bool
     GetID() uint32
@@ -34,6 +36,17 @@ type PedalBoardItem interface {
 type Parameter struct {
     name  string
     value float32
+}
+
+func (p *Parameter) GetName() string {
+    return p.name
+}
+
+func (p *Parameter) GetValue() string {
+    if len(p.name) != 0 {
+        return fmt.Sprintf("%f", p.value)
+    }
+    return ""
 }
 
 func (p *Parameter) SetValue(v float32) {

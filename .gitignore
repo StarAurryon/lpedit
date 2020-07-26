@@ -25,6 +25,7 @@ _testmain.go
 *.prof
 
 #QT
+deploy/*
 moc*
 rcc*
 uic*
