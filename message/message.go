@@ -18,120 +18,139 @@
 
 package message
 
-import "lpedit/pedal"
 import "encoding/binary"
 import "fmt"
+import "log"
 
-type messageType uint32
+import "lpedit/pedal"
 
-type messageInfo struct {
-    size  uint16
-    stype string
-    psinfo *map[subMessageType]subMessageInfo
+type IMessage interface {
+    Copy() IMessage
+    GetType() uint32
+    GetSubType() uint32
+    IsOk() bool
+    SetData([]byte)
+    LogInfo()
+    Parse(*pedal.PedalBoard) error
 }
 
 type Message struct {
-    data []byte
-    info messageInfo
-    sinfo subMessageInfo
+    data   []byte
+    mname  string
+    msize  int
+    mtype  uint32
+    smtype uint32
 }
 
-type subMessageType uint32
-
-type subMessageInfo struct {
-    stype string
-    parse func (Message, *pedal.PedalBoard) error
+func (m *Message) Copy() IMessage {
+    _m := new(Message)
+    *_m = *m
+    return _m
 }
 
-var messages = map[messageType]messageInfo {
-    134873092: messageInfo{size: 20, stype: "PedalBoardItem",
-        psinfo: &map[subMessageType]subMessageInfo {
-            285229056: subMessageInfo{stype: "Type change", parse: itemTypeChange},
-            318783488: subMessageInfo{stype: "Active change", parse: itemActiveChange},
-        }},
-    134874113: messageInfo{size: 4104, stype: "Preset",
-        psinfo: &map[subMessageType]subMessageInfo {
-            16793600:  subMessageInfo{stype:"Load", parse: loadPreset},
-        }},
-    134873089: messageInfo{size: 8, stype: "Prepare preset change?",
-        psinfo: &map[subMessageType]subMessageInfo {
-            587218944: subMessageInfo{stype:"Event", parse: nil},
-        }},
-    134873090: messageInfo{size: 12, stype: "Prepare preset change?",
-        psinfo: &map[subMessageType]subMessageInfo {
-            738213888: subMessageInfo{stype:"Parameter 1", parse: nil},
-            654327808: subMessageInfo{stype:"Parameter 3", parse: nil},
-        }},
-    134873094: messageInfo{size: 28, stype: "Item parameter",
-        psinfo: &map[subMessageType]subMessageInfo {
-            754991104: subMessageInfo{stype: "Parameter change", parse: itemParameterChange},
-            771768320: subMessageInfo{stype: "Parameter change 2 ", parse: nil},
-            788545536: subMessageInfo{stype: "Parameter change 3 ", parse: nil},
-        }},
-    134873093: messageInfo{size: 24, stype: "Setup",
-        psinfo: &map[subMessageType]subMessageInfo {
-        }},
+func (m *Message) GetType() uint32 { return m.mtype }
+func (m *Message) GetSubType() uint32 { return m.smtype }
+func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
+func (m *Message) SetData(data []byte) { m.data = data }
+
+func (m *Message) Parse(*pedal.PedalBoard) error {
+    log.Printf("No defined pase fuction for %s message", m.mname)
+    return nil
 }
 
-func NewMessage(rm RawMessage) (error, *Message) {
-    if rm.mtype != rawMessageTypeBegin {
+
+type ActiveChange struct {
+    Message
+}
+
+func (m *ActiveChange) Copy() IMessage {
+    _m := new(ActiveChange)
+    *_m = *m
+    return _m
+}
+
+type TypeChange struct {
+    Message
+}
+
+func (m *TypeChange) Copy() IMessage {
+    _m := new(TypeChange)
+    *_m = *m
+    return _m
+}
+
+type ParameterChange struct {
+    Message
+}
+
+func (m *ParameterChange) Copy() IMessage {
+    _m := new(ParameterChange)
+    *_m = *m
+    return _m
+}
+
+type PresetLoad struct {
+    Message
+}
+
+func (m *PresetLoad) Copy() IMessage {
+    _m := new(PresetLoad)
+    *_m = *m
+    return _m
+}
+
+type TempoChange struct {
+    Message
+}
+
+func (m *TempoChange) Copy() IMessage {
+    _m := new(TempoChange)
+    *_m = *m
+    return _m
+}
+
+var messages = []IMessage{
+    &ActiveChange{Message: Message{mtype: 134873092, smtype: 318783488, msize: 20, mname: "Item Active Change"}},
+    &TypeChange{Message: Message{mtype: 134873092, smtype: 285229056, msize: 20, mname: "Item Type Change"}},
+    &PresetLoad{Message: Message{mtype: 134874113, smtype: 16793600, msize: 4104, mname: "Preset Load"}},
+    &ParameterChange{Message: Message{mtype: 134873094, smtype: 754991104, msize: 28, mname: "Item Parameter Change"}},
+    &TempoChange{Message: Message{mtype: 134873093, smtype: 369115136, msize: 28, mname: "Tempo Change"}},
+}
+
+func newMessage(mtype uint32, smtype uint32) IMessage {
+    for _, m := range messages {
+        if m.GetType() == mtype && m.GetSubType() == smtype {
+            return m.Copy()
+        }
+    }
+    return nil
+}
+
+func NewMessage(rm RawMessage) (error, IMessage) {
+    if rm.mtype != RawMessageBegin {
         return fmt.Errorf("You can't init a message with a non Begin Type"), nil
     }
-    v, found := messages[rm.getMessageType()]
-    if !found {
-        return fmt.Errorf("Message type is unknown, code: %d",
-             rm.getMessageType()), nil
+    if len(rm.data) < 8 {
+        return fmt.Errorf("The size of the RawMessage is too small to get the messageType"), nil
     }
-    m := &Message{data: rm.data, info: v}
-    if !m.Ready() {
-        return nil, m
+
+    mtype := binary.LittleEndian.Uint32(rm.data[0:4])
+    smtype := binary.LittleEndian.Uint32(rm.data[4:8])
+    m := newMessage(mtype, smtype)
+    if m == nil {
+        return nil, &Message{mname: "Unknown", data: rm.data}
     }
-    return m.fillSubMessageInfo(), m
+
+    m.SetData(rm.data)
+    if !m.IsOk() {
+        return fmt.Errorf("The size of the RawMessage is too small\n"), nil
+    }
+    return nil, m
 }
 
-func (m *Message) Extend(rm RawMessage) error{
-    if rm.mtype != rawMessageTypeExt {
-        return fmt.Errorf("You can't extend a message with non Ext type")
-    }
-    m.data = append(m.data, rm.data...)
-
-    if !m.Ready() {
-        return nil
-    }
-    return m.fillSubMessageInfo()
-}
-
-func (m *Message) fillSubMessageInfo() error {
-    if !m.Ready() {
-        return nil
-    }
-    smtype := subMessageType(binary.LittleEndian.Uint32(m.data[4:8]))
-    v, found := (*m.info.psinfo)[smtype]
-    if found {
-        m.sinfo = v
-        return nil
-    } else {
-        m.sinfo = subMessageInfo{stype: "Unknown"}
-        return fmt.Errorf("Type \"%s\": Message subtype is unknwon, code: %d",
-             m.info.stype, smtype)
-    }
-}
-
-func (m Message) Parse(pb *pedal.PedalBoard) error{
-    if m.sinfo.parse == nil {
-        return fmt.Errorf("No parse function defined to handle the message\n")
-    }
-    return m.sinfo.parse(m, pb)
-}
-
-func (m Message) PrintInfo() {
-    fmt.Printf("Message info\n")
-    fmt.Printf("Type %s\n", m.info.stype)
-    fmt.Printf("SubType %s\n", m.sinfo.stype)
-    fmt.Printf("Data size %d, effective size, %d\n", m.info.size, len(m.data))
-    fmt.Printf("Content: %x\n\n", m.data)
-}
-
-func (m *Message) Ready() bool {
-    return len(m.data) >= int(m.info.size)
+func (m Message) LogInfo() {
+    log.Printf("Message info\n")
+    log.Printf("Name %s\n", m.mname)
+    log.Printf("Data size %d, effective size, %d\n", m.msize, len(m.data))
+    log.Printf("Content: %x\n\n", m.data)
 }

@@ -22,6 +22,7 @@ import "lpedit/pedal"
 import "encoding/binary"
 import "fmt"
 import "bytes"
+import "log"
 import "sort"
 
 type sUint16 []uint16
@@ -39,7 +40,7 @@ func (m Message) getPedalID() uint32 {
     return binary.LittleEndian.Uint32(m.data[12:16])
 }
 
-func loadPreset(m Message, pb *pedal.PedalBoard) error {
+func (m PresetLoad) Parse(pb *pedal.PedalBoard) error {
     pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
     // ppos contains the position as key
     ppos := map[uint16]presetPedalPos{}
@@ -76,9 +77,11 @@ func loadPreset(m Message, pb *pedal.PedalBoard) error {
             binary.Read(bytes.NewReader(m.data[poffset+20:poffset+24]), binary.LittleEndian, &v)
             param := pbi.GetParam(pidx)
             if param != nil {
-                param.SetValue(v)
+                if err := param.SetBinValue(v); err != nil {
+                    log.Printf("TODO: Fix the parameter type on pedal %s: %s \n", pbi.GetName(), err)
+                }
             } else {
-                fmt.Printf("TODO: Parameter ID %d does not exist on pedal type %s\n",
+                log.Printf("TODO: Parameter ID %d does not exist on pedal type %s\n",
                     pidx, pbi.GetName())
             }
 
@@ -103,7 +106,7 @@ func loadPreset(m Message, pb *pedal.PedalBoard) error {
     return nil
 }
 
-func itemActiveChange(m Message, pb *pedal.PedalBoard) error {
+func (m ActiveChange) Parse(pb *pedal.PedalBoard) error {
     id := m.getPedalID()
     p := pb.GetItem(id)
     if p == nil {
@@ -115,12 +118,12 @@ func itemActiveChange(m Message, pb *pedal.PedalBoard) error {
     } else {
         active = false
     }
-    fmt.Printf("Active change on ID %d status %t\n", id, active)
+    log.Printf("Active change on ID %d status %t\n", id, active)
     p.SetActive(active)
     return nil
 }
 
-func itemParameterChange (m Message, pb *pedal.PedalBoard) error {
+func (m ParameterChange) Parse(pb *pedal.PedalBoard) error {
     pid := m.getPedalID()
     p := pb.GetItem(pid)
     if p == nil {
@@ -137,12 +140,24 @@ func itemParameterChange (m Message, pb *pedal.PedalBoard) error {
     if param == nil {
         return fmt.Errorf("Parameter ID %d not found", id)
     }
-    param.SetValue(v)
+    if err := param.SetBinValue(v); err != nil {
+        log.Printf("TODO: Fix the parameter type on pedal %s: %s \n", p.GetName(), err)
+    }
     return nil
 }
 
-func itemTypeChange(m Message, pb *pedal.PedalBoard) error {
+func (m TypeChange) Parse(pb *pedal.PedalBoard) error {
     id := m.getPedalID()
     ptype := binary.LittleEndian.Uint32(m.data[16:])
     return pb.SetItem(id, ptype)
+}
+
+func (m TempoChange) Parse(pb *pedal.PedalBoard) error {
+    var v float32
+    err := binary.Read(bytes.NewReader(m.data[20:24]), binary.LittleEndian, &v)
+    if err != nil {
+        return err
+    }
+    pb.SetTempo(v)
+    return nil
 }

@@ -18,9 +18,9 @@
 
 package ui
 
-import "github.com/therecipe/qt/core"
+/*import "github.com/therecipe/qt/core"
 import "github.com/therecipe/qt/gui"
-import "github.com/therecipe/qt/svg"
+import "github.com/therecipe/qt/svg"*/
 import "github.com/therecipe/qt/widgets"
 
 import "sort"
@@ -44,7 +44,7 @@ func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
 
 func (p *Pedal) initUI() {
     //Setting up knob
-    svg := svg.NewQSvgRenderer2("ui/knob.svg", p)
+    /*svg := svg.NewQSvgRenderer2("ui/knob.svg", p)
     pix := gui.NewQPixmap2(p.Param1Knob.SizeHint())
     paint := gui.NewQPainter()
     paint.Scale(1, 1)
@@ -56,7 +56,7 @@ func (p *Pedal) initUI() {
 
     pal := gui.NewQPalette()
     pal.SetBrush(gui.QPalette__Background, gui.NewQBrush7(pix))
-    p.Param1Knob.SetPalette(pal)
+    p.Param1Knob.SetPalette(pal)*/
 
     //Setting up pedal type
     keys := make([]string, 0, len(p.pedalType))
@@ -180,18 +180,17 @@ func (p *Pedal) showParameter(id int) {
 }
 
 func (pUI *Pedal) updateModel() {
-    p := pUI.ctrl.GetPedal(pUI.id)
+    p := pUI.ctrl.GetPedalBoard().GetPedal2(pUI.id)
     pUI.setActive(p.GetActive())
-    pUI.FxType.SetCurrentText(p.GetPType())
+    pUI.FxType.SetCurrentText(p.GetSType())
     pUI.FxModel.SetCurrentText(p.GetName())
     nparam := int(p.GetParamLen())
     for j := 0; j < 5; j++ {
         if j < (nparam - 1) {
             param := p.GetParam(uint16(j+1))
-            pname := param.GetName()
-            if pname != "" {
+            if !param.IsNull() {
                 pUI.showParameter(j)
-                pUI.setParameterLabel(j, pname)
+                pUI.setParameterLabel(j, param.GetName())
                 pUI.setParameterValueList(j, []string{param.GetValue()})
                 pUI.setParameterValue(j, param.GetValue())
             } else {

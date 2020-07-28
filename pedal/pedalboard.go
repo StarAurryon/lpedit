@@ -19,6 +19,7 @@
 package pedal
 
 import "fmt"
+import "log"
 
 type PedalBoardChannel struct{
     aStart []PedalBoardItem
@@ -55,6 +56,7 @@ type PedalBoard struct {
     pname    string
     bAmp     []PedalBoardItem //Only for backup of channel B
     cabs     []PedalBoardItem //Pod still sending infos even if not present
+    tempo    float32
 }
 
 func NewPedalBoard() *PedalBoard {
@@ -99,6 +101,22 @@ func (pb *PedalBoard) GetPedal(pos uint16) PedalBoardItem {
     return nil
 }
 
+func (pb *PedalBoard) GetPedal2(id int) *Pedal {
+    if id < 0 || id > 7 {
+        return nil
+    }
+    p, _ := pb.GetItem(uint32(id + 4)).(*Pedal)
+    return p
+}
+
+func (pb *PedalBoard) GetPresetName() string {
+    return pb.pname
+}
+
+func (pb *PedalBoard) GetTempo() float32 {
+    return pb.tempo
+}
+
 func (pb *PedalBoard) SetItem(id uint32, ptype uint32) error {
     p := pb.GetItem(id)
     if p == nil {
@@ -111,24 +129,28 @@ func (pb *PedalBoard) SetPresetName(pname string) {
     pb.pname = pname
 }
 
-func (pb PedalBoard) PrintInfo() {
-    fmt.Printf("PedalBoard info\n")
-    fmt.Printf("Preset name \"%s\"\n", pb.pname)
-    fmt.Printf("PedalStart:\n")
-    for _, pbi := range(pb.start) { pbi.PrintInfo() }
-    for _, pbi := range(pb.startAmp) { pbi.PrintInfo() }
-    fmt.Printf("Channel A:\n")
-    fmt.Printf("Volume %f, pan %f\n", pb.pchan.aVol, pb.pchan.aPan)
-    for _, pbi := range(pb.pchan.aStart) { pbi.PrintInfo() }
-    for _, pbi := range(pb.pchan.aAmp) { pbi.PrintInfo() }
-    for _, pbi := range(pb.pchan.aEnd) { pbi.PrintInfo() }
-    fmt.Printf("Channel B:\n")
-    fmt.Printf("Volume %f, pan %f\n", pb.pchan.bVol, pb.pchan.bPan)
-    for _, pbi := range(pb.pchan.bStart) { pbi.PrintInfo() }
-    for _, pbi := range(pb.pchan.bAmp) { pbi.PrintInfo() }
-    for _, pbi := range(pb.pchan.bEnd) { pbi.PrintInfo() }
-    fmt.Printf("PedalEnd:\n")
-    for _, pbi := range(pb.endAmp) { pbi.PrintInfo() }
-    for _, pbi := range(pb.end) { pbi.PrintInfo() }
-    fmt.Printf("\n")
+func (pb *PedalBoard) SetTempo(t float32) {
+    pb.tempo = t
+}
+
+func (pb PedalBoard) LogInfo() {
+    log.Printf("PedalBoard info\n")
+    log.Printf("Preset name \"%s\"\n", pb.pname)
+    log.Printf("PedalStart:\n")
+    for _, pbi := range(pb.start) { pbi.LogInfo() }
+    for _, pbi := range(pb.startAmp) { pbi.LogInfo() }
+    log.Printf("Channel A:\n")
+    log.Printf("Volume %f, pan %f\n", pb.pchan.aVol, pb.pchan.aPan)
+    for _, pbi := range(pb.pchan.aStart) { pbi.LogInfo() }
+    for _, pbi := range(pb.pchan.aAmp) { pbi.LogInfo() }
+    for _, pbi := range(pb.pchan.aEnd) { pbi.LogInfo() }
+    log.Printf("Channel B:\n")
+    log.Printf("Volume %f, pan %f\n", pb.pchan.bVol, pb.pchan.bPan)
+    for _, pbi := range(pb.pchan.bStart) { pbi.LogInfo() }
+    for _, pbi := range(pb.pchan.bAmp) { pbi.LogInfo() }
+    for _, pbi := range(pb.pchan.bEnd) { pbi.LogInfo() }
+    log.Printf("PedalEnd:\n")
+    for _, pbi := range(pb.endAmp) { pbi.LogInfo() }
+    for _, pbi := range(pb.end) { pbi.LogInfo() }
+    log.Printf("\n")
 }

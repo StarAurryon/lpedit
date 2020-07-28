@@ -20,48 +20,54 @@ package message
 
 import "encoding/binary"
 import "fmt"
+import "log"
 
-type rawMessageType uint16
+type RawMessageType uint16
 const (
-    rawMessageTypeBegin rawMessageType = 1
-    rawMessageTypeExt   rawMessageType = 4
+    RawMessageBegin RawMessageType = 1
+    RawMessageExt   RawMessageType = 4
 )
 
 type RawMessage struct {
     size uint16
-    mtype rawMessageType
+    mtype RawMessageType
     data []byte
 }
 
 func NewRawMessage(data []byte) *RawMessage {
     var m RawMessage
     m.size = binary.LittleEndian.Uint16(data[:2])
-    m.mtype = rawMessageType(binary.LittleEndian.Uint16(data[2:4]))
+    m.mtype = RawMessageType(binary.LittleEndian.Uint16(data[2:4]))
     if len(data) > 4 {
         m.data = data[4:len(data)]
     }
     return &m
 }
 
-func (m RawMessage) getMessageType() messageType {
-    if(m.mtype != rawMessageTypeBegin) {
-        return 0
+func (m *RawMessage) Extend(rm *RawMessage) error{
+    if rm.mtype != RawMessageExt {
+        return fmt.Errorf("You can't extend a rawMessage with non Ext type")
     }
-    return messageType(binary.LittleEndian.Uint32(m.data[0:4]))
+    m.data = append(m.data, rm.data...)
+    return nil
 }
 
-func (m RawMessage) PrintInfo() {
+func (m *RawMessage) GetType() RawMessageType {
+    return m.mtype
+}
+
+func (m RawMessage) LogInfo() {
     var mtype = ""
-    fmt.Printf("RawMessage info\n")
+    log.Printf("RawMessage info\n")
     switch m.mtype {
-    case rawMessageTypeBegin:
+    case RawMessageBegin:
         mtype = "BEGIN"
-    case rawMessageTypeExt:
+    case RawMessageExt:
         mtype = "EXT"
     default:
         mtype = "Unknown"
     }
-    fmt.Printf("Type %s\n", mtype)
-    fmt.Printf("Data size %d, effective size, %d\n", m.size, len(m.data))
-    fmt.Printf("Content: %x\n\n", m.data)
+    log.Printf("Type %s\n", mtype)
+    log.Printf("Data size %d, effective size, %d\n", m.size, len(m.data))
+    log.Printf("Content: %x\n\n", m.data)
 }

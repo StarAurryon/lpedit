@@ -35,6 +35,7 @@ const (
     NormalStop
     NormalStart
     MessageProcessed
+    TempoChange
 )
 
 type Controller struct {
@@ -56,12 +57,8 @@ func NewController() *Controller {
     return c
 }
 
-func (c *Controller) GetPedal(id int) *pedal.Pedal {
-    if id < 0 || id > 7 {
-        return nil
-    }
-    p, _ := c.pb.GetItem(uint32(id + 4)).(*pedal.Pedal)
-    return p
+func (c *Controller) GetPedalBoard() *pedal.PedalBoard {
+    return c.pb
 }
 
 func (c *Controller) GetPedalType() map[string][]string {
@@ -105,8 +102,8 @@ func (c *Controller) Start(dev string) {
     c.pM = make(chan int)
     c.rCh = make(chan *message.RawMessage, 100)
     c.notify(nil, NormalStart)
-    go c.readDevMsg(dev)
-    go c.processMsg()
+    go c.readRawMessage(dev)
+    go c.processRawMessage()
     go c.monitor()
 }
 
@@ -118,49 +115,54 @@ func (c *Controller) monitor(){
     }
 }
 
-func (c *Controller) processMsg() {
+func (c *Controller) genMessage(rm *message.RawMessage) {
+    err, m := message.NewMessage(*rm)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+
+    m.LogInfo()
+
+    c.LockData()
+    err = m.Parse(c.pb)
+    if err != nil {
+        c.notify(err, ErrorProcess)
+    } else {
+        c.notify(nil, MessageProcessed)
+    }
+    c.UnlockData()
+}
+
+func (c *Controller) processRawMessage() {
     c.rWG.Add(1)
     defer c.rWG.Done()
-    var m *message.Message
-    var err error
+    var m *message.RawMessage
 
     for {
         select {
         case <-c.pM:
-            fmt.Println("Exiting startProcess")
             return
-        case rm := <-c.rCh:
-            if m == nil {
-                err, m = message.NewMessage(*rm)
-                if err != nil {
-                    m = nil
-                    c.notify(err, ErrorProcess)
-                    continue
-                }
-            } else {
-                err = m.Extend(*rm)
-                if err != nil {
-                    m = nil
-                    c.notify(err, ErrorProcess)
-                    continue
-                }
-            }
-            if m.Ready() {
-                c.LockData()
-                err = m.Parse(c.pb)
-                c.UnlockData()
-                if err != nil {
-                    c.notify(err, ErrorProcess)
-                } else {
-                    c.notify(nil, MessageProcessed)
-                }
+        case <-time.After(10 * time.Millisecond):
+            if m != nil {
+                go c.genMessage(m)
                 m = nil
+            }
+        case _m := <-c.rCh:
+            switch _m.GetType() {
+            case message.RawMessageBegin:
+                if m != nil {
+                    go c.genMessage(m)
+                }
+                m = _m
+            case message.RawMessageExt:
+                m.Extend(_m)
             }
         }
     }
 }
 
-func (c *Controller) readDevMsg(dev string) {
+func (c *Controller) readRawMessage(dev string) {
     c.rWG.Add(1)
     defer c.rWG.Done()
     c.dev = dev
@@ -183,6 +185,7 @@ func (c *Controller) readDevMsg(dev string) {
                 time.Sleep(100 * time.Millisecond)
                 continue
             }
+            message.NewRawMessage(buf).LogInfo()
             c.rCh <- message.NewRawMessage(buf)
         }
     }

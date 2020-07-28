@@ -19,38 +19,132 @@
 package pedal
 
 import "fmt"
+import "strings"
+import "strconv"
 
 type PedalBoardItem interface {
     GetActive() bool
     GetID() uint32
-    GetParam(id uint16) *Parameter
+    GetParam(id uint16) Parameter
     GetParamLen() uint16
     GetName() string
     SetActive(bool)
     SetLastPos(uint16, uint8) error
     SetType(uint32) error
-    PrintInfo()
+    LogInfo()
     remove()
 }
 
-type Parameter struct {
+type Parameter interface {
+    Copy() Parameter
+    IsNull() bool
+    GetName() string
+    GetValue() string
+    SetValue(string) error
+    GetBinValue() float32
+    SetBinValue(float32) error
+}
+
+type NullParam struct {}
+
+func (p *NullParam) Copy() Parameter {
+    _p := new(NullParam)
+    *_p = *p
+    return _p
+}
+
+func (p *NullParam) IsNull() bool { return true }
+func (p *NullParam) GetName() string { return "Null" }
+func (p *NullParam) GetValue() string { return "" }
+func (p *NullParam) SetValue(string) error { return fmt.Errorf("Null parameter") }
+func (p *NullParam) GetBinValue() float32 { return 0 }
+func (p *NullParam) SetBinValue(float32) error { return fmt.Errorf("Null parameter") }
+
+type PerCentParam struct {
     name  string
     value float32
 }
 
-func (p *Parameter) GetName() string {
-    return p.name
+func (p *PerCentParam) Copy() Parameter {
+    _p := new(PerCentParam)
+    *_p = *p
+    return _p
 }
 
-func (p *Parameter) GetValue() string {
-    if len(p.name) != 0 {
-        return fmt.Sprintf("%f", p.value)
-    }
-    return ""
+func (p *PerCentParam) IsNull() bool { return false }
+func (p *PerCentParam) GetName() string { return p.name }
+
+func (p *PerCentParam) GetValue() string {
+    return fmt.Sprintf("%d%%", int(p.value*100))
 }
 
-func (p *Parameter) SetValue(v float32) {
-    if len(p.name) != 0 {
-        p.value = v
+func (p *PerCentParam) SetValue(s string) error {
+    s = strings.Replace(s, " ", "", -1)
+    s = strings.Replace(s, "%", "", -1)
+    vi, err := strconv.Atoi(s)
+    if err != nil {
+        return err
     }
+    if vi > 100 || vi < 0 {
+        return fmt.Errorf("The value must be comprised between 0 and 100")
+    }
+    p.value = float32(vi)/100
+    return nil
+}
+
+func (p *PerCentParam) GetBinValue() float32 {
+    return p.value
+}
+
+func (p *PerCentParam) SetBinValue(v float32) error {
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    p.value = v
+    return nil
+}
+
+type TimeParam struct {
+    name  string
+    maxMs int
+    value float32
+}
+
+func (p *TimeParam) Copy() Parameter {
+    _p := new(TimeParam)
+    *_p = *p
+    return _p
+}
+
+func (p *TimeParam) IsNull() bool { return false }
+func (p *TimeParam) GetName() string { return p.name }
+
+func (p *TimeParam) GetValue() string {
+    return fmt.Sprintf("%dms", int(p.value*float32(p.maxMs)))
+}
+
+func (p *TimeParam) SetValue(s string) error {
+    s = strings.Replace(s, " ", "", -1)
+    s = strings.Replace(s, "ms", "", -1)
+    vi, err := strconv.Atoi(s)
+    if err != nil {
+        return err
+    }
+    if  vi > p.maxMs || vi < 0 {
+        return fmt.Errorf("The value must be comprised between 0 and %d", p.maxMs)
+    }
+    p.value = float32(vi)/float32(p.maxMs)
+    return nil
+}
+
+func (p *TimeParam) GetBinValue() float32 {
+    return p.value
+}
+
+func (p *TimeParam) SetBinValue(v float32) error {
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    p.value = v
+    return nil
 }

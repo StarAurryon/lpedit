@@ -40,6 +40,7 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
 
 func (l *LPEdit) init() {
     l.ConnectCloseEvent(l.windowClose)
+    l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.ActionAbout.ConnectTriggered(l.aboutClick)
     l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
     l.ctrl.ConnectModelUpdated(l.updateModel)
