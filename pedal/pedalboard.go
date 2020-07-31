@@ -18,8 +18,8 @@
 
 package pedal
 
-import "fmt"
 import "log"
+import "sync"
 
 type PedalBoardChannel struct{
     aStart []PedalBoardItem
@@ -33,6 +33,22 @@ type PedalBoardChannel struct{
     aPan   float32
     bPan   float32
 }
+
+type ChangeType int
+
+const (
+    ActiveChange ChangeType = iota
+    Error
+    ErrorStop
+    None
+    NormalStop
+    NormalStart
+    PedalBoardChange
+    ParameterChange
+    TempoChange
+    TypeChange
+    Warning
+)
 
 type pedalPos uint16
 
@@ -57,13 +73,14 @@ type PedalBoard struct {
     bAmp     []PedalBoardItem //Only for backup of channel B
     cabs     []PedalBoardItem //Pod still sending infos even if not present
     tempo    float32
+    mux      sync.Mutex
 }
 
 func NewPedalBoard() *PedalBoard {
     pb := &PedalBoard{}
-    ca := newNoneCab(uint32(1), pb, &pb.cabs)
+    ca := newNoCab(uint32(1), pb, &pb.cabs)
     newDisAmp(uint32(0), pb, &pb.pchan.aAmp, ca)
-    cb := newNoneCab(uint32(3), pb, &pb.cabs)
+    cb := newNoCab(uint32(3), pb, &pb.cabs)
     newDisAmp(uint32(2), pb, &pb.pchan.bAmp, cb)
     for id := uint32(4); id <= 11; id++ {
         newNonePedal(id, pb, &pb.start)
@@ -117,12 +134,8 @@ func (pb *PedalBoard) GetTempo() float32 {
     return pb.tempo
 }
 
-func (pb *PedalBoard) SetItem(id uint32, ptype uint32) error {
-    p := pb.GetItem(id)
-    if p == nil {
-        return fmt.Errorf("Pedal ID %d not found", id)
-    }
-    return p.SetType(ptype)
+func (c *PedalBoard) LockData(){
+    c.mux.Lock()
 }
 
 func (pb *PedalBoard) SetPresetName(pname string) {
@@ -131,6 +144,10 @@ func (pb *PedalBoard) SetPresetName(pname string) {
 
 func (pb *PedalBoard) SetTempo(t float32) {
     pb.tempo = t
+}
+
+func (c *PedalBoard) UnlockData(){
+    c.mux.Unlock()
 }
 
 func (pb PedalBoard) LogInfo() {

@@ -27,20 +27,8 @@ import "lpedit/alsa"
 import "lpedit/message"
 import "lpedit/pedal"
 
-type NotificationType int
-
-const (
-    ErrorProcess NotificationType = iota
-    ErrorStop
-    NormalStop
-    NormalStart
-    MessageProcessed
-    TempoChange
-)
-
 type Controller struct {
     pb      *pedal.PedalBoard
-    pbMux   sync.Mutex
     dev     string
     rLDM    chan int
     pM      chan int
@@ -49,16 +37,12 @@ type Controller struct {
     rStart  bool
     hwdep   alsa.Hwdep
     started bool
-    notif   func(error, NotificationType)
+    notif   func(error, pedal.ChangeType, interface{})
 }
 
 func NewController() *Controller {
     c := &Controller{pb: pedal.NewPedalBoard(), started: false}
     return c
-}
-
-func (c *Controller) GetPedalBoard() *pedal.PedalBoard {
-    return c.pb
 }
 
 func (c *Controller) GetPedalType() map[string][]string {
@@ -69,31 +53,23 @@ func (c *Controller) ListDevices() [][]string {
     return alsa.ListHWDev()
 }
 
-func (c *Controller) LockData(){
-    c.pbMux.Lock()
-}
-
-func (c *Controller) UnlockData(){
-    c.pbMux.Unlock()
-}
-
-func (c *Controller) notify(err error, ntype NotificationType) {
-    n := func(err error, ntype NotificationType) {
+func (c *Controller) notify(err error, ntype pedal.ChangeType, obj interface{}) {
+    n := func(err error, ntype pedal.ChangeType, obj interface{}) {
         if err != nil {
             log.Println(err)
         }
         if c.notif != nil {
-            c.notif(err, ntype)
+            c.notif(err, ntype, obj)
         }
     }
-    go n(err, ntype)
+    go n(err, ntype, obj)
 }
 
 func (c *Controller) IsStarted() bool {
     return c.started
 }
 
-func (c *Controller) SetNotify(n func(error, NotificationType)) {
+func (c *Controller) SetNotify(n func(error, pedal.ChangeType, interface{})) {
     c.notif = n
 }
 
@@ -101,7 +77,7 @@ func (c *Controller) Start(dev string) {
     c.rLDM = make(chan int)
     c.pM = make(chan int)
     c.rCh = make(chan *message.RawMessage, 100)
-    c.notify(nil, NormalStart)
+    c.notify(nil, pedal.NormalStart, nil)
     go c.readRawMessage(dev)
     go c.processRawMessage()
     go c.monitor()
@@ -121,17 +97,12 @@ func (c *Controller) genMessage(rm *message.RawMessage) {
         log.Println(err)
         return
     }
-
     m.LogInfo()
 
-    c.LockData()
-    err = m.Parse(c.pb)
-    if err != nil {
-        c.notify(err, ErrorProcess)
-    } else {
-        c.notify(nil, MessageProcessed)
-    }
-    c.UnlockData()
+    c.pb.LockData()
+    err, ct, obj := m.Parse(c.pb)
+    c.notify(err, ct, obj)
+    c.pb.UnlockData()
 }
 
 func (c *Controller) processRawMessage() {
@@ -168,7 +139,7 @@ func (c *Controller) readRawMessage(dev string) {
     c.dev = dev
     if err := c.hwdep.Open(dev); err != nil {
         c.notify(fmt.Errorf("Could not open device %s: %s\n", dev, err),
-            ErrorStop)
+            pedal.ErrorStop, nil)
         c.pM <- 0
         return
     }
@@ -185,7 +156,6 @@ func (c *Controller) readRawMessage(dev string) {
                 time.Sleep(100 * time.Millisecond)
                 continue
             }
-            message.NewRawMessage(buf).LogInfo()
             c.rCh <- message.NewRawMessage(buf)
         }
     }
@@ -202,9 +172,9 @@ func (c *Controller) Stop() {
     if c.hwdep.IsOpen() {
         if err := c.hwdep.Close(); err != nil {
             c.notify(fmt.Errorf("Could not close device %s: %s\n", c.dev, err),
-                ErrorStop)
+                pedal.ErrorStop, nil)
         } else {
-            c.notify(nil, NormalStop)
+            c.notify(nil, pedal.NormalStop, nil)
         }
     }
 }

@@ -21,14 +21,19 @@ package qtctrl
 import "github.com/therecipe/qt/core"
 
 import "lpedit/controller"
+import "lpedit/pedal"
 
 type Controller struct {
     core.QObject
     controller.Controller
     _ func() `constructor:"init"`
-    _ func() `signal:"loop"`
-    _ func(string) `signal:"loopError"`
-    _ func() `signal:modelUpdated`
+    _ func(pedal.PedalBoardItem) `signal:ActiveChange`
+    _ func() `signal:"Loop"`
+    _ func(string) `signal:"LoopError"`
+    _ func(pedal.Parameter) `signal:ParameterChange`
+    _ func(*pedal.PedalBoard) `signal:PedalBoardChange`
+    _ func(pedal.PedalBoardItem) `signal:TypeChange`
+    _ func(*pedal.PedalBoard) `signal:TempoChange`
 }
 
 func (c *Controller) init() {
@@ -36,15 +41,25 @@ func (c *Controller) init() {
     c.SetNotify(c.notif)
 }
 
-func (c *Controller) notif(err error, n controller.NotificationType) {
+func (c *Controller) notif(err error, n pedal.ChangeType, obj interface{}) {
     switch n {
-    case controller.NormalStart:
-        go c.Loop()
-    case controller.NormalStop:
-        go c.Loop()
-    case controller.ErrorStop:
-        go c.LoopError(err.Error())
-    case controller.MessageProcessed:
-        go c.ModelUpdated()
+    case pedal.ActiveChange:
+        c.ActiveChange(obj.(pedal.PedalBoardItem))
+    case pedal.NormalStart:
+        c.Loop()
+    case pedal.NormalStop:
+        c.Loop()
+    case pedal.ErrorStop:
+        c.LoopError(err.Error())
+    case pedal.ParameterChange:
+        c.ParameterChange(obj.(pedal.Parameter))
+    case pedal.PedalBoardChange:
+        pb := obj.(*pedal.PedalBoard)
+        c.PedalBoardChange(pb)
+    case pedal.TypeChange:
+        pbi := obj.(pedal.PedalBoardItem)
+        c.TypeChange(pbi)
+    case pedal.TempoChange:
+        c.TempoChange(obj.(*pedal.PedalBoard))
     }
 }

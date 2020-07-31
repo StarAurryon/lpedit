@@ -25,6 +25,7 @@ import "github.com/therecipe/qt/widgets"
 
 import "sort"
 
+import "lpedit/pedal"
 import "lpedit/qtctrl"
 
 type Pedal struct {
@@ -32,11 +33,23 @@ type Pedal struct {
     id         int
     pedalType  map[string][]string
     ctrl       *qtctrl.Controller
+    labels     []*widgets.QLabel
+    mids       []*widgets.QWidget
+    values     []*widgets.QComboBox
 }
 
 func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
         pt map[string][]string, id int) *Pedal {
     p := &Pedal{PedalUI: NewPedalUI(w), ctrl: c, pedalType: pt, id: id}
+    p.labels = []*widgets.QLabel{
+        p.Param0Lbl, p.Param1Lbl , p.Param2Lbl, p.Param3Lbl, p.Param4Lbl,
+    }
+    p.mids = []*widgets.QWidget{
+        p.Param0Mid, p.Param1Mid , p.Param2Mid, p.Param3Mid, p.Param4Mid,
+    }
+    p.values = []*widgets.QComboBox{
+        p.Param0Value, p.Param1Value , p.Param2Value, p.Param3Value, p.Param4Value,
+    }
     p.init()
     p.initUI()
     return p
@@ -76,28 +89,10 @@ func (p *Pedal) fxTypeChanged(fxType string) {
 }
 
 func (p *Pedal) hideParameter(id int) {
-    switch id {
-    case 0:
-        p.Param0Lbl.Hide()
-        p.Param0Mid.Hide()
-        p.Param0Value.Hide()
-    case 1:
-        p.Param1Lbl.Hide()
-        p.Param1Mid.Hide()
-        p.Param1Value.Hide()
-    case 2:
-        p.Param2Lbl.Hide()
-        p.Param2Mid.Hide()
-        p.Param2Value.Hide()
-    case 3:
-        p.Param3Lbl.Hide()
-        p.Param3Mid.Hide()
-        p.Param3Value.Hide()
-    case 4:
-        p.Param4Lbl.Hide()
-        p.Param4Mid.Hide()
-        p.Param4Value.Hide()
-    }
+    if id < 0 || id >= len(p.labels) { return }
+    p.labels[id].Hide()
+    p.mids[id].Hide()
+    p.values[id].Hide()
 }
 
 func (p *Pedal) setActive(status bool) {
@@ -105,99 +100,50 @@ func (p *Pedal) setActive(status bool) {
 }
 
 func (p *Pedal) setParameterLabel(id int, s string) {
-    switch id {
-    case 0:
-        p.Param0Lbl.SetText(s)
-    case 1:
-        p.Param1Lbl.SetText(s)
-    case 2:
-        p.Param2Lbl.SetText(s)
-    case 3:
-        p.Param3Lbl.SetText(s)
-    case 4:
-        p.Param4Lbl.SetText(s)
-    }
+    if id < 0 || id >= len(p.labels) { return }
+    p.labels[id].SetText(s)
 }
 
 func (p *Pedal) setParameterValueList(id int, s []string) {
-    switch id {
-    case 0:
-        p.Param0Value.Clear()
-        p.Param0Value.AddItems(s)
-    case 1:
-        p.Param1Value.Clear()
-        p.Param1Value.AddItems(s)
-    case 2:
-        p.Param2Value.Clear()
-        p.Param2Value.AddItems(s)
-    case 3:
-        p.Param4Value.Clear()
-        p.Param3Value.AddItems(s)
-    case 4:
-        p.Param4Value.Clear()
-        p.Param4Value.AddItems(s)
-    }
+    if id < 0 || id >= len(p.labels) { return }
+    p.values[id].Clear()
+    p.values[id].AddItems(s)
 }
 
 func (p *Pedal) setParameterValue(id int, s string) {
-    switch id {
-    case 0:
-        p.Param0Value.SetCurrentText(s)
-    case 1:
-        p.Param1Value.SetCurrentText(s)
-    case 2:
-        p.Param2Value.SetCurrentText(s)
-    case 3:
-        p.Param3Value.SetCurrentText(s)
-    case 4:
-        p.Param4Value.SetCurrentText(s)
-    }
+    if id < 0 || id >= len(p.labels) { return }
+    p.values[id].SetCurrentText(s)
 }
 
 func (p *Pedal) showParameter(id int) {
-    switch id {
-    case 0:
-        p.Param0Lbl.Show()
-        p.Param0Mid.Show()
-        p.Param0Value.Show()
-    case 1:
-        p.Param1Lbl.Show()
-        p.Param1Mid.Show()
-        p.Param1Value.Show()
-    case 2:
-        p.Param2Lbl.Show()
-        p.Param2Mid.Show()
-        p.Param2Value.Show()
-    case 3:
-        p.Param3Lbl.Show()
-        p.Param3Mid.Show()
-        p.Param3Value.Show()
-    case 4:
-        p.Param4Lbl.Show()
-        p.Param4Mid.Show()
-        p.Param4Value.Show()
-    }
+    if id < 0 || id >= len(p.labels) { return }
+    p.labels[id].Show()
+    p.mids[id].Show()
+    p.values[id].Show()
 }
 
-func (pUI *Pedal) updateModel() {
-    p := pUI.ctrl.GetPedalBoard().GetPedal2(pUI.id)
+func (pUI *Pedal) updatePedal(p *pedal.Pedal) {
     pUI.setActive(p.GetActive())
     pUI.FxType.SetCurrentText(p.GetSType())
     pUI.FxModel.SetCurrentText(p.GetName())
-    nparam := int(p.GetParamLen())
-    for j := 0; j < 5; j++ {
-        if j < (nparam - 1) {
-            param := p.GetParam(uint16(j+1))
-            if !param.IsNull() {
-                pUI.showParameter(j)
-                pUI.setParameterLabel(j, param.GetName())
-                pUI.setParameterValueList(j, []string{param.GetValue()})
-                pUI.setParameterValue(j, param.GetValue())
-            } else {
-                pUI.hideParameter(j)
-            }
-        } else {
-            pUI.hideParameter(j)
-        }
+    for i := range pUI.labels {
+        pUI.hideParameter(i)
+    }
+    for _, param := range p.GetParams() {
+        pUI.updateParam(param)
+    }
+}
+
+func (pUI * Pedal) updateParam(p pedal.Parameter) {
+    id := int(p.GetID())
+    if id == 0 || id > 5 { return }
+    id--
+    if !p.IsNull() {
+        pUI.showParameter(id)
+        pUI.setParameterLabel(id, p.GetName())
+        pUI.setParameterValueList(id, []string{p.GetValue()})
+        pUI.setParameterValue(id, p.GetValue())
+    } else {
+        pUI.hideParameter(id)
     }
 }

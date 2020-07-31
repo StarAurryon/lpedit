@@ -26,26 +26,37 @@ type PedalBoardItem interface {
     GetActive() bool
     GetID() uint32
     GetParam(id uint16) Parameter
+    GetParams() []Parameter
+    GetParamID(Parameter) (error, uint16)
     GetParamLen() uint16
     GetName() string
+    LockData()
     SetActive(bool)
     SetLastPos(uint16, uint8) error
     SetType(uint32) error
+    UnlockData()
     LogInfo()
     remove()
 }
 
 type Parameter interface {
     Copy() Parameter
-    IsNull() bool
-    GetName() string
-    GetValue() string
-    SetValue(string) error
     GetBinValue() float32
+    GetID() uint16
+    GetName() string
+    GetParent() PedalBoardItem
+    GetValue() string
+    IsNull() bool
+    LockData()
     SetBinValue(float32) error
+    SetParent(PedalBoardItem)
+    SetValue(string) error
+    UnlockData()
 }
 
-type NullParam struct {}
+type NullParam struct {
+    parent PedalBoardItem
+}
 
 func (p *NullParam) Copy() Parameter {
     _p := new(NullParam)
@@ -54,14 +65,25 @@ func (p *NullParam) Copy() Parameter {
 }
 
 func (p *NullParam) IsNull() bool { return true }
-func (p *NullParam) GetName() string { return "Null" }
-func (p *NullParam) GetValue() string { return "" }
-func (p *NullParam) SetValue(string) error { return fmt.Errorf("Null parameter") }
 func (p *NullParam) GetBinValue() float32 { return 0 }
+
+func (p *NullParam) GetID() uint16 {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
+func (p *NullParam) GetName() string { return "Null" }
+func (p *NullParam) GetParent() PedalBoardItem { return p.parent }
+func (p *NullParam) GetValue() string { return "" }
+func (p *NullParam) LockData() { p.parent.LockData() }
+func (p *NullParam) SetValue(string) error { return fmt.Errorf("Null parameter") }
 func (p *NullParam) SetBinValue(float32) error { return fmt.Errorf("Null parameter") }
+func (p *NullParam) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *NullParam) UnlockData() { p.parent.UnlockData() }
 
 type PerCentParam struct {
     name  string
+    parent PedalBoardItem
     value float32
 }
 
@@ -72,11 +94,21 @@ func (p *PerCentParam) Copy() Parameter {
 }
 
 func (p *PerCentParam) IsNull() bool { return false }
+func (p *PerCentParam) GetBinValue() float32 { return p.value }
+
+func (p *PerCentParam) GetID() uint16 {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
 func (p *PerCentParam) GetName() string { return p.name }
+func (p *PerCentParam) GetParent() PedalBoardItem { return p.parent }
 
 func (p *PerCentParam) GetValue() string {
     return fmt.Sprintf("%d%%", int(p.value*100))
 }
+
+func (p *PerCentParam) LockData() { p.parent.LockData() }
 
 func (p *PerCentParam) SetValue(s string) error {
     s = strings.Replace(s, " ", "", -1)
@@ -92,10 +124,6 @@ func (p *PerCentParam) SetValue(s string) error {
     return nil
 }
 
-func (p *PerCentParam) GetBinValue() float32 {
-    return p.value
-}
-
 func (p *PerCentParam) SetBinValue(v float32) error {
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
@@ -104,9 +132,13 @@ func (p *PerCentParam) SetBinValue(v float32) error {
     return nil
 }
 
+func (p *PerCentParam) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *PerCentParam) UnlockData() { p.parent.UnlockData() }
+
 type TimeParam struct {
     name  string
     maxMs int
+    parent PedalBoardItem
     value float32
 }
 
@@ -117,11 +149,21 @@ func (p *TimeParam) Copy() Parameter {
 }
 
 func (p *TimeParam) IsNull() bool { return false }
+func (p *TimeParam) GetBinValue() float32 { return p.value }
+
+func (p *TimeParam) GetID() (uint16) {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
 func (p *TimeParam) GetName() string { return p.name }
+func (p *TimeParam) GetParent() PedalBoardItem { return p.parent }
 
 func (p *TimeParam) GetValue() string {
     return fmt.Sprintf("%dms", int(p.value*float32(p.maxMs)))
 }
+
+func (p *TimeParam) LockData() { p.parent.LockData() }
 
 func (p *TimeParam) SetValue(s string) error {
     s = strings.Replace(s, " ", "", -1)
@@ -137,9 +179,7 @@ func (p *TimeParam) SetValue(s string) error {
     return nil
 }
 
-func (p *TimeParam) GetBinValue() float32 {
-    return p.value
-}
+
 
 func (p *TimeParam) SetBinValue(v float32) error {
     if v > 1 || v < 0 {
@@ -148,3 +188,6 @@ func (p *TimeParam) SetBinValue(v float32) error {
     p.value = v
     return nil
 }
+
+func (p *TimeParam) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *TimeParam) UnlockData() { p.parent.UnlockData() }

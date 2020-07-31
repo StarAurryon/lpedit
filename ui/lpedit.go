@@ -22,6 +22,9 @@ import "github.com/therecipe/qt/core"
 import "github.com/therecipe/qt/gui"
 import "github.com/therecipe/qt/widgets"
 
+import "fmt"
+
+import "lpedit/pedal"
 import "lpedit/qtctrl"
 
 type LPEdit struct {
@@ -39,27 +42,32 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
 }
 
 func (l *LPEdit) init() {
+    //UI Connections
     l.ConnectCloseEvent(l.windowClose)
-    l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.ActionAbout.ConnectTriggered(l.aboutClick)
     l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
-    l.ctrl.ConnectModelUpdated(l.updateModel)
+    l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
 
+    //PedalBoard Connections
+    l.ctrl.ConnectParameterChange(l.updateParameter)
+    l.ctrl.ConnectPedalBoardChange(l.updatePedalBoard)
+    l.ctrl.ConnectTempoChange(l.updateTempo)
+    l.ctrl.ConnectTypeChange(l.updateType)
     l.initPedals()
 }
 
 func (l *LPEdit) initPedals() {
     pedalType := l.ctrl.GetPedalType()
 
-    for i := 0; i < 8; i++ {
-        p := NewPedal(l.ScrollPedalW, l.ctrl, pedalType, i)
-        l.PedalsLayout.AddWidget(p, 0, 0)
-        l.pedals = append(l.pedals, p)
+    for i := 0; i < 9; i++ {
+        line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
+        line.SetFrameShape(widgets.QFrame__HLine)
+        line.SetFrameShadow(widgets.QFrame__Sunken)
+        l.PedalsLayout.AddWidget(line, 0, 0)
         if i != 8 {
-            line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
-            line.SetFrameShape(widgets.QFrame__HLine)
-            line.SetFrameShadow(widgets.QFrame__Sunken)
-            l.PedalsLayout.AddWidget(line, 0, 0)
+            p := NewPedal(l.ScrollPedalW, l.ctrl, pedalType, i)
+            l.PedalsLayout.AddWidget(p, 0, 0)
+            l.pedals = append(l.pedals, p)
         }
     }
 }
@@ -88,12 +96,37 @@ func (l *LPEdit) pbSelectorClick(vbo bool) {
     l.pbSelector.Raise()
 }
 
-func (l *LPEdit) updateModel() {
-    l.ctrl.LockData()
-    for _, p := range l.pedals {
-        p.updateModel()
+func (l *LPEdit) updateParameter(param pedal.Parameter) {
+    param.LockData()
+    defer param.UnlockData()
+    pbi := param.GetParent()
+    switch p := pbi.(type) {
+    case *pedal.Pedal:
+        l.pedals[p.GetID()-4].updateParam(param)
     }
-    l.ctrl.UnlockData()
+}
+
+func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
+    pb.LockData()
+    defer pb.UnlockData()
+    for i, p := range l.pedals {
+        p.updatePedal(pb.GetPedal2(i))
+    }
+}
+
+func (l *LPEdit) updateTempo(pb *pedal.PedalBoard) {
+    pb.LockData()
+    defer pb.UnlockData()
+    l.Tempo.SetText(fmt.Sprintf("%.2f", pb.GetTempo()))
+}
+
+func (l *LPEdit) updateType(pbi pedal.PedalBoardItem) {
+    pbi.LockData()
+    defer pbi.UnlockData()
+    switch p := pbi.(type) {
+    case *pedal.Pedal:
+        l.pedals[p.GetID()-4].updatePedal(p)
+    }
 }
 
 func (l *LPEdit) windowClose(event *gui.QCloseEvent) {

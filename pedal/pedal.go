@@ -21,6 +21,10 @@ package pedal
 import "fmt"
 import "log"
 
+const (
+    nonePedal uint32 = 34471935
+)
+
 type Pedal struct {
     id     uint32
     active bool
@@ -33,7 +37,7 @@ type Pedal struct {
 }
 
 var pedals = []Pedal {
-    Pedal{ptype: 34471935, active: true, stype: "None", name: "None"},
+    Pedal{ptype: nonePedal, active: true, stype: "None", name: "None"},
     /*
      * Dynamics section
      */
@@ -1056,19 +1060,21 @@ var pedals = []Pedal {
             }},
 }
 
-func newNonePedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) {
-    p := pedals[0]
-    p.id = id
-    p.pb = pb
-    p.plist = plist
-    *plist = append(*plist, PedalBoardItem(&p))
+func newNonePedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) *Pedal{
+    p := newPedal(id, pb, plist, nonePedal)
+    *p.plist = append(*p.plist, p)
+    return p
 }
 
-func newPedal(ptype uint32) *Pedal {
+func newPedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, ptype uint32 ) *Pedal {
     for _, newPedal := range pedals {
         if newPedal.ptype == ptype {
+            newPedal.id = id
+            newPedal.pb = pb
+            newPedal.plist = plist
             for i := range newPedal.params {
                 newPedal.params[i] = newPedal.params[i].Copy()
+                newPedal.params[i].SetParent(&newPedal)
             }
             return &newPedal
         }
@@ -1103,6 +1109,19 @@ func (p *Pedal) GetParam(id uint16) Parameter {
     return p.params[id]
 }
 
+func (p *Pedal) GetParams() []Parameter {
+    return p.params
+}
+
+func (p *Pedal) GetParamID(param Parameter) (error, uint16) {
+    for i, _param := range p.params {
+        if _param == param {
+            return nil, uint16(i)
+        }
+    }
+    return fmt.Errorf("Parameter %s not found", p.GetName()), 0
+}
+
 func (p *Pedal) GetParamLen() uint16 {
     return uint16(len(p.params)) //parameter start at 1
 }
@@ -1110,6 +1129,8 @@ func (p *Pedal) GetParamLen() uint16 {
 func (p *Pedal) GetSType() string {
     return p.stype
 }
+
+func (p *Pedal) LockData() { p.pb.LockData() }
 
 func (p *Pedal) SetLastPos(pos uint16, stype uint8) error {
     switch stype {
@@ -1148,16 +1169,18 @@ func (p *Pedal) SetActive(active bool){
 }
 
 func (p *Pedal) SetType(ptype uint32) error{
-    _p := newPedal(ptype)
+    _p := newPedal(p.id, p.pb, p.plist, ptype)
     if _p == nil {
         return fmt.Errorf("Pedal type not found, code: %d", ptype)
     }
-    _p.id = p.id
-    _p.pb = p.pb
-    _p.plist = p.plist
     *p = *_p
+    for i := range p.params {
+        p.params[i].SetParent(p)
+    }
     return nil
 }
+
+func (p *Pedal) UnlockData() { p.pb.UnlockData() }
 
 func (p *Pedal) remove() {
     for i, _p := range *p.plist {

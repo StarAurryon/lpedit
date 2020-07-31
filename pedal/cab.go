@@ -21,6 +21,10 @@ package pedal
 import "fmt"
 import "log"
 
+const (
+    noCab uint32 = 17301503
+)
+
 type Cab struct {
     id     uint32
     active bool
@@ -30,7 +34,7 @@ type Cab struct {
 }
 
 var cabs = []Cab {
-    Cab{ctype: 17301503, active: true, name: "No Cab"},
+    Cab{ctype: noCab, active: true, name: "No Cab"},
     Cab{ctype: 17235968, active: true, name: "212 PhD Ported"},
     Cab{ctype: 17235969, active: true, name: "6x9 Super O"},
     Cab{ctype: 17235970, active: true, name: "112 Celest 12-H"},
@@ -50,17 +54,17 @@ var cabs = []Cab {
     Cab{ctype: 17235986, active: true, name: "115 Flip Top"},
 }
 
-func newNoneCab(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) *Cab {
-    c := cabs[0]
-    c.id = id
-    c.pb = pb
-    *plist = append(*plist, PedalBoardItem(&c))
-    return &c
+func newNoCab(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) *Cab {
+    c := newCab(id, pb, noCab)
+    *plist = append(*plist, c)
+    return c
 }
 
-func newCab(ctype uint32) *Cab {
+func newCab(id uint32, pb *PedalBoard, ctype uint32) *Cab {
     for _, newCab := range cabs {
         if newCab.ctype == ctype {
+            newCab.id = id
+            newCab.pb = pb
             return &newCab
         }
     }
@@ -83,9 +87,19 @@ func (c *Cab) GetParam(id uint16) Parameter {
     return nil
 }
 
+func (c *Cab) GetParams() []Parameter {
+    return nil
+}
+
+func (c *Cab) GetParamID(p Parameter) (error, uint16) {
+    return fmt.Errorf("Parameter %s not found", p.GetName()), 0
+}
+
 func (c *Cab) GetParamLen() uint16 {
     return 0
 }
+
+func (c *Cab) LockData() { c.pb.LockData() }
 
 func (c *Cab) SetActive(active bool){
     c.active = active
@@ -96,15 +110,15 @@ func (c *Cab) SetLastPos(pos uint16, ctype uint8) error {
 }
 
 func (c *Cab) SetType(ctype uint32) error{
-    _c := newCab(ctype)
+    _c := newCab(c.id, c.pb, ctype)
     if _c == nil {
         return fmt.Errorf("Cab type not found, code: %d", ctype)
     }
-    _c.id = c.id
-    _c.pb = c.pb
     *c = *_c
     return nil
 }
+
+func (c *Cab) UnlockData() { c.pb.UnlockData() }
 
 func (c *Cab) remove() {}
 

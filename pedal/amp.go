@@ -21,6 +21,10 @@ package pedal
 import "fmt"
 import "log"
 
+const (
+    ampDisabled uint32 = 524287
+)
+
 type Amp struct {
     id     uint32
     atype  uint32
@@ -33,7 +37,7 @@ type Amp struct {
 }
 
 var amps = []Amp {
-    Amp{atype: 524287, active: true, name: "Amp Disabled"},
+    Amp{atype: ampDisabled, active: true, name: "Amp Disabled"},
     Amp{atype: 458752, active: true, name: "phD Motorway",
         params: []Parameter{
             &PerCentParam{name: "Bass", value:0},
@@ -577,20 +581,21 @@ var amps = []Amp {
 }
 
 func newDisAmp(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, c *Cab) *Amp {
-    a := amps[0]
-    a.id = id
-    a.pb = pb
-    a.cab = c
-    *plist = append(*plist, PedalBoardItem(&a))
-    a.plist = plist
-    return &a
+    a := newAmp(id, pb, plist, c, ampDisabled)
+    *a.plist = append(*a.plist, a)
+    return a
 }
 
-func newAmp(atype uint32) *Amp {
+func newAmp(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, c *Cab, atype uint32) *Amp {
     for _, newAmp := range amps {
         if newAmp.atype == atype {
+            newAmp.id = id
+            newAmp.pb = pb
+            newAmp.cab = c
+            newAmp.plist = plist
             for i := range newAmp.params {
                 newAmp.params[i] = newAmp.params[i].Copy()
+                newAmp.params[i].SetParent(&newAmp)
             }
             return &newAmp
         }
@@ -617,9 +622,24 @@ func (a *Amp) GetParam(id uint16) Parameter {
     return a.params[id]
 }
 
+func (a *Amp) GetParams() []Parameter {
+    return a.params
+}
+
+func (a *Amp) GetParamID(p Parameter) (error, uint16) {
+    for i, _p := range a.params {
+        if _p == p {
+            return nil, uint16(i)
+        }
+    }
+    return fmt.Errorf("Parameter %s not found", p.GetName()), 0
+}
+
 func (a *Amp) GetParamLen() uint16 {
     return uint16(len(a.params))
 }
+
+func (a *Amp) LockData() { a.pb.LockData() }
 
 func (a *Amp) SetActive(active bool){
     a.active = active
@@ -660,17 +680,18 @@ func (a *Amp) SetLastPos(pos uint16, ctype uint8) error {
 }
 
 func (a *Amp) SetType(atype uint32) error{
-    _a := newAmp(atype)
+    _a := newAmp(a.id, a.pb, a.plist, a.cab, atype)
     if _a == nil {
         return fmt.Errorf("Amp type not found, code: %d", atype)
     }
-    _a.id = a.id
-    _a.pb = a.pb
-    _a.cab = a.cab
-    _a.plist = a.plist
     *a = *_a
+    for i := range a.params {
+        a.params[i].SetParent(a)
+    }
     return nil
 }
+
+func (a *Amp) UnlockData() { a.pb.UnlockData() }
 
 func (a *Amp) remove() {
     *a.plist = nil

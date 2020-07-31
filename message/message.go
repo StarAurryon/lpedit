@@ -31,7 +31,7 @@ type IMessage interface {
     IsOk() bool
     SetData([]byte)
     LogInfo()
-    Parse(*pedal.PedalBoard) error
+    Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{})
 }
 
 type Message struct {
@@ -53,9 +53,10 @@ func (m *Message) GetSubType() uint32 { return m.smtype }
 func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
 func (m *Message) SetData(data []byte) { m.data = data }
 
-func (m *Message) Parse(*pedal.PedalBoard) error {
-    log.Printf("No defined pase fuction for %s message", m.mname)
-    return nil
+func (m *Message) Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    info := fmt.Sprintf("No defined pase fuction for %s message, mtype: %d, smtype %d",
+        m.mname, m.mtype, m.smtype)
+    return fmt.Errorf(info), pedal.Warning, nil
 }
 
 
@@ -99,12 +100,12 @@ func (m *PresetLoad) Copy() IMessage {
     return _m
 }
 
-type TempoChange struct {
+type SetupChange struct {
     Message
 }
 
-func (m *TempoChange) Copy() IMessage {
-    _m := new(TempoChange)
+func (m *SetupChange) Copy() IMessage {
+    _m := new(SetupChange)
     *_m = *m
     return _m
 }
@@ -114,7 +115,7 @@ var messages = []IMessage{
     &TypeChange{Message: Message{mtype: 134873092, smtype: 285229056, msize: 20, mname: "Item Type Change"}},
     &PresetLoad{Message: Message{mtype: 134874113, smtype: 16793600, msize: 4104, mname: "Preset Load"}},
     &ParameterChange{Message: Message{mtype: 134873094, smtype: 754991104, msize: 28, mname: "Item Parameter Change"}},
-    &TempoChange{Message: Message{mtype: 134873093, smtype: 369115136, msize: 28, mname: "Tempo Change"}},
+    &SetupChange{Message: Message{mtype: 134873093, smtype: 369115136, msize: 24, mname: "Setup Change"}},
 }
 
 func newMessage(mtype uint32, smtype uint32) IMessage {
@@ -138,7 +139,8 @@ func NewMessage(rm RawMessage) (error, IMessage) {
     smtype := binary.LittleEndian.Uint32(rm.data[4:8])
     m := newMessage(mtype, smtype)
     if m == nil {
-        return nil, &Message{mname: "Unknown", data: rm.data}
+        return nil, &Message{mname: "Unknown", data: rm.data,
+            mtype: mtype, smtype: smtype}
     }
 
     m.SetData(rm.data)

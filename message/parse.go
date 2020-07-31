@@ -18,12 +18,13 @@
 
 package message
 
-import "lpedit/pedal"
 import "encoding/binary"
 import "fmt"
 import "bytes"
 import "log"
 import "sort"
+
+import "lpedit/pedal"
 
 type sUint16 []uint16
 
@@ -36,11 +37,11 @@ type presetPedalPos struct {
     ptype uint8
 }
 
-func (m Message) getPedalID() uint32 {
+func (m Message) getPedalBoardItemID() uint32 {
     return binary.LittleEndian.Uint32(m.data[12:16])
 }
 
-func (m PresetLoad) Parse(pb *pedal.PedalBoard) error {
+func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
     // ppos contains the position as key
     ppos := map[uint16]presetPedalPos{}
@@ -99,18 +100,18 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) error {
     for k := uint16(0); k < uint16(len(pos)); k++ {
         err := pb.GetItem(ppos[k].pid).SetLastPos(k, ppos[k].ptype)
         if err != nil {
-            return err
+            return err, pedal.Warning, nil
         }
     }
     pb.GetItem(0).SetLastPos(ampPos, ampPosType)
-    return nil
+    return nil, pedal.PedalBoardChange, pb
 }
 
-func (m ActiveChange) Parse(pb *pedal.PedalBoard) error {
-    id := m.getPedalID()
+func (m ActiveChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    id := m.getPedalBoardItemID()
     p := pb.GetItem(id)
     if p == nil {
-        return fmt.Errorf("Item ID %d not found", id)
+        return fmt.Errorf("Item ID %d not found", id), pedal.Warning, nil
     }
     var active bool
     if binary.LittleEndian.Uint32(m.data[16:]) > 0 {
@@ -120,44 +121,51 @@ func (m ActiveChange) Parse(pb *pedal.PedalBoard) error {
     }
     log.Printf("Active change on ID %d status %t\n", id, active)
     p.SetActive(active)
-    return nil
+    return nil, pedal.ActiveChange, p
 }
 
-func (m ParameterChange) Parse(pb *pedal.PedalBoard) error {
-    pid := m.getPedalID()
+func (m ParameterChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    pid := m.getPedalBoardItemID()
     p := pb.GetItem(pid)
     if p == nil {
-        return fmt.Errorf("Item ID %d not found", pid)
+        return fmt.Errorf("Item ID %d not found", pid), pedal.Warning, nil
     }
     id := binary.LittleEndian.Uint16(m.data[20:22])
     var v float32
     err := binary.Read(bytes.NewReader(m.data[24:28]), binary.LittleEndian, &v)
     if err != nil {
-        return err
+        return err, pedal.Warning, nil
     }
 
     param := p.GetParam(id)
     if param == nil {
-        return fmt.Errorf("Parameter ID %d not found", id)
+        return fmt.Errorf("Parameter ID %d not found", id), pedal.Warning, nil
     }
     if err := param.SetBinValue(v); err != nil {
         log.Printf("TODO: Fix the parameter type on pedal %s: %s \n", p.GetName(), err)
     }
-    return nil
+    return nil, pedal.ParameterChange, param
 }
 
-func (m TypeChange) Parse(pb *pedal.PedalBoard) error {
-    id := m.getPedalID()
+func (m TypeChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    id := m.getPedalBoardItemID()
+    p := pb.GetItem(id)
+    if p == nil {
+        return fmt.Errorf("Item ID %d not found", id), pedal.Warning, nil
+    }
     ptype := binary.LittleEndian.Uint32(m.data[16:])
-    return pb.SetItem(id, ptype)
+    if err := p.SetType(ptype); err != nil {
+        return err, pedal.Warning, nil
+    }
+    return nil, pedal.TypeChange, p
 }
 
-func (m TempoChange) Parse(pb *pedal.PedalBoard) error {
+func (m SetupChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     var v float32
-    err := binary.Read(bytes.NewReader(m.data[20:24]), binary.LittleEndian, &v)
+    err := binary.Read(bytes.NewReader(m.data[20:]), binary.LittleEndian, &v)
     if err != nil {
-        return err
+        return err, pedal.Warning, nil
     }
     pb.SetTempo(v)
-    return nil
+    return nil, pedal.TempoChange, pb
 }
