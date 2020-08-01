@@ -31,9 +31,10 @@ type Controller struct {
     _ func() `signal:"Loop"`
     _ func(string) `signal:"LoopError"`
     _ func(pedal.Parameter) `signal:ParameterChange`
-    _ func(*pedal.PedalBoard) `signal:PedalBoardChange`
-    _ func(pedal.PedalBoardItem) `signal:TypeChange`
+    _ func(*pedal.PedalBoard) `signal:PresetLoad`
+    _ func(*pedal.PedalBoard) `signal:SetChange`
     _ func(*pedal.PedalBoard) `signal:TempoChange`
+    _ func(pedal.PedalBoardItem) `signal:TypeChange`
 }
 
 func (c *Controller) init() {
@@ -53,12 +54,12 @@ func (c *Controller) notif(err error, n pedal.ChangeType, obj interface{}) {
         c.LoopError(err.Error())
     case pedal.ParameterChange:
         c.ParameterChange(obj.(pedal.Parameter))
-    case pedal.PedalBoardChange:
-        pb := obj.(*pedal.PedalBoard)
-        c.PedalBoardChange(pb)
+    case pedal.PresetLoad:
+        c.PresetLoad(obj.(*pedal.PedalBoard))
+    case pedal.SetChange:
+        c.SetChange(obj.(*pedal.PedalBoard))
     case pedal.TypeChange:
-        pbi := obj.(pedal.PedalBoardItem)
-        c.TypeChange(pbi)
+        c.TypeChange(obj.(pedal.PedalBoardItem))
     case pedal.TempoChange:
         c.TempoChange(obj.(*pedal.PedalBoard))
     }

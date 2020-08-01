@@ -45,6 +45,10 @@ func NewController() *Controller {
     return c
 }
 
+func (c *Controller) GetPedalBoard() *pedal.PedalBoard {
+    return c.pb
+}
+
 func (c *Controller) GetPedalType() map[string][]string {
     return pedal.GetPedalType()
 }
@@ -101,8 +105,8 @@ func (c *Controller) genMessage(rm *message.RawMessage) {
 
     c.pb.LockData()
     err, ct, obj := m.Parse(c.pb)
-    c.notify(err, ct, obj)
     c.pb.UnlockData()
+    c.notify(err, ct, obj)
 }
 
 func (c *Controller) processRawMessage() {

@@ -90,12 +90,42 @@ func (m *ParameterChange) Copy() IMessage {
     return _m
 }
 
+type PresetChange struct {
+    Message
+}
+
+func (m *PresetChange) Copy() IMessage {
+    _m := new(PresetChange)
+    *_m = *m
+    return _m
+}
+
+type PresetChangeAlert struct {
+    Message
+}
+
+func (m *PresetChangeAlert) Copy() IMessage {
+    _m := new(PresetChangeAlert)
+    *_m = *m
+    return _m
+}
+
 type PresetLoad struct {
     Message
 }
 
 func (m *PresetLoad) Copy() IMessage {
     _m := new(PresetLoad)
+    *_m = *m
+    return _m
+}
+
+type SetChange struct {
+    Message
+}
+
+func (m *SetChange) Copy() IMessage {
+    _m := new(SetChange)
     *_m = *m
     return _m
 }
@@ -113,8 +143,11 @@ func (m *SetupChange) Copy() IMessage {
 var messages = []IMessage{
     &ActiveChange{Message: Message{mtype: 134873092, smtype: 318783488, msize: 20, mname: "Item Active Change"}},
     &TypeChange{Message: Message{mtype: 134873092, smtype: 285229056, msize: 20, mname: "Item Type Change"}},
+    &PresetChange{Message: Message{mtype: 134873090, smtype: 654327808, msize: 12, mname: "Preset change"}},
+    &PresetChangeAlert{Message: Message{mtype: 134873089, smtype: 587218944, msize: 8, mname: "Alert Preset Change"}},
     &PresetLoad{Message: Message{mtype: 134874113, smtype: 16793600, msize: 4104, mname: "Preset Load"}},
     &ParameterChange{Message: Message{mtype: 134873094, smtype: 754991104, msize: 28, mname: "Item Parameter Change"}},
+    &SetChange{Message: Message{mtype: 134873090, smtype: 738213888, msize: 12, mname: "Set Change"}},
     &SetupChange{Message: Message{mtype: 134873093, smtype: 369115136, msize: 24, mname: "Setup Change"}},
 }
 

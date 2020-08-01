@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1289</width>
-    <height>950</height>
+    <width>1453</width>
+    <height>1001</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,12 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QWidget" name="leftWidget" native="true">
       <property name="minimumSize">
@@ -29,137 +35,121 @@
         <height>16777215</height>
        </size>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <layout class="QVBoxLayout" name="leftLayout">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetDefaultConstraint</enum>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="inputSource1Lbl">
+         <property name="text">
+          <string>Input 1 Source</string>
          </property>
-         <property name="leftMargin">
-          <number>6</number>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="inputSource2"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="inputSource2Lbl">
+         <property name="text">
+          <string>Input 2 Source</string>
          </property>
-         <property name="topMargin">
-          <number>6</number>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_3"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="tempoLbl">
+         <property name="text">
+          <string>Tempo</string>
          </property>
-         <property name="rightMargin">
-          <number>6</number>
-         </property>
-         <property name="bottomMargin">
-          <number>6</number>
-         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="tempoLayout">
          <item>
-          <layout class="QVBoxLayout" name="setupLayout">
-           <property name="leftMargin">
-            <number>6</number>
-           </property>
-           <property name="topMargin">
-            <number>6</number>
-           </property>
-           <property name="rightMargin">
-            <number>6</number>
-           </property>
-           <property name="bottomMargin">
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="inputSource1Lbl">
-             <property name="text">
-              <string>Input 1 Source</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="inputSource2"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="inputSource2Lbl">
-             <property name="text">
-              <string>Input 2 Source</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBox_3"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="tempoLbl">
-             <property name="text">
-              <string>Tempo</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="tempoLayout">
-             <item>
-              <widget class="QLineEdit" name="tempo"/>
-             </item>
-             <item>
-              <widget class="QPushButton" name="BPMButton">
-               <property name="text">
-                <string>Tap Tempo</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
+          <widget class="QLineEdit" name="tempo"/>
          </item>
          <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="BPMButton">
+           <property name="text">
+            <string>Tap Tempo</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <property name="leftMargin">
-            <number>6</number>
-           </property>
-           <property name="topMargin">
-            <number>6</number>
-           </property>
-           <property name="rightMargin">
-            <number>6</number>
-           </property>
-           <property name="bottomMargin">
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="setListLbl">
-             <property name="text">
-              <string>Set List</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="setList"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="presetLbl">
-             <property name="text">
-              <string>Preset</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QListView" name="presetList"/>
-           </item>
-          </layout>
+          </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>34</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="setListLbl">
+         <property name="text">
+          <string>Set List</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="setList"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="presetLbl">
+         <property name="text">
+          <string>Preset</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="presetList"/>
        </item>
       </layout>
      </widget>
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>12</number>
+      </property>
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -167,13 +157,13 @@
        <number>12</number>
       </property>
       <property name="topMargin">
-       <number>12</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
        <number>12</number>
       </property>
       <property name="bottomMargin">
-       <number>12</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QFrame" name="frame">
@@ -186,17 +176,46 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_2">
+       <widget class="QScrollArea" name="scrollArea">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>217</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>217</height>
+         </size>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="pedalBoardView">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>1107</width>
+           <height>213</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="baseSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+       </widget>
       </item>
       <item>
        <widget class="QTabWidget" name="PedalBoardItemSettings">
@@ -218,8 +237,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>923</width>
-               <height>778</height>
+               <width>1087</width>
+               <height>633</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -263,7 +282,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1289</width>
+     <width>1453</width>
      <height>30</height>
     </rect>
    </property>

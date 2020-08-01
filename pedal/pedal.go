@@ -1134,27 +1134,27 @@ func (p *Pedal) LockData() { p.pb.LockData() }
 
 func (p *Pedal) SetLastPos(pos uint16, stype uint8) error {
     switch stype {
-    case pedalPosStart:
+    case PedalPosStart:
         p.remove()
         p.pb.start = append(p.pb.start, p)
         p.plist = &p.pb.start
-    case pedalPosAStart:
+    case PedalPosAStart:
         p.remove()
         p.pb.pchan.aStart = append(p.pb.pchan.aStart, p)
         p.plist = &p.pb.pchan.aStart
-    case pedalPosAEnd:
+    case PedalPosAEnd:
         p.remove()
         p.pb.pchan.aEnd = append(p.pb.pchan.aEnd, p)
         p.plist = &p.pb.pchan.aEnd
-    case pedalPosBStart:
+    case PedalPosBStart:
         p.remove()
         p.pb.pchan.bStart = append(p.pb.pchan.bStart, p)
         p.plist = &p.pb.pchan.bStart
-    case pedalPosBEnd:
+    case PedalPosBEnd:
         p.remove()
         p.pb.pchan.bEnd = append(p.pb.pchan.bEnd, p)
         p.plist = &p.pb.pchan.bEnd
-    case pedalPosEnd:
+    case PedalPosEnd:
         p.remove()
         p.pb.end = append(p.pb.end, p)
         p.plist = &p.pb.end
