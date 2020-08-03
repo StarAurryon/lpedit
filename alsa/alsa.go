@@ -100,3 +100,8 @@ func (h *Hwdep) Read(size int) []byte {
         C.ulong(size)))
     return buf[:copied]
 }
+
+func (h *Hwdep) Write(data []byte) int{
+    return int(C.snd_hwdep_write(h.hwdep, unsafe.Pointer(&data[0]),
+        C.ulong(len(data))))
+}

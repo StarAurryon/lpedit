@@ -36,6 +36,7 @@ type Pedal struct {
     labels     []*widgets.QLabel
     mids       []*widgets.QWidget
     values     []*widgets.QComboBox
+    valuesFunc []func(string)
 }
 
 func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
@@ -49,6 +50,10 @@ func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
     }
     p.values = []*widgets.QComboBox{
         p.Param0Value, p.Param1Value , p.Param2Value, p.Param3Value, p.Param4Value,
+    }
+    p.valuesFunc = []func(string) {
+        p.parameter0Changed, p.parameter1Changed, p.parameter2Changed,
+        p.parameter3Changed, p.parameter4Changed,
     }
     p.init()
     p.initUI()
@@ -79,8 +84,22 @@ func (p *Pedal) initUI() {
     }
     sort.Strings(keys)
 
+    p.OnStatus.ConnectClicked(p.onStatusChanged)
+    p.FxModel.ConnectActivated2(p.fxUserModelChanged)
+    p.FxType.ConnectActivated2(p.fxUserTypeChanged)
     p.FxType.ConnectCurrentTextChanged(p.fxTypeChanged)
     p.FxType.AddItems(keys)
+    for i := range p.values {
+        p.values[i].ConnectActivated2(p.valuesFunc[i])
+    }
+}
+
+func (p *Pedal) fxUserModelChanged(fxModel string) {
+    p.ctrl.SetPedalType(uint32(p.id), p.FxType.CurrentText(), fxModel)
+}
+
+func (p *Pedal) fxUserTypeChanged(fxType string) {
+    p.ctrl.SetPedalType(uint32(p.id), fxType, p.FxModel.CurrentText())
 }
 
 func (p *Pedal) fxTypeChanged(fxType string) {
@@ -95,6 +114,28 @@ func (p *Pedal) hideParameter(id int) {
     p.values[id].Hide()
 }
 
+func (p *Pedal) parameter0Changed(val string) { p.parameterChanged(1, val) }
+func (p *Pedal) parameter1Changed(val string) { p.parameterChanged(2, val) }
+func (p *Pedal) parameter2Changed(val string) { p.parameterChanged(3, val) }
+func (p *Pedal) parameter3Changed(val string) { p.parameterChanged(4, val) }
+func (p *Pedal) parameter4Changed(val string) { p.parameterChanged(5, val) }
+
+func (p *Pedal) parameterChanged(id int, val string) {
+    err := p.ctrl.SetPedalParameterValue(uint32(p.id), uint16(id), val)
+    if err != nil {
+        mb := widgets.NewQMessageBox(p)
+        mb.Critical(p, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
+    }
+    param := p.ctrl.GetPedalBoard().GetPedal2(p.id).GetParam(uint16(id))
+    param.LockData()
+    p.updateParam(param)
+    param.UnlockData()
+}
+
+func (p *Pedal) onStatusChanged(checked bool) {
+    p.ctrl.SetPedalActive(uint32(p.id), checked)
+}
+
 func (p *Pedal) setActive(status bool) {
     p.OnStatus.SetChecked(status)
 }
@@ -102,6 +143,11 @@ func (p *Pedal) setActive(status bool) {
 func (p *Pedal) setParameterLabel(id int, s string) {
     if id < 0 || id >= len(p.labels) { return }
     p.labels[id].SetText(s)
+}
+
+func (p *Pedal) setParameterValueEditable(id int, editable bool) {
+    if id < 0 || id >= len(p.labels) { return }
+    p.values[id].SetEditable(editable)
 }
 
 func (p *Pedal) setParameterValueList(id int, s []string) {
@@ -139,10 +185,17 @@ func (pUI * Pedal) updateParam(p pedal.Parameter) {
     if id == 0 || id > 5 { return }
     id--
     if !p.IsNull() {
-        pUI.showParameter(id)
-        pUI.setParameterLabel(id, p.GetName())
-        pUI.setParameterValueList(id, []string{p.GetValue()})
+        allowedValues := p.GetAllowedValues()
+        if allowedValues == nil {
+            pUI.setParameterValueList(id, []string{p.GetValue()})
+            pUI.setParameterValueEditable(id, true)
+        } else {
+            pUI.setParameterValueList(id, allowedValues)
+            pUI.setParameterValueEditable(id, false)
+        }
         pUI.setParameterValue(id, p.GetValue())
+        pUI.setParameterLabel(id, p.GetName())
+        pUI.showParameter(id)
     } else {
         pUI.hideParameter(id)
     }

@@ -1094,6 +1094,13 @@ func (p *Pedal) GetActive() bool {
     return p.active
 }
 
+func (p *Pedal) GetActive2() uint32 {
+    if p.active {
+        return 1
+    }
+    return 0
+}
+
 func (p *Pedal) GetID() uint32 {
     return p.id
 }
@@ -1124,6 +1131,10 @@ func (p *Pedal) GetParamID(param Parameter) (error, uint16) {
 
 func (p *Pedal) GetParamLen() uint16 {
     return uint16(len(p.params)) //parameter start at 1
+}
+
+func (p *Pedal) GetType() uint32 {
+    return p.ptype
 }
 
 func (p *Pedal) GetSType() string {
@@ -1168,7 +1179,7 @@ func (p *Pedal) SetActive(active bool){
     p.active = active
 }
 
-func (p *Pedal) SetType(ptype uint32) error{
+func (p *Pedal) SetType(ptype uint32) error {
     _p := newPedal(p.id, p.pb, p.plist, ptype)
     if _p == nil {
         return fmt.Errorf("Pedal type not found, code: %d", ptype)
@@ -1178,6 +1189,15 @@ func (p *Pedal) SetType(ptype uint32) error{
         p.params[i].SetParent(p)
     }
     return nil
+}
+
+func (p *Pedal) SetType2(stype string, name string) {
+    for _, _p := range pedals {
+        if stype == _p.stype && name == _p.name {
+            p.SetType(_p.ptype)
+            break
+        }
+    }
 }
 
 func (p *Pedal) UnlockData() { p.pb.UnlockData() }

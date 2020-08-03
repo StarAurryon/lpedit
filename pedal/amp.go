@@ -607,6 +607,13 @@ func (a *Amp) GetActive() bool {
     return a.active
 }
 
+func (a *Amp) GetActive2() uint32 {
+    if a.active {
+        return 1
+    }
+    return 0
+}
+
 func (a *Amp) GetID() uint32 {
     return a.id
 }
@@ -637,6 +644,10 @@ func (a *Amp) GetParamID(p Parameter) (error, uint16) {
 
 func (a *Amp) GetParamLen() uint16 {
     return uint16(len(a.params))
+}
+
+func (a *Amp) GetType() uint32 {
+    return a.atype
 }
 
 func (a *Amp) LockData() { a.pb.LockData() }
@@ -689,6 +700,15 @@ func (a *Amp) SetType(atype uint32) error{
         a.params[i].SetParent(a)
     }
     return nil
+}
+
+func (a *Amp) SetType2(name string, none string) {
+    for _, _a := range amps {
+        if name == _a.name {
+            a.SetType(_a.atype)
+            break
+        }
+    }
 }
 
 func (a *Amp) UnlockData() { a.pb.UnlockData() }

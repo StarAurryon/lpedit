@@ -21,25 +21,32 @@ package message
 import "encoding/binary"
 import "fmt"
 import "log"
+import "reflect"
 
 import "lpedit/pedal"
 
+const (
+    messageRead uint32  = 1073743882
+    messageWrite uint32 = 134299658
+)
+
 type IMessage interface {
     Copy() IMessage
-    GetType() uint32
-    GetSubType() uint32
+    getData() []byte
+    GetType() uint16
+    GetSubType() uint16
     IsOk() bool
-    SetData([]byte)
     LogInfo()
     Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{})
+    setData([]byte)
 }
 
 type Message struct {
     data   []byte
     mname  string
     msize  int
-    mtype  uint32
-    smtype uint32
+    mtype  uint16
+    smtype uint16
 }
 
 func (m *Message) Copy() IMessage {
@@ -48,10 +55,14 @@ func (m *Message) Copy() IMessage {
     return _m
 }
 
-func (m *Message) GetType() uint32 { return m.mtype }
-func (m *Message) GetSubType() uint32 { return m.smtype }
+func (m *Message) getData() []byte {
+    return m.data
+}
+
+func (m *Message) GetType() uint16 { return m.mtype }
+func (m *Message) GetSubType() uint16 { return m.smtype }
 func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
-func (m *Message) SetData(data []byte) { m.data = data }
+func (m *Message) setData(data []byte) { m.data = data }
 
 func (m *Message) Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     info := fmt.Sprintf("No defined pase fuction for %s message, mtype: %d, smtype %d",
@@ -141,19 +152,28 @@ func (m *SetupChange) Copy() IMessage {
 }
 
 var messages = []IMessage{
-    &ActiveChange{Message: Message{mtype: 134873092, smtype: 318783488, msize: 20, mname: "Item Active Change"}},
-    &TypeChange{Message: Message{mtype: 134873092, smtype: 285229056, msize: 20, mname: "Item Type Change"}},
-    &PresetChange{Message: Message{mtype: 134873090, smtype: 654327808, msize: 12, mname: "Preset change"}},
-    &PresetChangeAlert{Message: Message{mtype: 134873089, smtype: 587218944, msize: 8, mname: "Alert Preset Change"}},
-    &PresetLoad{Message: Message{mtype: 134874113, smtype: 16793600, msize: 4104, mname: "Preset Load"}},
-    &ParameterChange{Message: Message{mtype: 134873094, smtype: 754991104, msize: 28, mname: "Item Parameter Change"}},
-    &SetChange{Message: Message{mtype: 134873090, smtype: 738213888, msize: 12, mname: "Set Change"}},
-    &SetupChange{Message: Message{mtype: 134873093, smtype: 369115136, msize: 24, mname: "Setup Change"}},
+    &ActiveChange{Message: Message{mtype: 4, smtype: 4864, msize: 20, mname: "Item Active Change"}},
+    &TypeChange{Message: Message{mtype: 4, smtype: 4352, msize: 20, mname: "Item Type Change"}},
+    &PresetChange{Message: Message{mtype: 2, smtype: 9984, msize: 12, mname: "Preset change"}},
+    &PresetChangeAlert{Message: Message{mtype: 1, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
+    &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
+    &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
+    &SetChange{Message: Message{mtype: 2, smtype: 11264, msize: 12, mname: "Set Change"}},
+    &SetupChange{Message: Message{mtype: 5, smtype: 5632, msize: 24, mname: "Setup Change"}},
 }
 
-func newMessage(mtype uint32, smtype uint32) IMessage {
+func newMessage(mtype uint16, smtype uint16) IMessage {
     for _, m := range messages {
         if m.GetType() == mtype && m.GetSubType() == smtype {
+            return m.Copy()
+        }
+    }
+    return nil
+}
+
+func newMessage2(mtype reflect.Type) IMessage {
+    for _, m := range messages {
+        if mtype == reflect.TypeOf(m) {
             return m.Copy()
         }
     }
@@ -168,15 +188,15 @@ func NewMessage(rm RawMessage) (error, IMessage) {
         return fmt.Errorf("The size of the RawMessage is too small to get the messageType"), nil
     }
 
-    mtype := binary.LittleEndian.Uint32(rm.data[0:4])
-    smtype := binary.LittleEndian.Uint32(rm.data[4:8])
+    mtype := binary.LittleEndian.Uint16(rm.data[0:2])
+    smtype := binary.LittleEndian.Uint16(rm.data[6:8])
     m := newMessage(mtype, smtype)
     if m == nil {
         return nil, &Message{mname: "Unknown", data: rm.data,
             mtype: mtype, smtype: smtype}
     }
 
-    m.SetData(rm.data)
+    m.setData(rm.data)
     if !m.IsOk() {
         return fmt.Errorf("The size of the RawMessage is too small\n"), nil
     }

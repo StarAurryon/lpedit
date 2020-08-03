@@ -28,16 +28,20 @@ import "lpedit/message"
 import "lpedit/pedal"
 
 type Controller struct {
-    pb      *pedal.PedalBoard
-    dev     string
-    rLDM    chan int
-    pM      chan int
-    rWG     sync.WaitGroup
-    rCh     chan *message.RawMessage
-    rStart  bool
-    hwdep   alsa.Hwdep
-    started bool
-    notif   func(error, pedal.ChangeType, interface{})
+    pb         *pedal.PedalBoard
+    dev        string
+    hwdep      alsa.Hwdep
+    notifyCB   func(error, pedal.ChangeType, interface{}) // notifyCallBack
+    //Status
+    started    bool
+    //Threads
+    waitGroup  sync.WaitGroup
+    stopRRM    chan int //readRawMessage
+    stopPRM    chan int //processRawMessage
+    stopWRM    chan int //writeRawMessage
+    readQueue  chan *message.RawMessage
+    writeMux   sync.Mutex
+    writeQueue chan *message.RawMessage
 }
 
 func NewController() *Controller {
@@ -57,52 +61,82 @@ func (c *Controller) ListDevices() [][]string {
     return alsa.ListHWDev()
 }
 
-func (c *Controller) notify(err error, ntype pedal.ChangeType, obj interface{}) {
-    n := func(err error, ntype pedal.ChangeType, obj interface{}) {
-        if err != nil {
-            log.Println(err)
-        }
-        if c.notif != nil {
-            c.notif(err, ntype, obj)
-        }
-    }
-    go n(err, ntype, obj)
-}
-
 func (c *Controller) IsStarted() bool {
     return c.started
 }
 
 func (c *Controller) SetNotify(n func(error, pedal.ChangeType, interface{})) {
-    c.notif = n
+    c.notifyCB = n
 }
 
 func (c *Controller) Start(dev string) {
-    c.rLDM = make(chan int)
-    c.pM = make(chan int)
-    c.rCh = make(chan *message.RawMessage, 100)
+    c.stopRRM = make(chan int, 10)
+    c.stopPRM = make(chan int, 10)
+    c.stopWRM = make(chan int, 10)
+    c.readQueue = make(chan *message.RawMessage, 100)
+    c.writeQueue = make(chan *message.RawMessage, 100)
+
+    if err := c.hwdep.Open(dev); err != nil {
+        c.notify(fmt.Errorf("Could not open device %s: %s\n", dev, err),
+            pedal.ErrorStop, nil)
+        c.signalStop()
+        return
+    }
+
+    c.started = true
     c.notify(nil, pedal.NormalStart, nil)
-    go c.readRawMessage(dev)
+    go c.readRawMessage()
     go c.processRawMessage()
+    go c.writeRawMessage()
     go c.monitor()
+}
+
+func (c *Controller) Stop() {
+    c.signalStop()
+    c.waitGroup.Wait()
+    close(c.stopRRM)
+    close(c.stopPRM)
+    close(c.stopWRM)
+    close(c.readQueue)
+    close(c.writeQueue)
+    c.started = false
+    if c.hwdep.IsOpen() {
+        if err := c.hwdep.Close(); err != nil {
+            c.notify(fmt.Errorf("Could not close device %s: %s\n", c.dev, err),
+                pedal.ErrorStop, nil)
+        } else {
+            c.notify(nil, pedal.NormalStop, nil)
+        }
+    }
+}
+
+func (c *Controller) notify(err error, ntype pedal.ChangeType, obj interface{}) {
+    n := func(err error, ntype pedal.ChangeType, obj interface{}) {
+        if err != nil {
+            log.Println(err)
+        }
+        if c.notifyCB != nil {
+            c.notifyCB(err, ntype, obj)
+        }
+    }
+    go n(err, ntype, obj)
 }
 
 func (c *Controller) monitor(){
     time.Sleep(100 * time.Millisecond)
-    c.rWG.Wait()
+    c.waitGroup.Wait()
     if !c.hwdep.IsOpen() {
         c.Stop()
     }
 }
 
-func (c *Controller) genMessage(rm *message.RawMessage) {
+func (c *Controller) parseMessage(rm *message.RawMessage) {
     err, m := message.NewMessage(*rm)
     if err != nil {
         log.Println(err)
         return
     }
     m.LogInfo()
-
     c.pb.LockData()
     err, ct, obj := m.Parse(c.pb)
     c.pb.UnlockData()
@@ -110,24 +144,24 @@ func (c *Controller) genMessage(rm *message.RawMessage) {
 }
 
 func (c *Controller) processRawMessage() {
-    c.rWG.Add(1)
-    defer c.rWG.Done()
+    c.waitGroup.Add(1)
+    defer c.waitGroup.Done()
     var m *message.RawMessage
 
     for {
         select {
-        case <-c.pM:
+        case <-c.stopPRM:
             return
         case <-time.After(10 * time.Millisecond):
             if m != nil {
-                go c.genMessage(m)
+                go c.parseMessage(m)
                 m = nil
             }
-        case _m := <-c.rCh:
+        case _m := <-c.readQueue:
             switch _m.GetType() {
             case message.RawMessageBegin:
                 if m != nil {
-                    go c.genMessage(m)
+                    go c.parseMessage(m)
                 }
                 m = _m
             case message.RawMessageExt:
@@ -137,22 +171,12 @@ func (c *Controller) processRawMessage() {
     }
 }
 
-func (c *Controller) readRawMessage(dev string) {
-    c.rWG.Add(1)
-    defer c.rWG.Done()
-    c.dev = dev
-    if err := c.hwdep.Open(dev); err != nil {
-        c.notify(fmt.Errorf("Could not open device %s: %s\n", dev, err),
-            pedal.ErrorStop, nil)
-        c.pM <- 0
-        return
-    }
-
-    c.started = true
-
+func (c *Controller) readRawMessage() {
+    c.waitGroup.Add(1)
+    defer c.waitGroup.Done()
     for {
         select {
-        case <-c.rLDM:
+        case <-c.stopRRM:
             return
         default:
             buf := c.hwdep.Read(1000)
@@ -160,25 +184,37 @@ func (c *Controller) readRawMessage(dev string) {
                 time.Sleep(100 * time.Millisecond)
                 continue
             }
-            c.rCh <- message.NewRawMessage(buf)
+            c.readQueue <- message.NewRawMessage(buf)
         }
     }
 }
 
-func (c *Controller) Stop() {
-    c.started = false
-    c.pM <- 0
-    c.rLDM <- 0
-    c.rWG.Wait()
-    close(c.rLDM)
-    close(c.pM)
-    close(c.rCh)
-    if c.hwdep.IsOpen() {
-        if err := c.hwdep.Close(); err != nil {
-            c.notify(fmt.Errorf("Could not close device %s: %s\n", c.dev, err),
-                pedal.ErrorStop, nil)
-        } else {
-            c.notify(nil, pedal.NormalStop, nil)
+func (c* Controller) writeMessage(m message.IMessage) {
+    rms := message.NewRawMessages(m)
+    c.writeMux.Lock()
+    for _, rm := range rms {
+        c.writeQueue <- rm
+    }
+    c.writeMux.Unlock()
+}
+
+func (c* Controller) writeRawMessage() {
+    c.waitGroup.Add(1)
+    defer c.waitGroup.Done()
+    for {
+        select {
+        case <-c.stopWRM:
+            return
+        case m := <- c.writeQueue:
+            log.Println("Writing raw message")
+            m.LogInfo()
+            c.hwdep.Write(m.Export())
         }
     }
+}
+
+func (c *Controller) signalStop() {
+    c.stopPRM <- 0
+    c.stopRRM <- 0
+    c.stopWRM <- 0
 }

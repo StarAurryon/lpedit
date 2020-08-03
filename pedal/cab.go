@@ -75,6 +75,13 @@ func (c *Cab) GetActive() bool {
     return c.active
 }
 
+func (c *Cab) GetActive2() uint32 {
+    if c.active {
+        return 1
+    }
+    return 0
+}
+
 func (c *Cab) GetID() uint32 {
     return c.id
 }
@@ -99,6 +106,10 @@ func (c *Cab) GetParamLen() uint16 {
     return 0
 }
 
+func (c *Cab) GetType() uint32 {
+    return c.ctype
+}
+
 func (c *Cab) LockData() { c.pb.LockData() }
 
 func (c *Cab) SetActive(active bool){
@@ -116,6 +127,15 @@ func (c *Cab) SetType(ctype uint32) error{
     }
     *c = *_c
     return nil
+}
+
+func (c *Cab) SetType2(name string, none string) {
+    for _, _c := range cabs {
+        if name == _c.name {
+            c.SetType(_c.ctype)
+            break
+        }
+    }
 }
 
 func (c *Cab) UnlockData() { c.pb.UnlockData() }

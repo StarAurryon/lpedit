@@ -24,16 +24,19 @@ import "strconv"
 
 type PedalBoardItem interface {
     GetActive() bool
+    GetActive2() uint32
     GetID() uint32
     GetParam(id uint16) Parameter
     GetParams() []Parameter
     GetParamID(Parameter) (error, uint16)
     GetParamLen() uint16
     GetName() string
+    GetType() uint32
     LockData()
     SetActive(bool)
     SetLastPos(uint16, uint8) error
     SetType(uint32) error
+    SetType2(string, string)
     UnlockData()
     LogInfo()
     remove()
@@ -41,6 +44,7 @@ type PedalBoardItem interface {
 
 type Parameter interface {
     Copy() Parameter
+    GetAllowedValues() []string
     GetBinValue() float32
     GetID() uint16
     GetName() string
@@ -65,6 +69,7 @@ func (p *NullParam) Copy() Parameter {
 }
 
 func (p *NullParam) IsNull() bool { return true }
+func (p *NullParam) GetAllowedValues() []string { return nil }
 func (p *NullParam) GetBinValue() float32 { return 0 }
 
 func (p *NullParam) GetID() uint16 {
@@ -94,6 +99,7 @@ func (p *PerCentParam) Copy() Parameter {
 }
 
 func (p *PerCentParam) IsNull() bool { return false }
+func (p *PerCentParam) GetAllowedValues() []string { return nil }
 func (p *PerCentParam) GetBinValue() float32 { return p.value }
 
 func (p *PerCentParam) GetID() uint16 {
@@ -149,6 +155,7 @@ func (p *TimeParam) Copy() Parameter {
 }
 
 func (p *TimeParam) IsNull() bool { return false }
+func (p *TimeParam) GetAllowedValues() []string { return nil }
 func (p *TimeParam) GetBinValue() float32 { return p.value }
 
 func (p *TimeParam) GetID() (uint16) {
@@ -178,8 +185,6 @@ func (p *TimeParam) SetValue(s string) error {
     p.value = float32(vi)/float32(p.maxMs)
     return nil
 }
-
-
 
 func (p *TimeParam) SetBinValue(v float32) error {
     if v > 1 || v < 0 {

@@ -55,6 +55,7 @@ func (l *LPEdit) init() {
     l.SetList.ConnectCurrentIndexChanged(l.updatePresets)
 
     //PedalBoard Connections
+    l.ctrl.ConnectActiveChange(l.updateActive)
     l.ctrl.ConnectParameterChange(l.updateParameter)
     l.ctrl.ConnectPresetLoad(l.updatePedalBoard)
     l.ctrl.ConnectSetChange(l.updateSet)
@@ -100,6 +101,15 @@ func (l *LPEdit) pbSelectorClick(vbo bool) {
     }
     l.pbSelector.Show()
     l.pbSelector.Raise()
+}
+
+func (l *LPEdit) updateActive(pbi pedal.PedalBoardItem) {
+    pbi.LockData()
+    defer pbi.UnlockData()
+    switch p := pbi.(type) {
+    case *pedal.Pedal:
+        l.pedals[p.GetID()-4].setActive(p.GetActive())
+    }
 }
 
 func (l *LPEdit) updateParameter(param pedal.Parameter) {

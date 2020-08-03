@@ -66,7 +66,7 @@ func (m ParameterChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, i
     }
     id := binary.LittleEndian.Uint16(m.data[20:22])
     var v float32
-    err := binary.Read(bytes.NewReader(m.data[24:28]), binary.LittleEndian, &v)
+    err := binary.Read(bytes.NewReader(m.data[24:]), binary.LittleEndian, &v)
     if err != nil {
         return err, pedal.Warning, nil
     }
