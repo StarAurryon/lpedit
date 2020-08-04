@@ -37,9 +37,10 @@ type Pedal struct {
     mids       []*widgets.QWidget
     values     []*widgets.QComboBox
     valuesFunc []func(string)
+    parent     *LPEdit
 }
 
-func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
+func NewPedal(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
         pt map[string][]string, id int) *Pedal {
     p := &Pedal{PedalUI: NewPedalUI(w), ctrl: c, pedalType: pt, id: id}
     p.labels = []*widgets.QLabel{
@@ -55,6 +56,7 @@ func NewPedal(w widgets.QWidget_ITF, c *qtctrl.Controller,
         p.parameter0Changed, p.parameter1Changed, p.parameter2Changed,
         p.parameter3Changed, p.parameter4Changed,
     }
+    p.parent = parent
     p.init()
     p.initUI()
     return p
@@ -85,8 +87,8 @@ func (p *Pedal) initUI() {
     sort.Strings(keys)
 
     p.OnStatus.ConnectClicked(p.onStatusChanged)
-    p.FxModel.ConnectActivated2(p.fxUserModelChanged)
-    p.FxType.ConnectActivated2(p.fxUserTypeChanged)
+    p.FxModel.ConnectActivated2(p.fxModelUserChanged)
+    p.FxType.ConnectActivated2(p.fxTypeUserChanged)
     p.FxType.ConnectCurrentTextChanged(p.fxTypeChanged)
     p.FxType.AddItems(keys)
     for i := range p.values {
@@ -94,12 +96,20 @@ func (p *Pedal) initUI() {
     }
 }
 
-func (p *Pedal) fxUserModelChanged(fxModel string) {
+func (p *Pedal) fxModelUserChanged(fxModel string) {
     p.ctrl.SetPedalType(uint32(p.id), p.FxType.CurrentText(), fxModel)
+    pb := p.ctrl.GetPedalBoard()
+    pb.LockData()
+    p.parent.updatePedalBoardView(pb)
+    pb.UnlockData()
 }
 
-func (p *Pedal) fxUserTypeChanged(fxType string) {
+func (p *Pedal) fxTypeUserChanged(fxType string) {
     p.ctrl.SetPedalType(uint32(p.id), fxType, p.FxModel.CurrentText())
+    pb := p.ctrl.GetPedalBoard()
+    pb.LockData()
+    p.parent.updatePedalBoardView(pb)
+    pb.UnlockData()
 }
 
 func (p *Pedal) fxTypeChanged(fxType string) {

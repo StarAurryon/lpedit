@@ -72,7 +72,7 @@ func (l *LPEdit) initPedals() {
         line.SetFrameShadow(widgets.QFrame__Sunken)
         l.PedalsLayout.AddWidget(line, 0, 0)
         if i != 8 {
-            p := NewPedal(l.ScrollPedalW, l.ctrl, pedalType, i)
+            p := NewPedal(l, l.ScrollPedalW, l.ctrl, pedalType, i)
             l.PedalsLayout.AddWidget(p, 0, 0)
             l.pedals = append(l.pedals, p)
         }
@@ -280,6 +280,7 @@ func (l *LPEdit) updateType(pbi pedal.PedalBoardItem) {
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].updatePedal(p)
     }
+    l.updatePedalBoardView(l.ctrl.GetPedalBoard())
 }
 
 func (l *LPEdit) windowClose(event *gui.QCloseEvent) {

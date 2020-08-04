@@ -74,18 +74,15 @@ func (c *Controller) SetPedalType(id uint32, fxType string, fxModel string) {
 }
 
 func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel string) {
-    f := func() {
-        if !c.started { return }
-        c.pb.LockData()
-        pbi := c.pb.GetItem(id)
-        if pbi == nil {
-            c.pb.UnlockData()
-            return
-        }
-        pbi.SetType2(fxType, fxModel)
-        m := message.GenTypeChange(pbi)
+    if !c.started { return }
+    c.pb.LockData()
+    pbi := c.pb.GetItem(id)
+    if pbi == nil {
         c.pb.UnlockData()
-        c.writeMessage(m)
+        return
     }
-    go f()
+    pbi.SetType2(fxType, fxModel)
+    m := message.GenTypeChange(pbi)
+    c.pb.UnlockData()
+    go c.writeMessage(m)
 }
