@@ -22,15 +22,8 @@ import "encoding/binary"
 import "fmt"
 import "bytes"
 import "log"
-import "sort"
 
 import "lpedit/pedal"
-
-type sUint16 []uint16
-
-func (a sUint16) Len() int           { return len(a) }
-func (a sUint16) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a sUint16) Less(i, j int) bool { return a[i] < a[j] }
 
 type presetPedalPos struct {
     pid   uint32
@@ -92,10 +85,6 @@ func (m PresetChangeAlert) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType,
 
 func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
-    // ppos contains the position as key
-    ppos := map[uint16]presetPedalPos{}
-    ampPos := uint16(0)
-    ampPosType := uint8(0)
     pb.SetCurrentPresetName(string(m.data[8:40]))
 
     offset := 48
@@ -107,17 +96,9 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
         pbi.SetType(itype)
 
         //Pedal Board Item order gathering
-        switch pbi.(type){
-        case *pedal.Pedal:
-            pos := binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
-            ppos[pos] = presetPedalPos{pid: pbiOrder[i],
-                ptype: uint8(m.data[offset+6:offset+7][0])}
-        case *pedal.Amp:
-            if i == 0 {
-                ampPos = binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
-                ampPosType = uint8(m.data[offset+6:offset+7][0])
-            }
-        }
+        pos := binary.LittleEndian.Uint16(m.data[offset+4:offset+6])
+        posType := uint8(m.data[offset+6:offset+7][0])
+        pbi.SetPos(pos, posType)
 
         //Pedal Board Parameter Setup
         poffset := offset
@@ -140,19 +121,6 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
 
         offset += 256
     }
-    // Position of the pedal setup
-    pos := make(sUint16, 0, len(ppos))
-    for k := range ppos {
-        pos = append(pos, k)
-    }
-    sort.Sort(pos)
-    for k := uint16(0); k < uint16(len(pos)); k++ {
-        err := pb.GetItem(ppos[k].pid).SetLastPos(k, ppos[k].ptype)
-        if err != nil {
-            return err, pedal.Warning, nil
-        }
-    }
-    pb.GetItem(0).SetLastPos(ampPos, ampPosType)
     return nil, pedal.PresetLoad, pb
 }
 

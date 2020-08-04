@@ -26,14 +26,14 @@ const (
 )
 
 type Amp struct {
-    id     uint32
-    atype  uint32
-    active bool
-    name   string
-    params []Parameter
-    pb     *PedalBoard
-    plist  *[]PedalBoardItem
-    cab    *Cab
+    id      uint32
+    atype   uint32
+    active  bool
+    name    string
+    pos     uint16
+    posType uint8
+    params  []Parameter
+    pb      *PedalBoard
 }
 
 var amps = []Amp {
@@ -580,19 +580,18 @@ var amps = []Amp {
             }},
 }
 
-func newDisAmp(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, c *Cab) *Amp {
-    a := newAmp(id, pb, plist, c, ampDisabled)
-    *a.plist = append(*a.plist, a)
+func newDisAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Amp {
+    a := newAmp(id, pos, posType, pb, ampDisabled)
     return a
 }
 
-func newAmp(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, c *Cab, atype uint32) *Amp {
+func newAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard, atype uint32) *Amp {
     for _, newAmp := range amps {
         if newAmp.atype == atype {
             newAmp.id = id
+            newAmp.pos = pos
+            newAmp.posType = posType
             newAmp.pb = pb
-            newAmp.cab = c
-            newAmp.plist = plist
             for i := range newAmp.params {
                 newAmp.params[i] = newAmp.params[i].Copy()
                 newAmp.params[i].SetParent(&newAmp)
@@ -646,6 +645,10 @@ func (a *Amp) GetParamLen() uint16 {
     return uint16(len(a.params))
 }
 
+func (a *Amp) GetPos() (uint16, uint8) {
+    return a.pos, a.posType
+}
+
 func (a *Amp) GetType() uint32 {
     return a.atype
 }
@@ -656,42 +659,15 @@ func (a *Amp) SetActive(active bool){
     a.active = active
 }
 
-func (a *Amp) SetLastPos(pos uint16, ctype uint8) error {
-    if a.GetID() == 2 {
-        return nil
-    }
-    b, _ := a.pb.GetItem(2).(*Amp)
-    switch pos {
-    case 0:
-        a.remove()
-        a.pb.pchan.aAmp = append(a.pb.pchan.aAmp, a)
-        a.plist = &a.pb.pchan.aAmp
-        b.remove()
-        b.pb.pchan.bAmp = append(b.pb.pchan.bAmp, b)
-        b.plist = &b.pb.pchan.bAmp
-    default:
-        p, _ := a.pb.GetPedal(pos).(*Pedal)
-        switch p.plist {
-        case &a.pb.start:
-            a.remove()
-            a.pb.startAmp = append(a.pb.startAmp, a)
-            a.plist = &a.pb.startAmp
-        case &a.pb.end:
-            a.remove()
-            a.pb.endAmp = append(a.pb.endAmp, a)
-            a.plist = &a.pb.endAmp
-        default:
-            return fmt.Errorf("Wrong metodology in Amp placement")
-        }
-        b.remove()
-        b.pb.bAmp = append(b.pb.bAmp, b)
-        b.plist = &a.pb.bAmp
-    }
-    return nil
+func (a *Amp) SetPos(pos uint16, posType uint8) {
+    if posType == PedalPosAStart || posType == PedalPosBStart ||
+     posType == PedalPosAEnd || posType == PedalPosBEnd { return }
+    a.pos = pos
+    a.posType = posType
 }
 
 func (a *Amp) SetType(atype uint32) error{
-    _a := newAmp(a.id, a.pb, a.plist, a.cab, atype)
+    _a := newAmp(a.id, a.pos, a.posType, a.pb, atype)
     if _a == nil {
         return fmt.Errorf("Amp type not found, code: %d", atype)
     }
@@ -713,12 +689,7 @@ func (a *Amp) SetType2(name string, none string) {
 
 func (a *Amp) UnlockData() { a.pb.UnlockData() }
 
-func (a *Amp) remove() {
-    *a.plist = nil
-}
-
 func (a Amp) LogInfo() {
-    a.cab.LogInfo()
     log.Printf("Id %d, Amp Info, Name %s, Active %t\n", a.id, a.name, a.active)
     log.Printf("Parameters:\n")
     for i, param := range(a.params) {

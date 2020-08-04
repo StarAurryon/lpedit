@@ -26,11 +26,13 @@ const (
 )
 
 type Cab struct {
-    id     uint32
-    active bool
-    ctype  uint32
-    name   string
-    pb     *PedalBoard
+    id      uint32
+    active  bool
+    ctype   uint32
+    name    string
+    pos     uint16
+    posType uint8
+    pb      *PedalBoard
 }
 
 var cabs = []Cab {
@@ -54,9 +56,8 @@ var cabs = []Cab {
     Cab{ctype: 17235986, active: true, name: "115 Flip Top"},
 }
 
-func newNoCab(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) *Cab {
+func newNoCab(id uint32, pb *PedalBoard) *Cab {
     c := newCab(id, pb, noCab)
-    *plist = append(*plist, c)
     return c
 }
 
@@ -106,6 +107,10 @@ func (c *Cab) GetParamLen() uint16 {
     return 0
 }
 
+func (c *Cab) GetPos() (uint16, uint8) {
+    return c.pos, c.posType
+}
+
 func (c *Cab) GetType() uint32 {
     return c.ctype
 }
@@ -116,8 +121,9 @@ func (c *Cab) SetActive(active bool){
     c.active = active
 }
 
-func (c *Cab) SetLastPos(pos uint16, ctype uint8) error {
-    return nil
+func (c *Cab) SetPos(pos uint16, posType uint8) { 
+    c.pos = pos
+    c.posType = posType
 }
 
 func (c *Cab) SetType(ctype uint32) error{

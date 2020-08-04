@@ -32,15 +32,27 @@ type PedalBoardItem interface {
     GetParamLen() uint16
     GetName() string
     GetType() uint32
+    GetPos() (uint16, uint8)
     LockData()
     SetActive(bool)
-    SetLastPos(uint16, uint8) error
+    SetPos(uint16, uint8)
     SetType(uint32) error
     SetType2(string, string)
     UnlockData()
     LogInfo()
-    remove()
 }
+
+type SortablePosPBI []PedalBoardItem
+
+func (s SortablePosPBI) Len() int           { return len(s) }
+
+func (s SortablePosPBI) Less(i, j int) bool {
+    posI, _ := s[i].GetPos()
+    posJ, _ := s[j].GetPos()
+    return posI < posJ
+}
+
+func (s SortablePosPBI) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 type Parameter interface {
     Copy() Parameter

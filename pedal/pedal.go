@@ -26,14 +26,15 @@ const (
 )
 
 type Pedal struct {
-    id     uint32
-    active bool
-    name   string
-    ptype  uint32
-    stype  string
-    params []Parameter
-    pb     *PedalBoard
-    plist  *[]PedalBoardItem
+    id      uint32
+    active  bool
+    name    string
+    ptype   uint32
+    stype   string
+    pos     uint16
+    posType uint8
+    params  []Parameter
+    pb      *PedalBoard
 }
 
 var pedals = []Pedal {
@@ -1060,18 +1061,18 @@ var pedals = []Pedal {
             }},
 }
 
-func newNonePedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem) *Pedal{
-    p := newPedal(id, pb, plist, nonePedal)
-    *p.plist = append(*p.plist, p)
+func newNonePedal(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Pedal{
+    p := newPedal(id, pos, posType, pb, nonePedal)
     return p
 }
 
-func newPedal(id uint32, pb *PedalBoard, plist *[]PedalBoardItem, ptype uint32 ) *Pedal {
+func newPedal(id uint32, pos uint16, posType uint8, pb *PedalBoard, ptype uint32 ) *Pedal {
     for _, newPedal := range pedals {
         if newPedal.ptype == ptype {
             newPedal.id = id
+            newPedal.pos = pos
+            newPedal.posType = posType
             newPedal.pb = pb
-            newPedal.plist = plist
             for i := range newPedal.params {
                 newPedal.params[i] = newPedal.params[i].Copy()
                 newPedal.params[i].SetParent(&newPedal)
@@ -1133,6 +1134,10 @@ func (p *Pedal) GetParamLen() uint16 {
     return uint16(len(p.params)) //parameter start at 1
 }
 
+func (p *Pedal) GetPos() (uint16, uint8) {
+    return p.pos, p.posType
+}
+
 func (p *Pedal) GetType() uint32 {
     return p.ptype
 }
@@ -1143,36 +1148,10 @@ func (p *Pedal) GetSType() string {
 
 func (p *Pedal) LockData() { p.pb.LockData() }
 
-func (p *Pedal) SetLastPos(pos uint16, stype uint8) error {
-    switch stype {
-    case PedalPosStart:
-        p.remove()
-        p.pb.start = append(p.pb.start, p)
-        p.plist = &p.pb.start
-    case PedalPosAStart:
-        p.remove()
-        p.pb.pchan.aStart = append(p.pb.pchan.aStart, p)
-        p.plist = &p.pb.pchan.aStart
-    case PedalPosAEnd:
-        p.remove()
-        p.pb.pchan.aEnd = append(p.pb.pchan.aEnd, p)
-        p.plist = &p.pb.pchan.aEnd
-    case PedalPosBStart:
-        p.remove()
-        p.pb.pchan.bStart = append(p.pb.pchan.bStart, p)
-        p.plist = &p.pb.pchan.bStart
-    case PedalPosBEnd:
-        p.remove()
-        p.pb.pchan.bEnd = append(p.pb.pchan.bEnd, p)
-        p.plist = &p.pb.pchan.bEnd
-    case PedalPosEnd:
-        p.remove()
-        p.pb.end = append(p.pb.end, p)
-        p.plist = &p.pb.end
-    default:
-        return fmt.Errorf("Type %d is unsupported for pedal location", stype)
-    }
-    return nil
+func (p *Pedal) SetPos(pos uint16, posType uint8) {
+    if posType == AmpAPos || posType == AmpBPos { return }
+    p.pos = pos
+    p.posType = posType
 }
 
 func (p *Pedal) SetActive(active bool){
@@ -1180,7 +1159,7 @@ func (p *Pedal) SetActive(active bool){
 }
 
 func (p *Pedal) SetType(ptype uint32) error {
-    _p := newPedal(p.id, p.pb, p.plist, ptype)
+    _p := newPedal(p.id, p.pos, p.posType, p.pb, ptype)
     if _p == nil {
         return fmt.Errorf("Pedal type not found, code: %d", ptype)
     }
@@ -1201,15 +1180,6 @@ func (p *Pedal) SetType2(stype string, name string) {
 }
 
 func (p *Pedal) UnlockData() { p.pb.UnlockData() }
-
-func (p *Pedal) remove() {
-    for i, _p := range *p.plist {
-        if _p == p {
-            *p.plist = append((*p.plist)[:i], (*p.plist)[i+1:]...)
-            return
-        }
-    }
-}
 
 func (p Pedal) LogInfo() {
     log.Printf("Id %d, Pedal Info, Name %s, Type %s, Active %t\n", p.id, p.name,

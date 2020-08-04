@@ -152,43 +152,52 @@ func (l *LPEdit) updatePedalBoardView(pb *pedal.PedalBoard) {
         item.DestroyQObject()
     }
 
-    l.PedalBoardView.SetLayout(widgets.NewQHBoxLayout2(l.PedalBoardView))
-
-    fillLayout(l.PedalBoardView.Layout(), true, pb.GetItems(pedal.PedalPosStart)...)
-
-    ampA := pb.GetItems(pedal.AmpAPos)
+    ampA := pb.GetItems(pedal.AmpAPos)[0]
+    posA, _ := ampA.GetPos()
     aStart := pb.GetItems(pedal.PedalPosAStart)
     aEnd := pb.GetItems(pedal.PedalPosAEnd)
-    ampB := pb.GetItems(pedal.AmpBPos)
+    ampB := pb.GetItems(pedal.AmpBPos)[0]
     bStart := pb.GetItems(pedal.PedalPosBStart)
     bEnd := pb.GetItems(pedal.PedalPosBEnd)
 
-    if (len(ampB) + len(bStart) + len(bEnd) + len(ampA) + len(aStart) + len(aEnd)) > 0 {
-        top := append(append(aStart, ampA...), aEnd...)
-        bot := append(append(bStart, ampB...), bEnd...)
+    l.PedalBoardView.SetLayout(widgets.NewQHBoxLayout2(l.PedalBoardView))
 
-        max := Max(len(top), len(bot))
-        for i := 0; i < (max + 1); i++ {
-            split := widgets.NewQWidget(l.PedalBoardView, core.Qt__Widget)
+    //Start
+    startItems := pb.GetItems(pedal.PedalPosStart)
+    if posA == 5 { startItems = append(startItems, ampA) }
+    fillLayout(l.PedalBoardView.Layout(), true, startItems...)
+
+    //Split
+    var top, bot []pedal.PedalBoardItem
+    if posA != 0 {
+        top = append(aStart, aEnd...)
+        bot = append(bStart, bEnd...)
+    } else {
+        top = append(append(aStart, ampA), aEnd...)
+        bot = append(append(bStart, ampB), bEnd...)
+    }
+
+    max := Max(len(top), len(bot))
+    for i := 0; i < (max + 1); i++ {
+        split := widgets.NewQWidget(l.PedalBoardView, core.Qt__Widget)
+        split.SetLayout(widgets.NewQVBoxLayout2(split))
+        l.PedalBoardView.Layout().AddWidget(split)
+        AddLine(split.Layout(), split, widgets.QFrame__HLine)
+        AddLine(split.Layout(), split, widgets.QFrame__HLine)
+
+        if i < max {
+            split = widgets.NewQWidget(l.PedalBoardView, core.Qt__Widget)
             split.SetLayout(widgets.NewQVBoxLayout2(split))
             l.PedalBoardView.Layout().AddWidget(split)
-            AddLine(split.Layout(), split, widgets.QFrame__HLine)
-            AddLine(split.Layout(), split, widgets.QFrame__HLine)
-
-            if i < max {
-                split = widgets.NewQWidget(l.PedalBoardView, core.Qt__Widget)
-                split.SetLayout(widgets.NewQVBoxLayout2(split))
-                l.PedalBoardView.Layout().AddWidget(split)
-                if i < len(top) {
-                    fillLayout(split.Layout(), false, top[i])
-                } else {
-                    AddLine(split.Layout(), split, widgets.QFrame__HLine)
-                }
-                if i < len(bot) {
-                    fillLayout(split.Layout(), false, bot[i])
-                } else {
-                    AddLine(split.Layout(), split, widgets.QFrame__HLine)
-                }
+            if i < len(top) {
+                fillLayout(split.Layout(), false, top[i])
+            } else {
+                AddLine(split.Layout(), split, widgets.QFrame__HLine)
+            }
+            if i < len(bot) {
+                fillLayout(split.Layout(), false, bot[i])
+            } else {
+                AddLine(split.Layout(), split, widgets.QFrame__HLine)
             }
         }
     }
@@ -197,7 +206,10 @@ func (l *LPEdit) updatePedalBoardView(pb *pedal.PedalBoard) {
     pbiUI.SetText("Main Mix")
     l.PedalBoardView.Layout().AddWidget(pbiUI)
 
-    fillLayout(l.PedalBoardView.Layout(), true, pb.GetItems(pedal.PedalPosEnd)...)
+    //End
+    endItems := pb.GetItems(pedal.PedalPosEnd)
+    if posA == 7 { endItems = append(endItems, ampA) }
+    fillLayout(l.PedalBoardView.Layout(), true, endItems...)
 }
 
 func (l *LPEdit) updatePreset(pb *pedal.PedalBoard) {

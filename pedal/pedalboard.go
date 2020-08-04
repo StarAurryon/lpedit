@@ -20,20 +20,8 @@ package pedal
 
 import "fmt"
 import "log"
+import "sort"
 import "sync"
-
-type PedalBoardChannel struct{
-    aStart []PedalBoardItem
-    aAmp   []PedalBoardItem
-    aEnd   []PedalBoardItem
-    bStart []PedalBoardItem
-    bAmp   []PedalBoardItem
-    bEnd   []PedalBoardItem
-    aVol   float32
-    bVol   float32
-    aPan   float32
-    bPan   float32
-}
 
 type ChangeType int
 
@@ -64,14 +52,16 @@ const (
     AmpBPos        uint8 = 8
 )
 
+type PedalBoardSplitChannel struct{
+    aVol   float32
+    bVol   float32
+    aPan   float32
+    bPan   float32
+}
+
 type PedalBoard struct {
-    start         []PedalBoardItem
-    startAmp      []PedalBoardItem
-    end           []PedalBoardItem
-    endAmp        []PedalBoardItem
-    pchan         PedalBoardChannel
-    bAmp          []PedalBoardItem //Only for backup of channel B
-    cabs          []PedalBoardItem //Pod still sending infos even if not present
+    items         []PedalBoardItem
+    split         PedalBoardSplitChannel
     tempo         float32
     mux           sync.Mutex
     currentSet    *set
@@ -87,64 +77,44 @@ func NewPedalBoard() *PedalBoard {
         pb.setList[i] = newSet(uint32(i), name)
     }
 
-    ca := newNoCab(uint32(1), pb, &pb.cabs)
-    newDisAmp(uint32(0), pb, &pb.pchan.aAmp, ca)
-    cb := newNoCab(uint32(3), pb, &pb.cabs)
-    newDisAmp(uint32(2), pb, &pb.pchan.bAmp, cb)
+    pb.items = make([]PedalBoardItem, 12)
+
+    pb.items[0] = newDisAmp(uint32(0), uint16(0), AmpAPos, pb)
+    pb.items[1] = newNoCab(uint32(1), pb)
+    pb.items[2] = newDisAmp(uint32(2), uint16(0), AmpBPos, pb)
+    pb.items[3] = newNoCab(uint32(3), pb)
     for id := uint32(4); id <= 11; id++ {
-        newNonePedal(id, pb, &pb.start)
+        pb.items[id] = newNonePedal(id, uint16(id - 4), PedalPosStart, pb)
     }
     return pb
 }
 
 func (pb *PedalBoard) GetItem(id uint32) PedalBoardItem {
-    var p PedalBoardItem
-    ps := []*[]PedalBoardItem{&pb.start, &pb.startAmp,
-         &pb.pchan.aStart, &pb.pchan.aAmp, &pb.pchan.aEnd,
-         &pb.pchan.bStart, &pb.pchan.bAmp, &pb.pchan.bEnd,
-         &pb.endAmp, &pb.end,
-         &pb.bAmp, &pb.cabs}
-    for i, _ := range(ps) {
-        for j, _ := range(*ps[i]) {
-            p = (*ps[i])[j]
-            if p.GetID() == id {
-                return p
-            }
+    for _, pbi := range pb.items {
+        if pbi.GetID() == id {
+            return pbi
         }
     }
     return nil
 }
 
 func (pb *PedalBoard) GetItems(posType uint8) []PedalBoardItem{
-    switch posType {
-    case PedalPosStart:
-        return pb.start
-    case PedalPosAStart:
-        return pb.pchan.aStart
-    case PedalPosBStart:
-        return pb.pchan.bStart
-    case PedalPosAEnd:
-        return pb.pchan.aEnd
-    case PedalPosBEnd:
-        return pb.pchan.bEnd
-    case PedalPosEnd:
-        return pb.end
-    case AmpAPos:
-        return pb.pchan.aAmp
-    case AmpBPos:
-        return pb.pchan.bAmp
+    ret := []PedalBoardItem{}
+    if posType == AmpBPos && len(pb.GetItems(AmpAPos)) == 0 { return ret }
+    for _, pbi := range pb.items {
+        if _, _posType := pbi.GetPos(); _posType == posType {
+            ret = append(ret, pbi)
+        }
     }
-    return nil
+    sort.Sort(SortablePosPBI(ret))
+    return ret
 }
 
 func (pb *PedalBoard) GetPedal(pos uint16) PedalBoardItem {
-    list := append(pb.start, pb.pchan.aStart...)
-    list = append(list, pb.pchan.aEnd...)
-    list = append(list, pb.pchan.bStart...)
-    list = append(list, pb.pchan.bEnd...)
-    list = append(list, pb.end...)
-    if pos < uint16(len(list)) {
-        return list[pos]
+    for _, pbi := range pb.items {
+        if _pos, _ := pbi.GetPos(); _pos == pos {
+            return pbi
+        }
     }
     return nil
 }
@@ -242,20 +212,18 @@ func (pb PedalBoard) LogInfo() {
     }
     log.Printf("Preset name \"%s\"\n", name)
     log.Printf("PedalStart:\n")
-    for _, pbi := range(pb.start) { pbi.LogInfo() }
-    for _, pbi := range(pb.startAmp) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(PedalPosStart)) { pbi.LogInfo() }
     log.Printf("Channel A:\n")
-    log.Printf("Volume %f, pan %f\n", pb.pchan.aVol, pb.pchan.aPan)
-    for _, pbi := range(pb.pchan.aStart) { pbi.LogInfo() }
-    for _, pbi := range(pb.pchan.aAmp) { pbi.LogInfo() }
-    for _, pbi := range(pb.pchan.aEnd) { pbi.LogInfo() }
+    log.Printf("Volume %f, pan %f\n", pb.split.aVol, pb.split.aPan)
+    for _, pbi := range(pb.GetItems(PedalPosAStart)) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(AmpAPos)) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(PedalPosAEnd)) { pbi.LogInfo() }
     log.Printf("Channel B:\n")
-    log.Printf("Volume %f, pan %f\n", pb.pchan.bVol, pb.pchan.bPan)
-    for _, pbi := range(pb.pchan.bStart) { pbi.LogInfo() }
-    for _, pbi := range(pb.pchan.bAmp) { pbi.LogInfo() }
-    for _, pbi := range(pb.pchan.bEnd) { pbi.LogInfo() }
+    log.Printf("Volume %f, pan %f\n", pb.split.bVol, pb.split.bPan)
+    for _, pbi := range(pb.GetItems(PedalPosBStart)) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(AmpBPos)) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(PedalPosBEnd)) { pbi.LogInfo() }
     log.Printf("PedalEnd:\n")
-    for _, pbi := range(pb.endAmp) { pbi.LogInfo() }
-    for _, pbi := range(pb.end) { pbi.LogInfo() }
+    for _, pbi := range(pb.GetItems(PedalPosEnd)) { pbi.LogInfo() }
     log.Printf("\n")
 }
