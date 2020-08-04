@@ -19,6 +19,7 @@
 package pedal
 
 import "fmt"
+import "math"
 import "strings"
 import "strconv"
 
@@ -123,7 +124,7 @@ func (p *PerCentParam) GetName() string { return p.name }
 func (p *PerCentParam) GetParent() PedalBoardItem { return p.parent }
 
 func (p *PerCentParam) GetValue() string {
-    return fmt.Sprintf("%d%%", int(p.value*100))
+    return fmt.Sprintf("%d%%", int(math.Round(float64(p.value*100))))
 }
 
 func (p *PerCentParam) LockData() { p.parent.LockData() }
@@ -152,6 +153,65 @@ func (p *PerCentParam) SetBinValue(v float32) error {
 
 func (p *PerCentParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *PerCentParam) UnlockData() { p.parent.UnlockData() }
+
+type RangeParam struct {
+    name      string
+    max       float32
+    min       float32
+    increment float32
+    parent    PedalBoardItem
+    value     float32
+}
+
+func (p *RangeParam) Copy() Parameter {
+    _p := new(RangeParam)
+    *_p = *p
+    return _p
+}
+
+func (p *RangeParam) IsNull() bool { return false }
+func (p *RangeParam) GetAllowedValues() []string { return nil }
+func (p *RangeParam) GetBinValue() float32 { return p.value }
+
+func (p *RangeParam) GetID() (uint16) {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
+func (p *RangeParam) GetName() string { return p.name }
+func (p *RangeParam) GetParent() PedalBoardItem { return p.parent }
+
+func (p *RangeParam) GetValue() string {
+    return fmt.Sprintf("%.1f", (p.value * (p.max - p.min)) + p.min)
+}
+
+func (p *RangeParam) LockData() { p.parent.LockData() }
+
+func (p *RangeParam) SetValue(s string) error {
+    s = strings.Replace(s, " ", "", -1)
+    vi, err := strconv.ParseFloat(s, 32)
+    if err != nil {
+        return err
+    }
+    v := float32(vi)
+    if  v > p.max || p.min < 0 {
+        return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
+    }
+    p.value = (v/(p.max - p.min)) - p.min
+    return nil
+}
+
+func (p *RangeParam) SetBinValue(v float32) error {
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    p.value = v
+    return nil
+}
+
+func (p *RangeParam) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *RangeParam) UnlockData() { p.parent.UnlockData() }
+
 
 type TimeParam struct {
     name  string

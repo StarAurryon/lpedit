@@ -57,8 +57,8 @@ var pedals = []Pedal {
     Pedal{ptype: 33554445, active: true, stype: "Dynamics", name: "Blue Comp Treble",
         params: []Parameter{
             &NullParam{},
-            &PerCentParam{name: "Sustain", value:0},
             &PerCentParam{name: "Level", value:0},
+            &PerCentParam{name: "Sustain", value:0},
             }},
     Pedal{ptype: 33554446, active: true, stype: "Dynamics", name: "Tube Comp",
         params: []Parameter{
@@ -95,9 +95,8 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33554451, active: true, stype: "Dynamics", name: "Hard Gate",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Open Threshold", value:0},
-            &PerCentParam{name: "Close Threshold", value:0},
+            &RangeParam{name: "Open Threshold", max: 0, min: -96, increment: 1, value:0},
+            &RangeParam{name: "Close Threshold", max: 0, min: -96, increment: 1, value:0},
             &TimeParam{name: "Hold", value:0, maxMs: 800},
             &TimeParam{name: "Decay", value:0, maxMs: 4000},
             }},

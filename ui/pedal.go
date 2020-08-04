@@ -45,16 +45,19 @@ func NewPedal(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
     p := &Pedal{PedalUI: NewPedalUI(w), ctrl: c, pedalType: pt, id: id}
     p.labels = []*widgets.QLabel{
         p.Param0Lbl, p.Param1Lbl , p.Param2Lbl, p.Param3Lbl, p.Param4Lbl,
+        p.Param5Lbl,
     }
     p.mids = []*widgets.QWidget{
         p.Param0Mid, p.Param1Mid , p.Param2Mid, p.Param3Mid, p.Param4Mid,
+        p.Param5Mid,
     }
     p.values = []*widgets.QComboBox{
-        p.Param0Value, p.Param1Value , p.Param2Value, p.Param3Value, p.Param4Value,
+        p.Param0Value, p.Param1Value , p.Param2Value, p.Param3Value,
+        p.Param4Value, p.Param5Value,
     }
     p.valuesFunc = []func(string) {
         p.parameter0Changed, p.parameter1Changed, p.parameter2Changed,
-        p.parameter3Changed, p.parameter4Changed,
+        p.parameter3Changed, p.parameter4Changed, p.parameter5Changed,
     }
     p.parent = parent
     p.init()
@@ -124,11 +127,12 @@ func (p *Pedal) hideParameter(id int) {
     p.values[id].Hide()
 }
 
-func (p *Pedal) parameter0Changed(val string) { p.parameterChanged(1, val) }
-func (p *Pedal) parameter1Changed(val string) { p.parameterChanged(2, val) }
-func (p *Pedal) parameter2Changed(val string) { p.parameterChanged(3, val) }
-func (p *Pedal) parameter3Changed(val string) { p.parameterChanged(4, val) }
-func (p *Pedal) parameter4Changed(val string) { p.parameterChanged(5, val) }
+func (p *Pedal) parameter0Changed(val string) { p.parameterChanged(0, val) }
+func (p *Pedal) parameter1Changed(val string) { p.parameterChanged(1, val) }
+func (p *Pedal) parameter2Changed(val string) { p.parameterChanged(2, val) }
+func (p *Pedal) parameter3Changed(val string) { p.parameterChanged(3, val) }
+func (p *Pedal) parameter4Changed(val string) { p.parameterChanged(4, val) }
+func (p *Pedal) parameter5Changed(val string) { p.parameterChanged(5, val) }
 
 func (p *Pedal) parameterChanged(id int, val string) {
     err := p.ctrl.SetPedalParameterValue(uint32(p.id), uint16(id), val)
@@ -192,8 +196,7 @@ func (pUI *Pedal) updatePedal(p *pedal.Pedal) {
 
 func (pUI * Pedal) updateParam(p pedal.Parameter) {
     id := int(p.GetID())
-    if id == 0 || id > 5 { return }
-    id--
+    if id > len(pUI.labels) { return }
     if !p.IsNull() {
         allowedValues := p.GetAllowedValues()
         if allowedValues == nil {
