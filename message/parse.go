@@ -74,6 +74,21 @@ func (m ParameterChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, i
     return nil, pedal.ParameterChange, param
 }
 
+func (m ParameterTempoChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    pid := m.getPedalBoardItemID()
+    p := pb.GetItem(pid)
+    if p == nil {
+        return fmt.Errorf("Item ID %d not found", pid), pedal.Warning, nil
+    }
+    param := p.GetParam(0)
+    if param == nil {
+        return fmt.Errorf("Parameter ID 0 not found"), pedal.Warning, nil
+    }
+    value := binary.LittleEndian.Uint32(m.data[16:])
+    param.SetBinValue(float32(value))
+    return nil, pedal.ParameterChange, param
+}
+
 func (m PresetChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     pb.SetCurrentPreset(binary.LittleEndian.Uint32(m.data[8:]))
     return nil, pedal.PresetChange, pb
@@ -104,10 +119,15 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
         poffset := offset
         for j := uint16(0); j < pbi.GetParamLen(); j++ {
             pidx := binary.LittleEndian.Uint16(m.data[poffset+16:poffset+18])
-            var v float32
-            binary.Read(bytes.NewReader(m.data[poffset+20:poffset+24]), binary.LittleEndian, &v)
             param := pbi.GetParam(pidx)
             if param != nil {
+                tempoValue := binary.LittleEndian.Uint16(m.data[poffset+9:poffset+11])
+                var v float32
+                if j == 0 && tempoValue > 1{
+                    v = float32(tempoValue)
+                } else {
+                    binary.Read(bytes.NewReader(m.data[poffset+20:poffset+24]), binary.LittleEndian, &v)
+                }
                 if err := param.SetBinValue(v); err != nil {
                     log.Printf("TODO: Fix the parameter type on pedal %s: %s \n", pbi.GetName(), err)
                 }

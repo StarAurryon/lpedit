@@ -20,6 +20,7 @@ package message
 
 import "bytes"
 import "encoding/binary"
+import "math"
 import "reflect"
 
 import "lpedit/pedal"
@@ -56,6 +57,24 @@ func GenParameterChange(p pedal.Parameter) IMessage {
     binary.Write(buf, binary.LittleEndian, p.GetID())
     binary.Write(buf, binary.LittleEndian, uint16(16144))
     binary.Write(buf, binary.LittleEndian, p.GetBinValue())
+    m.data = buf.Bytes()
+
+    return m
+}
+
+func GenParameterTempoChange(p pedal.Parameter) IMessage {
+    var m *ParameterTempoChange
+    m = newMessage2(reflect.TypeOf(m)).(*ParameterTempoChange)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(0))
+    binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
+    binValue := p.GetBinValue()
+    if binValue > 1 {
+        binary.Write(buf, binary.LittleEndian, uint32(math.Round(float64(binValue))))
+    } else {
+        binary.Write(buf, binary.LittleEndian, uint32(0))
+    }
     m.data = buf.Bytes()
 
     return m

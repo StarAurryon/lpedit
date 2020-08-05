@@ -42,9 +42,13 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
         c.pb.UnlockData()
         return err
     }
-    m := message.GenParameterChange(p)
-    c.pb.UnlockData()
+    m := message.GenParameterTempoChange(p)
     go c.writeMessage(m)
+    if pid == 0 && p.GetBinValue() <= 1  {
+        m := message.GenParameterChange(p)
+        go c.writeMessage(m)
+    }
+    c.pb.UnlockData()
     return nil
 }
 

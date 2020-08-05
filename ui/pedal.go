@@ -198,12 +198,24 @@ func (pUI * Pedal) updateParam(p pedal.Parameter) {
     id := int(p.GetID())
     if id > len(pUI.labels) { return }
     if !p.IsNull() {
-        allowedValues := p.GetAllowedValues()
-        if allowedValues == nil {
-            pUI.setParameterValueList(id, []string{p.GetValue()})
+        values := p.GetAllowedValues()
+
+        valueIn := false
+        for _, v := range values {
+            if v == p.GetValue() {
+                valueIn = true
+                break
+            }
+        }
+
+        if !valueIn {
+            values = append([]string{p.GetValue()}, values...)
+        }
+
+        pUI.setParameterValueList(id, values)
+        if p.IsAllowingOtherValues() {
             pUI.setParameterValueEditable(id, true)
         } else {
-            pUI.setParameterValueList(id, allowedValues)
             pUI.setParameterValueEditable(id, false)
         }
         pUI.setParameterValue(id, p.GetValue())
