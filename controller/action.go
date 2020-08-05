@@ -18,6 +18,7 @@
 
 package controller
 
+import "lpedit/pedal"
 import "lpedit/message"
 
 func (c *Controller) SetPedalParameterValue(id uint32, pid uint16, value string) error {
@@ -42,9 +43,15 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
         c.pb.UnlockData()
         return err
     }
-    m := message.GenParameterTempoChange(p)
-    go c.writeMessage(m)
-    if pid == 0 && p.GetBinValue() <= 1  {
+    switch p2 := p.(type) {
+    case *pedal.TempoParam:
+        m := message.GenParameterTempoChange(p2)
+        c.writeMessage(m)
+        if p2.GetBinValue() <= 1 {
+            m := message.GenParameterChange(p)
+            c.writeMessage(m)
+        }
+    default:
         m := message.GenParameterChange(p)
         go c.writeMessage(m)
     }

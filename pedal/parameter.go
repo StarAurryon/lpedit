@@ -85,7 +85,7 @@ func (p *FreqParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
     }
-    p.value = (v/(p.max - p.min)) - p.min
+    p.value = (v - p.min) / (p.max - p.min)
     return nil
 }
 
@@ -160,6 +160,67 @@ func (p *ListParam) SetBinValue(v float32) error {
 
 func (p *ListParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *ListParam) UnlockData() { p.parent.UnlockData() }
+
+type ListParam2 struct {
+    name  string
+    list  []string
+    parent PedalBoardItem
+    value float32
+}
+
+func (p *ListParam2) Copy() Parameter {
+    _p := new(ListParam2)
+    *_p = *p
+    return _p
+}
+
+func (p *ListParam2) IsAllowingOtherValues() bool { return false }
+func (p *ListParam2) IsNull() bool { return false }
+func (p *ListParam2) GetAllowedValues() []string { return p.list }
+func (p *ListParam2) GetBinValue() float32 { return p.value }
+
+func (p *ListParam2) GetID() (uint16) {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
+func (p *ListParam2) GetName() string { return p.name }
+func (p *ListParam2) GetParent() PedalBoardItem { return p.parent }
+
+func (p *ListParam2) GetValue() string {
+    fmt.Println(p.value)
+    return p.list[int(math.Round(float64(p.value) * float64(len(p.list))))]
+}
+
+func (p *ListParam2) LockData() { p.parent.LockData() }
+
+func (p *ListParam2) SetValue(s string) error {
+    found := false
+    i := 0
+    v := ""
+    for i, v = range p.list {
+        if v == s {
+            found = true
+            break
+        }
+    }
+    if !found {
+        return fmt.Errorf("The value must be in the list")
+    }
+    p.value = float32(i) / float32(len(p.list))
+    return nil
+}
+
+func (p *ListParam2) SetBinValue(v float32) error {
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    p.value = v
+    return nil
+}
+
+func (p *ListParam2) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *ListParam2) UnlockData() { p.parent.UnlockData() }
 
 type NullParam struct {
     parent PedalBoardItem
@@ -290,7 +351,7 @@ func (p *RangeParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
     }
-    p.value = (v/(p.max - p.min)) - p.min
+    p.value = (v - p.min)/(p.max - p.min)
     return nil
 }
 
@@ -365,7 +426,7 @@ func (p *TempoParam) SetValue(s string) error {
     if  v > 15 || 0.10 > v {
         return fmt.Errorf("The value must be comprised between 0.10 and 15 or be in the list")
     }
-    p.value = (v/(15 - 0.10)) - 0.10
+    p.value = (v - 0.10)/(15 - 0.10)
     return nil
 }
 
