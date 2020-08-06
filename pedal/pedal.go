@@ -798,7 +798,7 @@ var pedals = []Pedal {
     Pedal{ptype: 34013189, active: true, stype: "Volume/Pan", name: "Pan",
         params: []Parameter{
             &NullParam{},
-            &PerCentParam{name: "Pan L-R Balance", value:0},
+            &RangeParam{name: "Pan L-R Balance", value:0, min: -100, max: 100},
             }},
     /*
      * FX Loop
