@@ -806,8 +806,9 @@ var pedals = []Pedal {
     Pedal{ptype: 34078720, active: true, stype: "FX Loop", name: "FX Loop",
         params: []Parameter{
             &NullParam{},
-            &PerCentParam{name: "Send", value:0},
-            &PerCentParam{name: "Return", value:0},
+            &RangeParam{name: "Send", value:0, min: -80, max: 0},
+            &RangeParam{name: "Return", value:0, min: 0, max: 24},
+            &NullParam{},
             &PerCentParam{name: "Mix", value:0},
             }},
     /*
