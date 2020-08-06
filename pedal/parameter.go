@@ -100,6 +100,66 @@ func (p *FreqParam) SetBinValue(v float32) error {
 func (p *FreqParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *FreqParam) UnlockData() { p.parent.UnlockData() }
 
+type FreqKParam struct {
+    name      string
+    max       float32
+    min       float32
+    parent    PedalBoardItem
+    value     float32
+}
+
+func (p *FreqKParam) Copy() Parameter {
+    _p := new(FreqKParam)
+    *_p = *p
+    return _p
+}
+
+func (p *FreqKParam) IsAllowingOtherValues() bool { return true }
+func (p *FreqKParam) IsNull() bool { return false }
+func (p *FreqKParam) GetAllowedValues() []string { return nil }
+func (p *FreqKParam) GetBinValue() float32 { return p.value }
+
+func (p *FreqKParam) GetID() (uint16) {
+    _, id := p.GetParent().GetParamID(p)
+    return id
+}
+
+func (p *FreqKParam) GetName() string { return p.name }
+func (p *FreqKParam) GetParent() PedalBoardItem { return p.parent }
+
+func (p *FreqKParam) GetValue() string {
+    return fmt.Sprintf("%.1fKHz", float64((p.value * (p.max - p.min)) + p.min))
+}
+
+func (p *FreqKParam) LockData() { p.parent.LockData() }
+
+func (p *FreqKParam) SetValue(s string) error {
+    s = strings.Replace(s, " ", "", -1)
+    s = strings.Replace(s, "KHz", "", -1)
+    s = strings.Replace(s, "khz", "", -1)
+    vi, err := strconv.ParseFloat(s, 32)
+    if err != nil {
+        return err
+    }
+    v := float32(vi)
+    if  v > p.max || p.min > v {
+        return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
+    }
+    p.value = (v - p.min) / (p.max - p.min)
+    return nil
+}
+
+func (p *FreqKParam) SetBinValue(v float32) error {
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    p.value = v
+    return nil
+}
+
+func (p *FreqKParam) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *FreqKParam) UnlockData() { p.parent.UnlockData() }
+
 type ListParam struct {
     name  string
     list  []string
