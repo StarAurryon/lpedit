@@ -427,9 +427,11 @@ func (p *RangeParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *RangeParam) UnlockData() { p.parent.UnlockData() }
 
 type TempoParam struct {
-    name  string
+    name   string
     parent PedalBoardItem
-    value float32
+    max    float32
+    min    float32
+    value  float32
 }
 
 func (p *TempoParam) Copy() Parameter {
@@ -461,7 +463,7 @@ func (p *TempoParam) GetValue() string {
     if p.value > 1 {
         return p.GetAllowedValues()[int(p.value) - 2]
     }
-    return fmt.Sprintf("%.2fHz", (p.value * (15 - 0.10)) + 0.10)
+    return fmt.Sprintf("%.2fHz", (p.value * (p.max - p.min)) + p.min)
 }
 
 func (p *TempoParam) LockData() { p.parent.LockData() }
@@ -483,10 +485,10 @@ func (p *TempoParam) SetValue(s string) error {
         return err
     }
     v := float32(vi)
-    if  v > 15 || 0.10 > v {
+    if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between 0.10 and 15 or be in the list")
     }
-    p.value = (v - 0.10)/(15 - 0.10)
+    p.value = (v - p.min)/(p.max - p.min)
     return nil
 }
 

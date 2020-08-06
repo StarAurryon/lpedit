@@ -80,6 +80,24 @@ func GenParameterTempoChange(p pedal.Parameter) IMessage {
     return m
 }
 
+func GenParameterTempoChange2(p pedal.Parameter) IMessage {
+    var m *ParameterTempoChange2
+    m = newMessage2(reflect.TypeOf(m)).(*ParameterTempoChange2)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(0))
+    binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
+    binValue := p.GetBinValue()
+    if binValue > 1 {
+        binary.Write(buf, binary.LittleEndian, uint32(math.Round(float64(binValue))))
+    } else {
+        binary.Write(buf, binary.LittleEndian, uint32(0))
+    }
+    m.data = buf.Bytes()
+
+    return m
+}
+
 func GenPresetChange() IMessage {
     var m *PresetChange
     m = newMessage2(reflect.TypeOf(m)).(*PresetChange)

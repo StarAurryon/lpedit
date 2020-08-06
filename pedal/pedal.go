@@ -105,8 +105,7 @@ var pedals = []Pedal {
      */
     Pedal{ptype: 33685521, active: true, stype: "Delay", name: "Digital Delay",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Bass", value:0},
             &PerCentParam{name: "Treble", value:0},
@@ -114,8 +113,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685522, active: true, stype: "Delay", name: "Digital Delay W/Mod",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "ModSpd", value:0},
             &PerCentParam{name: "Depth", value:0},
@@ -123,17 +121,15 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685523, active: true, stype: "Delay", name: "Stereo Delay",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "L Time", value:0},
+            &TempoParam{name: "L Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "L-FDBK", value:0},
-            &PerCentParam{name: "R Time", value:0},
+            &TempoParam{name: "R Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "R-FDBK", value:0},
             &PerCentParam{name: "Mix", value:0},
             }},
     Pedal{ptype: 33685524, active: true, stype: "Delay", name: "Analog Echo",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Bass", value:0},
             &PerCentParam{name: "Treble", value:0},
@@ -141,8 +137,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685525, active: true, stype: "Delay", name: "Analog W/Mod",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "ModSpd", value:0},
             &PerCentParam{name: "Depth", value:0},
@@ -150,8 +145,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685530, active: true, stype: "Delay", name: "Multi-Head",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Heads 1-2", value:0},
             &PerCentParam{name: "Heads 3-4", value:0},
@@ -159,8 +153,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685533, active: true, stype: "Delay", name: "Low Res Delay",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Tone", value:0},
             &PerCentParam{name: "Res", value:0},
@@ -168,8 +161,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685536, active: true, stype: "Delay", name: "Ping Pong",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Offset", value:0},
             &PerCentParam{name: "Spread", value:0},
@@ -177,8 +169,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685537, active: true, stype: "Delay", name: "Reverse",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "ModSpd", value:0},
             &PerCentParam{name: "Depth", value:0},
@@ -186,8 +177,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685538, active: true, stype: "Delay", name: "Dynamic Delay",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Thresh", value:0},
             &PerCentParam{name: "Ducking", value:0},
@@ -195,8 +185,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685539, active: true, stype: "Delay", name: "Auto-Volume Echo",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Bass", value:0},
             &PerCentParam{name: "Treble", value:0},
@@ -204,8 +193,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685546, active: true, stype: "Delay", name: "Tube Echo",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Wow/Flt", value:0},
             &PerCentParam{name: "Drive", value:0},
@@ -213,8 +201,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685547, active: true, stype: "Delay", name: "Tube Echo Dry",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Wow/Flt", value:0},
             &PerCentParam{name: "Drive", value:0},
@@ -222,8 +209,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685548, active: true, stype: "Delay", name: "Tape Echo",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Bass", value:0},
             &PerCentParam{name: "Treble", value:0},
@@ -231,8 +217,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685549, active: true, stype: "Delay", name: "Tape Echo Dry",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Bass", value:0},
             &PerCentParam{name: "Treble", value:0},
@@ -240,8 +225,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685550, active: true, stype: "Delay", name: "Sweep Echo",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Swp Spd", value:0},
             &PerCentParam{name: "Swp Dep", value:0},
@@ -249,8 +233,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685551, active: true, stype: "Delay", name: "Sweep Echo Dry",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Swp Spd", value:0},
             &PerCentParam{name: "Swp Dep", value:0},
@@ -258,17 +241,15 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33685552, active: true, stype: "Delay", name: "Echo Platter",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Wow/Flt", value:0},
             &PerCentParam{name: "Drive", value:0},
             &PerCentParam{name: "Mix", value:0},
             }},
-    Pedal{ptype: 33685553, active: true, stype: "Delay", name: "Echo Platter",
+    Pedal{ptype: 33685553, active: true, stype: "Delay", name: "Echo Platter Dry",
         params: []Parameter{
-            &NullParam{},
-            &PerCentParam{name: "Time", value:0},
+            &TempoParam{name: "Time", value:0, min: 20, max: 2000},
             &PerCentParam{name: "FDBK", value:0},
             &PerCentParam{name: "Wow/Flt", value:0},
             &PerCentParam{name: "Drive", value:0},
@@ -279,7 +260,7 @@ var pedals = []Pedal {
      */
     Pedal{ptype: 33751072, active: true, stype: "Modulation", name: "Opto Tremolo",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Shape", value:0},
             &PerCentParam{name: "VolSens", value:0},
@@ -287,7 +268,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751073, active: true, stype: "Modulation", name: "Bias Tremolo",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Shape", value:0},
             &PerCentParam{name: "VolSens", value:0},
@@ -295,7 +276,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751074, active: true, stype: "Modulation", name: "Phaser",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Fdbk", value:0},
             &ListParam{name: "Stages", value:0, list: []string{"STG 4", "STG 8",
@@ -306,7 +287,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751075, active: true, stype: "Modulation", name: "Dual Phaser",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Fdbk", value:0},
             &ListParam{name: "LfoShp", value:0, list: []string{"Sine", "Square"}},
@@ -315,7 +296,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751076, active: true, stype: "Modulation", name: "Panned Phaser",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &ListParam{name: "Pan", value:0, list: []string{"Left", "Center", "Right"}},
             &PerCentParam{name: "PanSpd", value:0},
@@ -323,7 +304,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751077, active: true, stype: "Modulation", name: "U-Vibe",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Fdbk", value:0},
             &PerCentParam{name: "VolSens", value:0},
@@ -350,7 +331,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751080, active: true, stype: "Modulation", name: "Analog Flanger",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Fdbk", value:0},
             &PerCentParam{name: "Manual", value:0},
@@ -359,7 +340,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751081, active: true, stype: "Modulation", name: "Jet Flanger",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Fdbk", value:0},
             &PerCentParam{name: "Manual", value:0},
@@ -368,7 +349,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751082, active: true, stype: "Modulation", name: "Analog Chorus",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &ListParam{name: "Ch Vib", value:0, list: []string{"Chorus", "Vibrato"}},
             &PerCentParam{name: "Tone", value:0},
@@ -386,7 +367,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751084, active: true, stype: "Modulation", name: "Tri Chorus",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Depth2", value:0},
             &PerCentParam{name: "Depth3", value:0},
@@ -395,7 +376,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751085, active: true, stype: "Modulation", name: "Pitch Vibrato",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &PerCentParam{name: "Rise", value:0},
             &PerCentParam{name: "VolSens", value:0},
@@ -413,7 +394,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751087, active: true, stype: "Modulation", name: "Panner",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Depth", value:0},
             &ListParam{name: "Shape", value:0, list: []string{"Triangle",
                 "Sine", "Square"},
@@ -423,7 +404,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751104, active: true, stype: "Modulation", name: "Barberpole Phaser",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Fdbk", value:0},
             &ListParam{name: "Mode", value:0, list: []string{"Up", "Down", "Stereo"}},
             &NullParam{},
@@ -441,7 +422,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751107, active: true, stype: "Modulation", name: "Pattern Tremolo",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &ListParam{name: "Step1", value:0,
                 list: []string{"Mute", "1", "2", "3", "4", "5", "6", "7",
                      "8", "9", "10", "11", "12", "13", "14", "15", "16",
@@ -465,18 +446,18 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 33751109, active: true, stype: "Modulation", name: "Script Phase",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             }},
     Pedal{ptype: 33751111, active: true, stype: "Modulation", name: "AC Flanger",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Width", value:0},
             &PerCentParam{name: "Regen", value:0},
             &PerCentParam{name: "Manual", value:0},
             }},
     Pedal{ptype: 33751113, active: true, stype: "Modulation", name: "80A Flanger",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Range", value:0},
             &PerCentParam{name: "Enhance", value:0},
             &PerCentParam{name: "Manual", value:0},
@@ -880,7 +861,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209809, active: true, stype: "Filter", name: "Seeker",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &ListParam2{name: "Steps", value:0, list: []string{"2 Steps", "3 Steps",
@@ -891,7 +872,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209810, active: true, stype: "Filter", name: "Obi Wah",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &ListParam{name: "Type", value:0, list: []string{"LP", "BP", "HP"}},
@@ -918,7 +899,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209813, active: true, stype: "Filter", name: "Throbber",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &ListParam{name: "Wave", value:0, list: []string{"Ramp Up", "Ramp Down",
@@ -929,7 +910,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209814, active: true, stype: "Filter", name: "Spin Cycle",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &PerCentParam{name: "VolSens", value:0},
@@ -938,7 +919,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209815, active: true, stype: "Filter", name: "Comet Trails",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &PerCentParam{name: "Gain", value:0},
@@ -947,7 +928,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209816, active: true, stype: "Filter", name: "Octisynth",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &PerCentParam{name: "Depth", value:0},
@@ -956,7 +937,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209817, active: true, stype: "Filter", name: "Growler",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Q", value:0},
             &PerCentParam{name: "Pitch", value:0},
@@ -985,7 +966,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209820, active: true, stype: "Filter", name: "Synth String",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &PerCentParam{name: "Freq", value:0},
             &PerCentParam{name: "Attack", value:0},
             &PerCentParam{name: "Pitch", value:0},
@@ -994,7 +975,7 @@ var pedals = []Pedal {
             }},
     Pedal{ptype: 34209821, active: true, stype: "Filter", name: "Voice Box",
         params: []Parameter{
-            &TempoParam{name: "Speed", value:0},
+            &TempoParam{name: "Speed", value:0, min: 0.10, max: 15},
             &ListParam{name: "Start", value:0, list: []string{"A", "E", "I", "O", "U"}},
             &ListParam{name: "End", value:0, list: []string{"A", "E", "I", "O", "U"}},
             &ListParam{name: "Auto", value:0, list: []string{"Auto 1", "Auto 2", "Auto 3", "Auto 4"}},

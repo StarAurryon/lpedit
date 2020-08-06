@@ -111,6 +111,16 @@ func (m *ParameterTempoChange) Copy() IMessage {
     return _m
 }
 
+type ParameterTempoChange2 struct {
+    Message
+}
+
+func (m *ParameterTempoChange2) Copy() IMessage {
+    _m := new(ParameterTempoChange2)
+    *_m = *m
+    return _m
+}
+
 type PresetChange struct {
     Message
 }
@@ -169,6 +179,7 @@ var messages = []IMessage{
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
     &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
     &ParameterTempoChange{Message: Message{mtype: 4, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
+    &ParameterTempoChange2{Message: Message{mtype: 4, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
     &SetChange{Message: Message{mtype: 2, smtype: 11264, msize: 12, mname: "Set Change"}},
     &SetupChange{Message: Message{mtype: 5, smtype: 5632, msize: 24, mname: "Setup Change"}},
 }

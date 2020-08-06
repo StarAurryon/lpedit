@@ -89,6 +89,21 @@ func (m ParameterTempoChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeTy
     return nil, pedal.ParameterChange, param
 }
 
+func (m ParameterTempoChange2) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    pid := m.getPedalBoardItemID()
+    p := pb.GetItem(pid)
+    if p == nil {
+        return fmt.Errorf("Item ID %d not found", pid), pedal.Warning, nil
+    }
+    param := p.GetParam(2)
+    if param == nil {
+        return fmt.Errorf("Parameter ID 2 not found"), pedal.Warning, nil
+    }
+    value := binary.LittleEndian.Uint32(m.data[16:])
+    param.SetBinValue(float32(value))
+    return nil, pedal.ParameterChange, param
+}
+
 func (m PresetChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     pb.SetCurrentPreset(binary.LittleEndian.Uint32(m.data[8:]))
     return nil, pedal.PresetChange, pb

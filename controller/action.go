@@ -45,8 +45,14 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
     }
     switch p2 := p.(type) {
     case *pedal.TempoParam:
-        m := message.GenParameterTempoChange(p2)
-        c.writeMessage(m)
+        switch p2.GetID() {
+        case 0:
+            m := message.GenParameterTempoChange(p2)
+            c.writeMessage(m)
+        case 2:
+            m := message.GenParameterTempoChange2(p2)
+            c.writeMessage(m)
+        }
         if p2.GetBinValue() <= 1 {
             m := message.GenParameterChange(p)
             c.writeMessage(m)
