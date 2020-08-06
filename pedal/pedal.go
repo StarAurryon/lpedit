@@ -569,7 +569,7 @@ var pedals = []Pedal {
         params: []Parameter{
             &NullParam{},
             &PerCentParam{name: "Dwell", value:0},
-            &PerCentParam{name: "Condition", value:0},
+            &ListParam{name: "Condition", value:0, list: []string{"Stable", "Critical", "Hazard"}},
             &PerCentParam{name: "Gain", value:0},
             &NullParam{},
             &PerCentParam{name: "Mix", value:0},
