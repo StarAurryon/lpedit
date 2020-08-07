@@ -18,15 +18,23 @@
 
 package pedal
 
+import "bytes"
+import "encoding/binary"
 import "fmt"
 import "math"
 import "strings"
 import "strconv"
 
+const (
+    Int32Type  uint32 = 0
+    float32Type uint32 = 1
+)
+
 type Parameter interface {
     Copy() Parameter
     GetAllowedValues() []string
-    GetBinValue() float32
+    GetBinValue() [4]byte
+    GetBinValueType() uint32
     GetID() uint16
     GetName() string
     GetParent() PedalBoardItem
@@ -34,10 +42,36 @@ type Parameter interface {
     IsAllowingOtherValues() bool
     IsNull() bool
     LockData()
-    SetBinValue(float32) error
+    SetBinValue([4]byte) error
     SetParent(PedalBoardItem)
     SetValue(string) error
     UnlockData()
+}
+
+func to4Bytes(obj interface{}) [4]byte {
+    ret := [4]byte{}
+    buf := new(bytes.Buffer)
+    binary.Write(buf, binary.LittleEndian, obj)
+    copy(ret[:], buf.Bytes())
+    return ret
+}
+
+func from4BytesToFloat32(v [4]byte) float32 {
+    var ret float32
+    err := binary.Read(bytes.NewReader(v[:]), binary.LittleEndian, &ret)
+    if err != nil {
+        return 0
+    }
+    return ret
+}
+
+func from4BytesToInt32(v [4]byte) int32 {
+    var ret int32
+    err := binary.Read(bytes.NewReader(v[:]), binary.LittleEndian, &ret)
+    if err != nil {
+        return 0
+    }
+    return ret
 }
 
 type FreqParam struct {
@@ -57,7 +91,9 @@ func (p *FreqParam) Copy() Parameter {
 func (p *FreqParam) IsAllowingOtherValues() bool { return true }
 func (p *FreqParam) IsNull() bool { return false }
 func (p *FreqParam) GetAllowedValues() []string { return nil }
-func (p *FreqParam) GetBinValue() float32 { return p.value }
+
+func (p *FreqParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *FreqParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *FreqParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -89,7 +125,8 @@ func (p *FreqParam) SetValue(s string) error {
     return nil
 }
 
-func (p *FreqParam) SetBinValue(v float32) error {
+func (p *FreqParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
     }
@@ -117,7 +154,8 @@ func (p *FreqKParam) Copy() Parameter {
 func (p *FreqKParam) IsAllowingOtherValues() bool { return true }
 func (p *FreqKParam) IsNull() bool { return false }
 func (p *FreqKParam) GetAllowedValues() []string { return nil }
-func (p *FreqKParam) GetBinValue() float32 { return p.value }
+func (p *FreqKParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *FreqKParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *FreqKParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -149,7 +187,8 @@ func (p *FreqKParam) SetValue(s string) error {
     return nil
 }
 
-func (p *FreqKParam) SetBinValue(v float32) error {
+func (p *FreqKParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
     }
@@ -161,10 +200,12 @@ func (p *FreqKParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *FreqKParam) UnlockData() { p.parent.UnlockData() }
 
 type ListParam struct {
-    name  string
-    list  []string
-    parent PedalBoardItem
-    value float32
+    name         string
+    list         []string
+    parent       PedalBoardItem
+    value        interface{}
+    binValueType uint32
+    maxIDShift   int
 }
 
 func (p *ListParam) Copy() Parameter {
@@ -173,11 +214,11 @@ func (p *ListParam) Copy() Parameter {
     return _p
 }
 
-
 func (p *ListParam) IsAllowingOtherValues() bool { return false }
 func (p *ListParam) IsNull() bool { return false }
 func (p *ListParam) GetAllowedValues() []string { return p.list }
-func (p *ListParam) GetBinValue() float32 { return p.value }
+func (p *ListParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *ListParam) GetBinValueType() uint32 { return p.binValueType }
 
 func (p *ListParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -188,7 +229,16 @@ func (p *ListParam) GetName() string { return p.name }
 func (p *ListParam) GetParent() PedalBoardItem { return p.parent }
 
 func (p *ListParam) GetValue() string {
-    return p.list[int(math.Round(float64(p.value) * float64((len(p.list) - 1))))]
+    switch p.binValueType {
+    case Int32Type:
+        value := p.value.(int32)
+        return p.list[value - int32(p.maxIDShift)]
+    case float32Type:
+        value := p.value.(float32)
+        return p.list[int(math.Round(float64(value) * float64((len(p.list) - 1 + p.maxIDShift))))]
+    default:
+        return ""
+    }
 }
 
 func (p *ListParam) LockData() { p.parent.LockData() }
@@ -206,15 +256,26 @@ func (p *ListParam) SetValue(s string) error {
     if !found {
         return fmt.Errorf("The value must be in the list")
     }
-    p.value = float32(i) / float32((len(p.list) - 1))
+    switch p.binValueType {
+    case Int32Type:
+        p.value = int32(i + p.maxIDShift)
+    case float32Type:
+        p.value = float32(i) / float32((len(p.list) - 1 + p.maxIDShift))
+    }
     return nil
 }
 
-func (p *ListParam) SetBinValue(v float32) error {
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+func (p *ListParam) SetBinValue(value [4]byte) error {
+    switch p.binValueType {
+    case Int32Type:
+        p.value = from4BytesToInt32(value)
+    case float32Type:
+        v := from4BytesToFloat32(value)
+        if v > 1 || v < 0 {
+            return fmt.Errorf("The binary value must be comprised between 0 and 1")
+        }
+        p.value = v
     }
-    p.value = v
     return nil
 }
 
@@ -227,60 +288,6 @@ type ListParam2 struct {
     parent PedalBoardItem
     value float32
 }
-
-func (p *ListParam2) Copy() Parameter {
-    _p := new(ListParam2)
-    *_p = *p
-    return _p
-}
-
-func (p *ListParam2) IsAllowingOtherValues() bool { return false }
-func (p *ListParam2) IsNull() bool { return false }
-func (p *ListParam2) GetAllowedValues() []string { return p.list }
-func (p *ListParam2) GetBinValue() float32 { return p.value }
-
-func (p *ListParam2) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
-}
-
-func (p *ListParam2) GetName() string { return p.name }
-func (p *ListParam2) GetParent() PedalBoardItem { return p.parent }
-
-func (p *ListParam2) GetValue() string {
-    fmt.Println(p.value)
-    return p.list[int(math.Round(float64(p.value) * float64(len(p.list))))]
-}
-
-func (p *ListParam2) LockData() { p.parent.LockData() }
-
-func (p *ListParam2) SetValue(s string) error {
-    found := false
-    i := 0
-    v := ""
-    for i, v = range p.list {
-        if v == s {
-            found = true
-            break
-        }
-    }
-    if !found {
-        return fmt.Errorf("The value must be in the list")
-    }
-    p.value = float32(i) / float32(len(p.list))
-    return nil
-}
-
-func (p *ListParam2) SetBinValue(v float32) error {
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *ListParam2) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *ListParam2) UnlockData() { p.parent.UnlockData() }
 
 type NullParam struct {
     parent PedalBoardItem
@@ -295,7 +302,8 @@ func (p *NullParam) Copy() Parameter {
 func (p *NullParam) IsAllowingOtherValues() bool { return false }
 func (p *NullParam) IsNull() bool { return true }
 func (p *NullParam) GetAllowedValues() []string { return nil }
-func (p *NullParam) GetBinValue() float32 { return 0 }
+func (p *NullParam) GetBinValue() [4]byte { return [4]byte{} }
+func (p *NullParam) GetBinValueType() uint32 { return 0 }
 
 func (p *NullParam) GetID() uint16 {
     _, id := p.GetParent().GetParamID(p)
@@ -307,14 +315,15 @@ func (p *NullParam) GetParent() PedalBoardItem { return p.parent }
 func (p *NullParam) GetValue() string { return "" }
 func (p *NullParam) LockData() { p.parent.LockData() }
 func (p *NullParam) SetValue(string) error { return fmt.Errorf("Null parameter") }
-func (p *NullParam) SetBinValue(float32) error { return fmt.Errorf("Null parameter") }
+func (p *NullParam) SetBinValue([4]byte) error { return fmt.Errorf("Null parameter") }
 func (p *NullParam) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *NullParam) UnlockData() { p.parent.UnlockData() }
 
 type PerCentParam struct {
-    name  string
+    name   string
     parent PedalBoardItem
-    value float32
+    value  float32
+    idAdd  uint16
 }
 
 func (p *PerCentParam) Copy() Parameter {
@@ -326,13 +335,15 @@ func (p *PerCentParam) Copy() Parameter {
 func (p *PerCentParam) IsAllowingOtherValues() bool { return true }
 func (p *PerCentParam) IsNull() bool { return false }
 func (p *PerCentParam) GetAllowedValues() []string { return nil }
-func (p *PerCentParam) GetBinValue() float32 { return p.value }
+func (p *PerCentParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *PerCentParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *PerCentParam) GetID() uint16 {
     _, id := p.GetParent().GetParamID(p)
     return id
 }
 
+func (p* PerCentParam) GetIDAdd() uint16 { return p.idAdd }
 func (p *PerCentParam) GetName() string { return p.name }
 func (p *PerCentParam) GetParent() PedalBoardItem { return p.parent }
 
@@ -356,7 +367,8 @@ func (p *PerCentParam) SetValue(s string) error {
     return nil
 }
 
-func (p *PerCentParam) SetBinValue(v float32) error {
+func (p *PerCentParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
     }
@@ -385,7 +397,8 @@ func (p *RangeParam) Copy() Parameter {
 func (p *RangeParam) IsAllowingOtherValues() bool { return true }
 func (p *RangeParam) IsNull() bool { return false }
 func (p *RangeParam) GetAllowedValues() []string { return nil }
-func (p *RangeParam) GetBinValue() float32 { return p.value }
+func (p *RangeParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *RangeParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *RangeParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -415,7 +428,8 @@ func (p *RangeParam) SetValue(s string) error {
     return nil
 }
 
-func (p *RangeParam) SetBinValue(v float32) error {
+func (p *RangeParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
     }
@@ -449,7 +463,8 @@ func (p *TempoParam) GetAllowedValues() []string {
         "32 (dot)", "32", "32 (3)", "64 (dot)", "64", "64 (3)"}
 }
 
-func (p *TempoParam) GetBinValue() float32 { return p.value }
+func (p *TempoParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *TempoParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *TempoParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -492,7 +507,8 @@ func (p *TempoParam) SetValue(s string) error {
     return nil
 }
 
-func (p *TempoParam) SetBinValue(v float32) error {
+func (p *TempoParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     p.value = v
     return nil
 }
@@ -516,7 +532,8 @@ func (p *TimeParam) Copy() Parameter {
 func (p *TimeParam) IsAllowingOtherValues() bool { return true }
 func (p *TimeParam) IsNull() bool { return false }
 func (p *TimeParam) GetAllowedValues() []string { return nil }
-func (p *TimeParam) GetBinValue() float32 { return p.value }
+func (p *TimeParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *TimeParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *TimeParam) GetID() (uint16) {
     _, id := p.GetParent().GetParamID(p)
@@ -546,7 +563,8 @@ func (p *TimeParam) SetValue(s string) error {
     return nil
 }
 
-func (p *TimeParam) SetBinValue(v float32) error {
+func (p *TimeParam) SetBinValue(value [4]byte) error {
+    v := from4BytesToFloat32(value)
     if v > 1 || v < 0 {
         return fmt.Errorf("The binary value must be comprised between 0 and 1")
     }

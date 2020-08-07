@@ -53,9 +53,28 @@ func GenParameterChange(p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
-    binary.Write(buf, binary.LittleEndian, uint32(1))
-    binary.Write(buf, binary.LittleEndian, p.GetID())
-    binary.Write(buf, binary.LittleEndian, uint16(16144))
+    binary.Write(buf, binary.LittleEndian, p.GetBinValueType())
+    id := p.GetID()
+    idAdd := uint16(0)
+    p2, ok := p.(*pedal.PerCentParam)
+    if ok {
+        idAdd = p2.GetIDAdd()
+        id -= idAdd
+    }
+    //FIXME: Dirty
+    if p.GetBinValueType() == pedal.Int32Type {
+        id += 6142
+    }
+
+    binary.Write(buf, binary.LittleEndian, id)
+    if idAdd == 1 {
+        binary.Write(buf, binary.LittleEndian, uint8(1))
+    } else if id > 6142 {
+        binary.Write(buf, binary.LittleEndian, uint8(0))
+    } else {
+        binary.Write(buf, binary.LittleEndian, uint8(16))
+    }
+    binary.Write(buf, binary.LittleEndian, uint8(63))
     binary.Write(buf, binary.LittleEndian, p.GetBinValue())
     m.data = buf.Bytes()
 
@@ -69,7 +88,9 @@ func GenParameterTempoChange(p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
-    binValue := p.GetBinValue()
+    tmpValue := p.GetBinValue()
+    var binValue float32
+    binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
     if binValue > 1 {
         binary.Write(buf, binary.LittleEndian, uint32(math.Round(float64(binValue))))
     } else {
@@ -87,7 +108,9 @@ func GenParameterTempoChange2(p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
-    binValue := p.GetBinValue()
+    tmpValue := p.GetBinValue()
+    var binValue float32
+    binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
     if binValue > 1 {
         binary.Write(buf, binary.LittleEndian, uint32(math.Round(float64(binValue))))
     } else {

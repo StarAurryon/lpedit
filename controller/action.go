@@ -18,6 +18,9 @@
 
 package controller
 
+import "bytes"
+import "encoding/binary"
+
 import "lpedit/pedal"
 import "lpedit/message"
 
@@ -53,7 +56,10 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
             m := message.GenParameterTempoChange2(p2)
             c.writeMessage(m)
         }
-        if p2.GetBinValue() <= 1 {
+        binValue := p2.GetBinValue()
+        var value float32
+        binary.Read(bytes.NewReader(binValue[:]), binary.LittleEndian, &value)
+        if value <= 1 {
             m := message.GenParameterChange(p)
             c.writeMessage(m)
         }
