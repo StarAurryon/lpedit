@@ -26,20 +26,20 @@ const (
 )
 
 type set struct {
-    id         uint32
+    id         uint8
     name       string
     presetList [presetPerSet]*preset
 }
 
-func newSet(id uint32, name string) *set {
+func newSet(id uint8, name string) *set {
     s := set{id: id, name: name}
     for i := 0; i < presetPerSet; i++ {
-        s.presetList[i] = &preset{id: uint32(i), name: "New Tone"}
+        s.presetList[i] = &preset{id: uint8(i), name: "New Tone"}
     }
     return &s
 }
 
-func (s *set) GetID() uint32 {
+func (s *set) GetID() uint8 {
     return s.id
 }
 
@@ -48,11 +48,11 @@ func (s *set) GetName() string {
 }
 
 type preset struct {
-    id   uint32
+    id   uint8
     name string
 }
 
-func (p *preset) GetID() uint32 {
+func (p *preset) GetID() uint8 {
     return p.id
 }
 

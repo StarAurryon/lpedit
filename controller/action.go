@@ -51,21 +51,21 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
         switch p2.GetID() {
         case 0:
             m := message.GenParameterTempoChange(p2)
-            c.writeMessage(m)
+            c.writeMessage(m, 0, 0)
         case 2:
             m := message.GenParameterTempoChange2(p2)
-            c.writeMessage(m)
+            c.writeMessage(m, 0, 0)
         }
         binValue := p2.GetBinValue()
         var value float32
         binary.Read(bytes.NewReader(binValue[:]), binary.LittleEndian, &value)
         if value <= 1 {
             m := message.GenParameterChange(p)
-            c.writeMessage(m)
+            c.writeMessage(m, 0, 0)
         }
     default:
         m := message.GenParameterChange(p)
-        go c.writeMessage(m)
+        go c.writeMessage(m, 0, 0)
     }
     c.pb.UnlockData()
     return nil
@@ -87,7 +87,7 @@ func (c *Controller) SetPedalBoardItemActive(id uint32, active bool) {
         pbi.SetActive(active)
         m := message.GenActiveChange(pbi)
         c.pb.UnlockData()
-        c.writeMessage(m)
+        c.writeMessage(m, 0, 0)
     }
     go f()
 }
@@ -106,6 +106,9 @@ func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel str
     }
     pbi.SetType2(fxType, fxModel)
     m := message.GenTypeChange(pbi)
+    m2 := message.GenPresetQuery()
     c.pb.UnlockData()
-    go c.writeMessage(m)
+    go c.writeMessage(m, 0, 0)
+    //go c.writeMessage(m2, 0x62, 0x71)
+    go c.writeMessage(m2, 0, 0)
 }

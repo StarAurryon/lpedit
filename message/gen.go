@@ -139,6 +139,17 @@ func GenPresetLoad() IMessage {
     return m
 }
 
+func GenPresetQuery() IMessage {
+    var m *PresetQuery
+    m = newMessage2(reflect.TypeOf(m)).(*PresetQuery)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(0xFFFFFFFF))
+    m.data = buf.Bytes()
+
+    return m
+}
+
 func GenSetChange() IMessage {
     var m *SetChange
     m = newMessage2(reflect.TypeOf(m)).(*SetChange)

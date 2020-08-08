@@ -74,7 +74,7 @@ func NewPedalBoard() *PedalBoard {
 
     for i := 0; i < numberSet; i++ {
         name := fmt.Sprintf("Set %d", i + 1)
-        pb.setList[i] = newSet(uint32(i), name)
+        pb.setList[i] = newSet(uint8(i), name)
     }
 
     pb.items = make([]PedalBoardItem, 12)
@@ -127,14 +127,14 @@ func (pb *PedalBoard) GetPedal2(id int) *Pedal {
     return p
 }
 
-func (pb *PedalBoard) GetCurrentSet() (error, uint32) {
+func (pb *PedalBoard) GetCurrentSet() (error, uint8) {
     if s := pb.currentSet; s != nil {
         return nil, s.GetID()
     }
     return fmt.Errorf("Current set is not defined"), 0
 }
 
-func (pb *PedalBoard) GetCurrentPreset() (error, uint32) {
+func (pb *PedalBoard) GetCurrentPreset() (error, uint8) {
     if p := pb.currentPreset; p != nil {
         return nil, p.GetID()
     }

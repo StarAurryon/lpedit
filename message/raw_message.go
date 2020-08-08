@@ -24,28 +24,32 @@ import "fmt"
 import "log"
 
 const (
-    RawMessageBegin uint16 = 1
-    RawMessageExt   uint16 = 4
+    RawMessageBegin uint8 = 1
+    RawMessageExt   uint8 = 4
     maxDataSize       int = 60
 )
 
 type RawMessage struct {
-    size  uint16
-    mtype uint16
+    size  uint8
+    ukno0 uint8
+    mtype uint8
+    ukno1 uint8
     data  []byte
 }
 
 func NewRawMessage(data []byte) *RawMessage {
     var m RawMessage
-    m.size = binary.LittleEndian.Uint16(data[:2])
-    m.mtype = binary.LittleEndian.Uint16(data[2:4])
+    m.size = data[0]
+    m.ukno0 = data[1]
+    m.mtype = data[2]
+    m.ukno1 = data[3]
     if len(data) > 4 {
         m.data = data[4:len(data)]
     }
     return &m
 }
 
-func NewRawMessages(m IMessage) []*RawMessage {
+func NewRawMessages(m IMessage, ukno0 uint8, ukno1 uint8) []*RawMessage {
     var buf []byte
     data := m.getData()
     size := len(data) / maxDataSize
@@ -61,7 +65,8 @@ func NewRawMessages(m IMessage) []*RawMessage {
         } else {
             buf = data[offset:]
         }
-        ret[i] = &RawMessage{size: uint16(len(buf)), mtype: mtype, data: buf}
+        ret[i] = &RawMessage{size: uint8(len(buf)), mtype: mtype, data: buf,
+        ukno0: ukno0, ukno1: ukno1}
         mtype = RawMessageExt
     }
     return ret
@@ -70,7 +75,9 @@ func NewRawMessages(m IMessage) []*RawMessage {
 func (m *RawMessage) Export() []byte {
     buf := new(bytes.Buffer)
     binary.Write(buf, binary.LittleEndian, m.size)
+    binary.Write(buf, binary.LittleEndian, m.ukno0)
     binary.Write(buf, binary.LittleEndian, m.mtype)
+    binary.Write(buf, binary.LittleEndian, m.ukno1)
     binary.Write(buf, binary.LittleEndian, m.data)
     return buf.Bytes()
 }
@@ -83,7 +90,7 @@ func (m *RawMessage) Extend(rm *RawMessage) error{
     return nil
 }
 
-func (m *RawMessage) GetType() uint16 {
+func (m *RawMessage) GetType() uint8 {
     return m.mtype
 }
 

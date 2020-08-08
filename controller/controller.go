@@ -189,8 +189,8 @@ func (c *Controller) readRawMessage() {
     }
 }
 
-func (c* Controller) writeMessage(m message.IMessage) {
-    rms := message.NewRawMessages(m)
+func (c* Controller) writeMessage(m message.IMessage, ukno0 uint8, ukno1 uint8) {
+    rms := message.NewRawMessages(m, ukno0, ukno1)
     c.writeMux.Lock()
     for _, rm := range rms {
         c.writeQueue <- rm

@@ -151,6 +151,17 @@ func (m *PresetLoad) Copy() IMessage {
     return _m
 }
 
+type PresetQuery struct {
+    Message
+}
+
+func (m *PresetQuery) Copy() IMessage {
+    _m := new(PresetQuery)
+    *_m = *m
+    return _m
+}
+
+
 type SetChange struct {
     Message
 }
@@ -177,6 +188,7 @@ var messages = []IMessage{
     &PresetChange{Message: Message{mtype: 2, smtype: 9984, msize: 12, mname: "Preset change"}},
     &PresetChangeAlert{Message: Message{mtype: 1, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
+    &PresetQuery{Message: Message{mtype: 2, smtype: 0, msize: 12, mname: "Preset Query"}},
     &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
     &ParameterTempoChange{Message: Message{mtype: 4, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
     &ParameterTempoChange2{Message: Message{mtype: 4, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
