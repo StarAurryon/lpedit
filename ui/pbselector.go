@@ -18,10 +18,10 @@
 
 package ui
 
-import "github.com/therecipe/qt/core"
-import "github.com/therecipe/qt/widgets"
+import "github.com/StarAurryon/qt/core"
+import "github.com/StarAurryon/qt/widgets"
 
-import "lpedit/qtctrl"
+import "github.com/StarAurryon/lpedit/qtctrl"
 
 type PBSelector struct {
     *PBSelectorUI

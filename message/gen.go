@@ -23,7 +23,7 @@ import "encoding/binary"
 import "math"
 import "reflect"
 
-import "lpedit/pedal"
+import "github.com/StarAurryon/lpedit/pedal"
 
 func genHeader(m IMessage) *bytes.Buffer {
     buf := new(bytes.Buffer)

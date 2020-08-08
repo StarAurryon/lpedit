@@ -21,8 +21,8 @@ package controller
 import "bytes"
 import "encoding/binary"
 
-import "lpedit/pedal"
-import "lpedit/message"
+import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/message"
 
 func (c *Controller) SetPedalParameterValue(id uint32, pid uint16, value string) error {
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)

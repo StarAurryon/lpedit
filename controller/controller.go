@@ -23,9 +23,9 @@ import "log"
 import "sync"
 import "time"
 
-import "lpedit/alsa"
-import "lpedit/message"
-import "lpedit/pedal"
+import "github.com/StarAurryon/lpedit/alsa"
+import "github.com/StarAurryon/lpedit/message"
+import "github.com/StarAurryon/lpedit/pedal"
 
 type Controller struct {
     pb         *pedal.PedalBoard

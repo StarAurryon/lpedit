@@ -23,7 +23,7 @@ import "fmt"
 import "log"
 import "reflect"
 
-import "lpedit/pedal"
+import "github.com/StarAurryon/lpedit/pedal"
 
 const (
     messageRead uint32  = 1073743882

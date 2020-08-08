@@ -18,8 +18,8 @@
 
 package ui
 
-import "github.com/therecipe/qt/core"
-import "github.com/therecipe/qt/widgets"
+import "github.com/StarAurryon/qt/core"
+import "github.com/StarAurryon/qt/widgets"
 
 func AddWidget(lay widgets.QLayout_ITF, widget widgets.QWidget_ITF) {
      switch _lay := lay.(type) {

@@ -20,10 +20,10 @@ package main
 
 import "os"
 
-import "github.com/therecipe/qt/widgets"
+import "github.com/StarAurryon/qt/widgets"
 
-import "lpedit/qtctrl"
-import "lpedit/ui"
+import "github.com/StarAurryon/lpedit/qtctrl"
+import "github.com/StarAurryon/lpedit/ui"
 
 func main() {
     app := widgets.NewQApplication(len(os.Args), os.Args)

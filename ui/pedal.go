@@ -18,15 +18,15 @@
 
 package ui
 
-/*import "github.com/therecipe/qt/core"
-import "github.com/therecipe/qt/gui"
-import "github.com/therecipe/qt/svg"*/
-import "github.com/therecipe/qt/widgets"
+/*import "github.com/StarAurryon/qt/core"
+import "github.com/StarAurryon/qt/gui"
+import "github.com/StarAurryon/qt/svg"*/
+import "github.com/StarAurryon/qt/widgets"
 
 import "sort"
 
-import "lpedit/pedal"
-import "lpedit/qtctrl"
+import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/qtctrl"
 
 type Pedal struct {
     *PedalUI

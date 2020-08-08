@@ -23,7 +23,7 @@ import "fmt"
 import "bytes"
 import "log"
 
-import "lpedit/pedal"
+import "github.com/StarAurryon/lpedit/pedal"
 
 type presetPedalPos struct {
     pid   uint32

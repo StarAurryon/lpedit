@@ -18,10 +18,10 @@
 
 package qtctrl
 
-import "github.com/therecipe/qt/core"
+import "github.com/StarAurryon/qt/core"
 
-import "lpedit/controller"
-import "lpedit/pedal"
+import "github.com/StarAurryon/lpedit/controller"
+import "github.com/StarAurryon/lpedit/pedal"
 
 type Controller struct {
     core.QObject
