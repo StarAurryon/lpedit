@@ -34,8 +34,9 @@ LPEdit is a reimplementation of Line6 HD Edit made through usb protocol reverse 
 You will need my patched verion of QT bindings for golang available at:
 https://github.com/StarAurryon/qt
 
-Then extract this repository into your $GOPATH/src folder, go into the lpedit folder and run:
+Then run the following commands:
 ```
+go get -v github.com/StarAurryon/lpedit (this would not compile as qtdeploy must be run to generate missing go file)
 $(go env GOPATH)/bin/qtdeploy
 ```
 
