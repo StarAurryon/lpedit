@@ -32,6 +32,7 @@ type LPEdit struct {
     about      *AboutUI
     pbSelector *PBSelector
     ctrl       *qtctrl.Controller
+    amps       []*Amp
     pedals     []*Pedal
 }
 
@@ -70,6 +71,7 @@ func (l *LPEdit) disconnectSignal() {
 
 func (l *LPEdit) init() {
     //init
+    l.initAmpsCabs()
     l.initPedals()
 
     //UI Connections
@@ -143,6 +145,10 @@ func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
     defer pb.UnlockData()
     l.updatePreset(pb)
     l.updatePedalBoardView(pb)
+    for i, a := range l.amps {
+        fmt.Println(i)
+        a.updateAmp(pb.GetAmp(i))
+    }
     for i, p := range l.pedals {
         p.updatePedal(pb.GetPedal2(i))
     }
@@ -296,6 +302,8 @@ func (l *LPEdit) updateType(pbi pedal.PedalBoardItem) {
     pbi.LockData()
     defer pbi.UnlockData()
     switch p := pbi.(type) {
+    case *pedal.Amp:
+        l.amps[p.GetID()/2].updateAmp(p)
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].updatePedal(p)
     }

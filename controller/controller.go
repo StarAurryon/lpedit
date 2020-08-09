@@ -57,6 +57,10 @@ func (c *Controller) GetPedalBoard() *pedal.PedalBoard {
     return c.pb
 }
 
+func (c *Controller) GetAmpType() []string {
+    return pedal.GetAmpType()
+}
+
 func (c *Controller) GetPedalType() map[string][]string {
     return pedal.GetPedalType()
 }

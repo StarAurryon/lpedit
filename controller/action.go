@@ -80,6 +80,10 @@ func (c *Controller) QueryAllSets() {
     go f()
 }
 
+func (c *Controller) SetAmpParameterValue(id uint32, pid uint16, value string) error {
+    return c.SetPedalBoardItemParameterValue(id*2, pid, value)
+}
+
 func (c *Controller) SetPedalParameterValue(id uint32, pid uint16, value string) error {
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)
 }
@@ -146,6 +150,10 @@ func (c *Controller) SetPedalBoardItemActive(id uint32, active bool) {
         c.writeMessage(m, 0, 0)
     }
     go f()
+}
+
+func (c *Controller) SetAmpType(id uint32, name string) {
+    c.SetPedalBoardItemType(id*2, name, "")
 }
 
 func (c *Controller) SetPedalType(id uint32, fxType string, fxModel string) {

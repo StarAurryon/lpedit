@@ -613,6 +613,14 @@ func (a *Amp) GetActive2() uint32 {
     return 0
 }
 
+func GetAmpType() []string {
+    m := make([]string, len(amps))
+    for i, a := range amps {
+        m[i] = a.GetName()
+    }
+    return m
+}
+
 func (a *Amp) GetID() uint32 {
     return a.id
 }

@@ -92,6 +92,14 @@ func NewPedalBoard() *PedalBoard {
     return pb
 }
 
+func (pb *PedalBoard) GetAmp(id int) *Amp {
+    if id < 0 || id > 2 {
+        return nil
+    }
+    a, _ := pb.GetItem(uint32(id*2)).(*Amp)
+    return a
+}
+
 func (pb *PedalBoard) GetItem(id uint32) PedalBoardItem {
     for _, pbi := range pb.items {
         if pbi.GetID() == id {
