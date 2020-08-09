@@ -509,6 +509,10 @@ func (p *TempoParam) SetValue(s string) error {
 
 func (p *TempoParam) SetBinValue(value [4]byte) error {
     v := from4BytesToFloat32(value)
+    maxV := float32(len(p.GetAllowedValues()))
+    if v > maxV || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and %.1f", maxV)
+    }
     p.value = v
     return nil
 }

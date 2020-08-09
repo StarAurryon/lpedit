@@ -24,6 +24,62 @@ import "encoding/binary"
 import "github.com/StarAurryon/lpedit/pedal"
 import "github.com/StarAurryon/lpedit/message"
 
+
+func (c *Controller) QueryCurrentPreset() {
+    if !c.started { return }
+    f := func() {
+        m := message.GenPresetQuery(uint16(0xFFFF), uint16(0xFFFF))
+        c.writeMessage(m, 0, 0)
+    }
+    go f()
+}
+
+func (c *Controller) QueryAllPresets() {
+    if !c.started { return }
+    f := func() {
+        c.syncPreset = true
+        max := pedal.NumberSet * pedal.PresetPerSet
+        pb := c.GetPedalBoard()
+        for i := 0; i < pedal.NumberSet; i++ {
+            pb.LockData()
+            pb.SetCurrentSet(uint32(i))
+            pb.UnlockData()
+            for j := 0; j < pedal.PresetPerSet; j++ {
+                pb.LockData()
+                pb.SetCurrentPreset(uint32(j))
+                pb.UnlockData()
+                m := message.GenPresetQuery(uint16(j), uint16(i))
+                c.writeMessage(m, 0, 0)
+                <- c.presetLoaded
+                progress := (((i * pedal.PresetPerSet) + (j + 1)) * 100) / max
+                c.notify(nil, pedal.PresetLoadProgress, progress)
+            }
+        }
+        c.syncPreset = false
+    }
+    go f()
+}
+
+func (c *Controller) QueryAllSets() {
+    if !c.started { return }
+    f := func() {
+        pb := c.GetPedalBoard()
+        c.syncPreset = true
+        for i := 0; i < pedal.NumberSet; i++ {
+            pb.LockData()
+            pb.SetCurrentSet(uint32(i))
+            pb.UnlockData()
+            m := message.GenSetQuery(uint32(i))
+            c.writeMessage(m, 0, 0)
+            <- c.presetLoaded
+            progress := ((i + 1) * 100) / pedal.NumberSet
+            c.notify(nil, pedal.SetLoadProgress, progress)
+        }
+        c.syncPreset = false
+    }
+    go f()
+}
+
 func (c *Controller) SetPedalParameterValue(id uint32, pid uint16, value string) error {
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)
 }
@@ -106,7 +162,7 @@ func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel str
     }
     pbi.SetType2(fxType, fxModel)
     m := message.GenTypeChange(pbi)
-    m2 := message.GenPresetQuery()
+    m2 := message.GenPresetQuery(uint16(0xFFFF), uint16(0xFFFF))
     c.pb.UnlockData()
     go c.writeMessage(m, 0, 0)
     //go c.writeMessage(m2, 0x62, 0x71)

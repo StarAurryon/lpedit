@@ -35,7 +35,10 @@ const (
     ParameterChange
     PresetChange
     PresetLoad
+    PresetLoadProgress
     SetChange
+    SetLoad
+    SetLoadProgress
     TempoChange
     TypeChange
     Warning
@@ -66,13 +69,13 @@ type PedalBoard struct {
     mux           sync.Mutex
     currentSet    *set
     currentPreset *preset
-    setList       [numberSet]*set
+    setList       [NumberSet]*set
 }
 
 func NewPedalBoard() *PedalBoard {
     pb := &PedalBoard{}
 
-    for i := 0; i < numberSet; i++ {
+    for i := 0; i < NumberSet; i++ {
         name := fmt.Sprintf("Set %d", i + 1)
         pb.setList[i] = newSet(uint8(i), name)
     }
@@ -153,8 +156,8 @@ func (pb *PedalBoard) GetTempo() float32 {
 }
 
 func (pb *PedalBoard) GetPresetList(setID int) [][]string {
-    ret := make([][]string, presetPerSet)
-    if setID < 0 || numberSet <= setID { return ret }
+    ret := make([][]string, PresetPerSet)
+    if setID < 0 || NumberSet <= setID { return ret }
     for i, preset := range pb.setList[setID].presetList {
         ret[i] = []string{preset.GetID2(), preset.GetName()}
     }
@@ -162,7 +165,7 @@ func (pb *PedalBoard) GetPresetList(setID int) [][]string {
 }
 
 func (pb *PedalBoard) GetSetList() []string {
-    ret := make([]string, numberSet)
+    ret := make([]string, NumberSet)
     for i, set := range pb.setList {
         ret[i] = set.GetName()
     }
@@ -180,7 +183,7 @@ func (pb *PedalBoard) SetCurrentPresetName(name string) {
 }
 
 func (pb *PedalBoard) SetCurrentPreset(id uint32) {
-    if id < presetPerSet && pb.currentSet != nil {
+    if id < PresetPerSet && pb.currentSet != nil {
         pb.currentPreset = pb.currentSet.presetList[id]
     } else {
         pb.currentPreset = nil
@@ -188,10 +191,16 @@ func (pb *PedalBoard) SetCurrentPreset(id uint32) {
 }
 
 func (pb *PedalBoard) SetCurrentSet(id uint32) {
-    if id < numberSet {
+    if id < NumberSet {
         pb.currentSet = pb.setList[id]
     } else {
         pb.currentSet = nil
+    }
+}
+
+func (pb *PedalBoard) SetCurrentSetName(name string) {
+    if s := pb.currentSet; s != nil {
+        s.SetName(name)
     }
 }
 

@@ -41,19 +41,12 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
     return l
 }
 
-func (l *LPEdit) init() {
-    //init
+func (l *LPEdit) connectSignal() {
     l.updateSets()
     l.updatePresets(0)
-    l.initPedals()
 
     //UI Connections
-    l.ConnectCloseEvent(l.windowClose)
-    l.ActionAbout.ConnectTriggered(l.aboutClick)
-    l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
-    l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.SetList.ConnectCurrentIndexChanged(l.updatePresets)
-
     //PedalBoard Connections
     l.ctrl.ConnectActiveChange(l.updateActive)
     l.ctrl.ConnectParameterChange(l.updateParameter)
@@ -61,6 +54,29 @@ func (l *LPEdit) init() {
     l.ctrl.ConnectSetChange(l.updateSet)
     l.ctrl.ConnectTempoChange(l.updateTempo)
     l.ctrl.ConnectTypeChange(l.updateType)
+}
+
+func (l *LPEdit) disconnectSignal() {
+    //UI Connections
+    l.SetList.DisconnectCurrentIndexChanged()
+    //PedalBoard Connections
+    l.ctrl.DisconnectActiveChange()
+    l.ctrl.DisconnectParameterChange()
+    l.ctrl.DisconnectPresetLoad()
+    l.ctrl.DisconnectSetChange()
+    l.ctrl.DisconnectTempoChange()
+    l.ctrl.DisconnectTypeChange()
+}
+
+func (l *LPEdit) init() {
+    //init
+    l.initPedals()
+
+    //UI Connections
+    l.ConnectCloseEvent(l.windowClose)
+    l.ActionAbout.ConnectTriggered(l.aboutClick)
+    l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
+    l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
 }
 
 func (l *LPEdit) initPedals() {
@@ -93,9 +109,9 @@ func (l *LPEdit) aboutClick(vbo bool) {
 
 func (l *LPEdit) pbSelectorClick(vbo bool) {
     if l.pbSelector == nil {
-        l.pbSelector = NewPBSelector(l.ctrl, l)
+        l.pbSelector = NewPBSelector(l.ctrl, l, l)
         l.pbSelector.ConnectCloseEvent(func(event *gui.QCloseEvent) {
-            l.pbSelector.DeleteLater()
+            l.pbSelector.DestroyQObject()
             l.pbSelector = nil
         })
     }
@@ -230,6 +246,8 @@ func (l *LPEdit) updatePresets(index int) {
     presets := pb.GetPresetList(index)
     pb.UnlockData()
 
+    l.PresetList.Clear()
+
     /*for _, c := range l.PresetList.Children() {
         c.DestroyQObject()
     }*/
@@ -262,6 +280,7 @@ func (l *LPEdit) updateSets() {
     setList := pb.GetSetList()
     pb.UnlockData()
 
+    l.SetList.Clear()
     l.SetList.AddItems(setList)
 }
 

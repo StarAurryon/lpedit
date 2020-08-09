@@ -28,24 +28,28 @@ import "github.com/StarAurryon/lpedit/message"
 import "github.com/StarAurryon/lpedit/pedal"
 
 type Controller struct {
-    pb         *pedal.PedalBoard
-    dev        string
-    hwdep      alsa.Hwdep
-    notifyCB   func(error, pedal.ChangeType, interface{}) // notifyCallBack
+    pb           *pedal.PedalBoard
+    dev          string
+    hwdep        alsa.Hwdep
+    notifyCB     func(error, pedal.ChangeType, interface{}) // notifyCallBack
     //Status
-    started    bool
+    started      bool
     //Threads
-    waitGroup  sync.WaitGroup
-    stopRRM    chan int //readRawMessage
-    stopPRM    chan int //processRawMessage
-    stopWRM    chan int //writeRawMessage
-    readQueue  chan *message.RawMessage
-    writeMux   sync.Mutex
-    writeQueue chan *message.RawMessage
+    waitGroup    sync.WaitGroup
+    stopRRM      chan int //readRawMessage
+    stopPRM      chan int //processRawMessage
+    stopWRM      chan int //writeRawMessage
+    readQueue    chan *message.RawMessage
+    writeMux     sync.Mutex
+    writeQueue   chan *message.RawMessage
+    //Query sync
+    presetLoaded chan int
+    syncPreset   bool
 }
 
 func NewController() *Controller {
     c := &Controller{pb: pedal.NewPedalBoard(), started: false}
+    c.presetLoaded = make(chan int, 10)
     return c
 }
 
@@ -141,6 +145,14 @@ func (c *Controller) parseMessage(rm *message.RawMessage) {
     err, ct, obj := m.Parse(c.pb)
     c.pb.UnlockData()
     c.notify(err, ct, obj)
+    if c.syncPreset {
+        switch ct {
+        case pedal.PresetLoad:
+            c.presetLoaded <- 0
+        case pedal.SetLoad:
+            c.presetLoaded <- 0
+        }
+    }
 }
 
 func (c *Controller) processRawMessage() {

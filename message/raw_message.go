@@ -86,7 +86,9 @@ func (m *RawMessage) Extend(rm *RawMessage) error{
     if rm.mtype != RawMessageExt {
         return fmt.Errorf("You can't extend a rawMessage with non Ext type")
     }
-    m.data = append(m.data, rm.data...)
+    if len(rm.data) > 0 {
+        m.data = append(m.data, rm.data...)
+    }
     return nil
 }
 

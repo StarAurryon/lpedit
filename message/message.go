@@ -172,6 +172,26 @@ func (m *SetChange) Copy() IMessage {
     return _m
 }
 
+type SetLoad struct {
+    Message
+}
+
+func (m *SetLoad) Copy() IMessage {
+    _m := new(SetLoad)
+    *_m = *m
+    return _m
+}
+
+type SetQuery struct {
+    Message
+}
+
+func (m *SetQuery) Copy() IMessage {
+    _m := new(SetQuery)
+    *_m = *m
+    return _m
+}
+
 type SetupChange struct {
     Message
 }
@@ -193,6 +213,8 @@ var messages = []IMessage{
     &ParameterTempoChange{Message: Message{mtype: 4, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
     &ParameterTempoChange2{Message: Message{mtype: 4, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
     &SetChange{Message: Message{mtype: 2, smtype: 11264, msize: 12, mname: "Set Change"}},
+    &SetLoad{Message: Message{mtype: 6, smtype: 10496, msize: 12, mname: "Set Query"}},
+    &SetQuery{Message: Message{mtype: 2, smtype: 10240, msize: 12, mname: "Set Query"}},
     &SetupChange{Message: Message{mtype: 5, smtype: 5632, msize: 24, mname: "Setup Change"}},
 }
 

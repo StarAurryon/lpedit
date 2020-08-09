@@ -182,6 +182,11 @@ func (m SetChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interfa
     return nil, pedal.SetChange, pb
 }
 
+func (m SetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    pb.SetCurrentSetName(string(m.data[12:]))
+    return nil, pedal.SetLoad, nil
+}
+
 func (m SetupChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
     var v float32
     err := binary.Read(bytes.NewReader(m.data[20:]), binary.LittleEndian, &v)

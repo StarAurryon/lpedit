@@ -21,19 +21,19 @@ package pedal
 import "strconv"
 
 const (
-    numberSet = 8
-    presetPerSet = 64
+    NumberSet = 8
+    PresetPerSet = 64
 )
 
 type set struct {
     id         uint8
     name       string
-    presetList [presetPerSet]*preset
+    presetList [PresetPerSet]*preset
 }
 
 func newSet(id uint8, name string) *set {
     s := set{id: id, name: name}
-    for i := 0; i < presetPerSet; i++ {
+    for i := 0; i < PresetPerSet; i++ {
         s.presetList[i] = &preset{id: uint8(i), name: "New Tone"}
     }
     return &s
@@ -45,6 +45,10 @@ func (s *set) GetID() uint8 {
 
 func (s *set) GetName() string {
     return s.name
+}
+
+func (s *set) SetName(name string) {
+    s.name = name
 }
 
 type preset struct {

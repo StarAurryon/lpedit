@@ -1154,7 +1154,7 @@ func (p *Pedal) GetName() string {
 }
 
 func (p *Pedal) GetParam(id uint16) Parameter {
-    if id > p.GetParamLen() {
+    if id >= p.GetParamLen() {
         return nil
     }
     return p.params[id]
