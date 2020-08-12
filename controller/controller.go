@@ -23,14 +23,14 @@ import "log"
 import "sync"
 import "time"
 
-import "github.com/StarAurryon/lpedit/alsa"
+import "github.com/StarAurryon/lpedit/hw"
 import "github.com/StarAurryon/lpedit/message"
 import "github.com/StarAurryon/lpedit/pedal"
 
 type Controller struct {
     pb           *pedal.PedalBoard
     dev          string
-    hwdep        alsa.Hwdep
+    hwdep        hw.Hwdep
     notifyCB     func(error, pedal.ChangeType, interface{}) // notifyCallBack
     //Status
     started      bool
@@ -66,7 +66,7 @@ func (c *Controller) GetPedalType() map[string][]string {
 }
 
 func (c *Controller) ListDevices() [][]string {
-    return alsa.ListHWDev()
+    return hw.ListHWDev()
 }
 
 func (c *Controller) IsStarted() bool {
