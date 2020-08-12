@@ -19,7 +19,6 @@
 package pedal
 
 import "fmt"
-import "log"
 import "sort"
 import "sync"
 
@@ -33,6 +32,8 @@ const (
     NormalStop
     NormalStart
     ParameterChange
+    ParameterChangeMin
+    ParameterChangeMax
     PresetChange
     PresetLoad
     PresetLoadProgress
@@ -218,29 +219,4 @@ func (pb *PedalBoard) SetTempo(t float32) {
 
 func (c *PedalBoard) UnlockData(){
     c.mux.Unlock()
-}
-
-func (pb PedalBoard) LogInfo() {
-    var name string
-    log.Printf("PedalBoard info\n")
-    pname := pb.GetCurrentPresetName()
-    if len(pname) >= 2 {
-        name = fmt.Sprintf("%s: %s", pname[0], pname[1])
-    }
-    log.Printf("Preset name \"%s\"\n", name)
-    log.Printf("PedalStart:\n")
-    for _, pbi := range(pb.GetItems(PedalPosStart)) { pbi.LogInfo() }
-    log.Printf("Channel A:\n")
-    log.Printf("Volume %f, pan %f\n", pb.split.aVol, pb.split.aPan)
-    for _, pbi := range(pb.GetItems(PedalPosAStart)) { pbi.LogInfo() }
-    for _, pbi := range(pb.GetItems(AmpAPos)) { pbi.LogInfo() }
-    for _, pbi := range(pb.GetItems(PedalPosAEnd)) { pbi.LogInfo() }
-    log.Printf("Channel B:\n")
-    log.Printf("Volume %f, pan %f\n", pb.split.bVol, pb.split.bPan)
-    for _, pbi := range(pb.GetItems(PedalPosBStart)) { pbi.LogInfo() }
-    for _, pbi := range(pb.GetItems(AmpBPos)) { pbi.LogInfo() }
-    for _, pbi := range(pb.GetItems(PedalPosBEnd)) { pbi.LogInfo() }
-    log.Printf("PedalEnd:\n")
-    for _, pbi := range(pb.GetItems(PedalPosEnd)) { pbi.LogInfo() }
-    log.Printf("\n")
 }

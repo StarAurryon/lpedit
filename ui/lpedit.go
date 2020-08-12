@@ -55,6 +55,13 @@ func (l *LPEdit) connectSignal() {
     l.ctrl.ConnectSetChange(l.updateSet)
     l.ctrl.ConnectTempoChange(l.updateTempo)
     l.ctrl.ConnectTypeChange(l.updateType)
+
+    for _, amp := range l.amps {
+        amp.connectSignal()
+    }
+    for _, pedal := range l.pedals {
+        pedal.connectSignal()
+    }
 }
 
 func (l *LPEdit) disconnectSignal() {
@@ -67,6 +74,13 @@ func (l *LPEdit) disconnectSignal() {
     l.ctrl.DisconnectSetChange()
     l.ctrl.DisconnectTempoChange()
     l.ctrl.DisconnectTypeChange()
+
+    for _, amp := range l.amps {
+        amp.disconnectSignal()
+    }
+    for _, pedal := range l.pedals {
+        pedal.disconnectSignal()
+    }
 }
 
 func (l *LPEdit) init() {
@@ -125,6 +139,8 @@ func (l *LPEdit) updateActive(pbi pedal.PedalBoardItem) {
     pbi.LockData()
     defer pbi.UnlockData()
     switch p := pbi.(type) {
+    case *pedal.Amp:
+        l.amps[p.GetID()/2].setActive(p.GetActive())
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].setActive(p.GetActive())
     }
@@ -135,6 +151,8 @@ func (l *LPEdit) updateParameter(param pedal.Parameter) {
     defer param.UnlockData()
     pbi := param.GetParent()
     switch p := pbi.(type) {
+    case *pedal.Amp:
+        l.amps[p.GetID()/2].updateParam(param)
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].updateParam(param)
     }
@@ -146,7 +164,6 @@ func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
     l.updatePreset(pb)
     l.updatePedalBoardView(pb)
     for i, a := range l.amps {
-        fmt.Println(i)
         a.updateAmp(pb.GetAmp(i))
     }
     for i, p := range l.pedals {

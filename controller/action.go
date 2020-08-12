@@ -80,15 +80,15 @@ func (c *Controller) QueryAllSets() {
     go f()
 }
 
-func (c *Controller) SetAmpParameterValue(id uint32, pid uint16, value string) error {
+func (c *Controller) SetAmpParameterValue(id uint32, pid uint32, value string) error {
     return c.SetPedalBoardItemParameterValue(id*2, pid, value)
 }
 
-func (c *Controller) SetPedalParameterValue(id uint32, pid uint16, value string) error {
+func (c *Controller) SetPedalParameterValue(id uint32, pid uint32, value string) error {
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)
 }
 
-func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, value string) error {
+func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
     c.pb.LockData()
     pbi := c.pb.GetItem(id);
@@ -101,7 +101,7 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
         c.pb.UnlockData()
         return nil
     }
-    err := p.SetValue(value)
+    err := p.SetValueCurrent(value)
     if err != nil {
         c.pb.UnlockData()
         return err
@@ -109,14 +109,14 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
     switch p2 := p.(type) {
     case *pedal.TempoParam:
         switch p2.GetID() {
-        case 0:
+        case 0x3F100000:
             m := message.GenParameterTempoChange(p2)
             c.writeMessage(m, 0, 0)
-        case 2:
+        case 0x3F100002:
             m := message.GenParameterTempoChange2(p2)
             c.writeMessage(m, 0, 0)
         }
-        binValue := p2.GetBinValue()
+        binValue := p2.GetBinValueCurrent()
         var value float32
         binary.Read(bytes.NewReader(binValue[:]), binary.LittleEndian, &value)
         if value <= 1 {
@@ -127,6 +127,54 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint16, valu
         m := message.GenParameterChange(p)
         go c.writeMessage(m, 0, 0)
     }
+    c.pb.UnlockData()
+    return nil
+}
+
+func (c *Controller) SetPedalBoardItemParameterValueMin(id uint32, pid uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    pbi := c.pb.GetItem(id);
+    if pbi == nil {
+        c.pb.UnlockData()
+        return nil
+    }
+    p := pbi.GetParam(pid)
+    if p == nil {
+        c.pb.UnlockData()
+        return nil
+    }
+    err := p.SetValueMin(value)
+    if err != nil {
+        c.pb.UnlockData()
+        return err
+    }
+    m := message.GenParameterChangeMin(p)
+    go c.writeMessage(m, 0, 0)
+    c.pb.UnlockData()
+    return nil
+}
+
+func (c *Controller) SetPedalBoardItemParameterValueMax(id uint32, pid uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    pbi := c.pb.GetItem(id);
+    if pbi == nil {
+        c.pb.UnlockData()
+        return nil
+    }
+    p := pbi.GetParam(pid)
+    if p == nil {
+        c.pb.UnlockData()
+        return nil
+    }
+    err := p.SetValueMax(value)
+    if err != nil {
+        c.pb.UnlockData()
+        return err
+    }
+    m := message.GenParameterChangeMax(p)
+    go c.writeMessage(m, 0, 0)
     c.pb.UnlockData()
     return nil
 }

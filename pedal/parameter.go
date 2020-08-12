@@ -33,20 +33,40 @@ const (
 type Parameter interface {
     Copy() Parameter
     GetAllowedValues() []string
-    GetBinValue() [4]byte
+    GetBinValueCurrent() [4]byte
+    GetBinValueMin() [4]byte
+    GetBinValueMax() [4]byte
     GetBinValueType() uint32
-    GetID() uint16
+    GetID() uint32
     GetName() string
     GetParent() PedalBoardItem
-    GetValue() string
+    GetValueCurrent() string
+    GetValueMin() string
+    GetValueMax() string
     IsAllowingOtherValues() bool
-    IsNull() bool
     LockData()
-    SetBinValue([4]byte) error
+    SetBinValueCurrent([4]byte) error
+    SetBinValueMin([4]byte) error
+    SetBinValueMax([4]byte) error
     SetParent(PedalBoardItem)
-    SetValue(string) error
+    SetValueCurrent(string) error
+    SetValueMin(string) error
+    SetValueMax(string) error
     UnlockData()
 }
+
+type GenericParameter struct {
+    id        uint32
+    name      string
+    parent    PedalBoardItem
+}
+
+func (p *GenericParameter) GetID() uint32 { return p.id }
+func (p *GenericParameter) GetName() string { return p.name }
+func (p *GenericParameter) GetParent() PedalBoardItem { return p.parent }
+func (p *GenericParameter) LockData() { p.parent.LockData() }
+func (p *GenericParameter) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *GenericParameter) UnlockData() { p.parent.UnlockData() }
 
 func to4Bytes(obj interface{}) [4]byte {
     ret := [4]byte{}
@@ -75,11 +95,12 @@ func from4BytesToInt32(v [4]byte) int32 {
 }
 
 type FreqParam struct {
-    name      string
-    max       float32
-    min       float32
-    parent    PedalBoardItem
-    value     float32
+    GenericParameter
+    max          float32
+    min          float32
+    valueCurrent float32
+    valueMin     float32
+    valueMax     float32
 }
 
 func (p *FreqParam) Copy() Parameter {
@@ -89,27 +110,34 @@ func (p *FreqParam) Copy() Parameter {
 }
 
 func (p *FreqParam) IsAllowingOtherValues() bool { return true }
-func (p *FreqParam) IsNull() bool { return false }
 func (p *FreqParam) GetAllowedValues() []string { return nil }
-
-func (p *FreqParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *FreqParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *FreqParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *FreqParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *FreqParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *FreqParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
+func (p *FreqParam) getValue(v float32) string {
+    return fmt.Sprintf("%dHz", int(math.Round(float64((v * (p.max - p.min)) + p.min))))
 }
 
-func (p *FreqParam) GetName() string { return p.name }
-func (p *FreqParam) GetParent() PedalBoardItem { return p.parent }
+func (p *FreqParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *FreqParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *FreqParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *FreqParam) GetValue() string {
-    return fmt.Sprintf("%dHz", int(math.Round(float64((p.value * (p.max - p.min)) + p.min))))
+func (p *FreqParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    *dst = v
+    return nil
 }
 
-func (p *FreqParam) LockData() { p.parent.LockData() }
+func (p *FreqParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *FreqParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *FreqParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
-func (p *FreqParam) SetValue(s string) error {
+func (p *FreqParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
     s = strings.Replace(s, "Hz", "", -1)
     s = strings.Replace(s, "hz", "", -1)
@@ -121,28 +149,21 @@ func (p *FreqParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
     }
-    p.value = (v - p.min) / (p.max - p.min)
+    *dst = (v - p.min) / (p.max - p.min)
     return nil
 }
 
-func (p *FreqParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *FreqParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *FreqParam) UnlockData() { p.parent.UnlockData() }
+func (p *FreqParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *FreqParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *FreqParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type FreqKParam struct {
-    name      string
-    max       float32
-    min       float32
-    parent    PedalBoardItem
-    value     float32
+    GenericParameter
+    max          float32
+    min          float32
+    valueCurrent float32
+    valueMin     float32
+    valueMax     float32
 }
 
 func (p *FreqKParam) Copy() Parameter {
@@ -152,26 +173,34 @@ func (p *FreqKParam) Copy() Parameter {
 }
 
 func (p *FreqKParam) IsAllowingOtherValues() bool { return true }
-func (p *FreqKParam) IsNull() bool { return false }
 func (p *FreqKParam) GetAllowedValues() []string { return nil }
-func (p *FreqKParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *FreqKParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *FreqKParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *FreqKParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *FreqKParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *FreqKParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
+func (p *FreqKParam) getValue(v float32) string {
+    return fmt.Sprintf("%.1fKHz", float64((v * (p.max - p.min)) + p.min))
 }
 
-func (p *FreqKParam) GetName() string { return p.name }
-func (p *FreqKParam) GetParent() PedalBoardItem { return p.parent }
+func (p *FreqKParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *FreqKParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *FreqKParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *FreqKParam) GetValue() string {
-    return fmt.Sprintf("%.1fKHz", float64((p.value * (p.max - p.min)) + p.min))
+func (p *FreqKParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    *dst = v
+    return nil
 }
 
-func (p *FreqKParam) LockData() { p.parent.LockData() }
+func (p *FreqKParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *FreqKParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *FreqKParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
-func (p *FreqKParam) SetValue(s string) error {
+func (p *FreqKParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
     s = strings.Replace(s, "KHz", "", -1)
     s = strings.Replace(s, "khz", "", -1)
@@ -183,27 +212,20 @@ func (p *FreqKParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
     }
-    p.value = (v - p.min) / (p.max - p.min)
+    *dst = (v - p.min) / (p.max - p.min)
     return nil
 }
 
-func (p *FreqKParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *FreqKParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *FreqKParam) UnlockData() { p.parent.UnlockData() }
+func (p *FreqKParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *FreqKParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *FreqKParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type ListParam struct {
-    name         string
+    GenericParameter
     list         []string
-    parent       PedalBoardItem
-    value        interface{}
+    valueCurrent interface{}
+    valueMin     interface{}
+    valueMax     interface{}
     binValueType uint32
     maxIDShift   int
 }
@@ -215,35 +237,53 @@ func (p *ListParam) Copy() Parameter {
 }
 
 func (p *ListParam) IsAllowingOtherValues() bool { return false }
-func (p *ListParam) IsNull() bool { return false }
 func (p *ListParam) GetAllowedValues() []string { return p.list }
-func (p *ListParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *ListParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *ListParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *ListParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *ListParam) GetBinValueType() uint32 { return p.binValueType }
 
-func (p *ListParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
-}
-
-func (p *ListParam) GetName() string { return p.name }
-func (p *ListParam) GetParent() PedalBoardItem { return p.parent }
-
-func (p *ListParam) GetValue() string {
+func (p *ListParam) getValue(v interface{}) string {
     switch p.binValueType {
     case Int32Type:
-        value := p.value.(int32)
+        value := v.(int32)
         return p.list[value - int32(p.maxIDShift)]
     case float32Type:
-        value := p.value.(float32)
+        value := v.(float32)
         return p.list[int(math.Round(float64(value) * float64((len(p.list) - 1 + p.maxIDShift))))]
     default:
         return ""
     }
 }
 
-func (p *ListParam) LockData() { p.parent.LockData() }
+func (p *ListParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *ListParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *ListParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *ListParam) SetValue(s string) error {
+func (p *ListParam) setBinValue(dst *interface{}, value [4]byte) error {
+    switch p.binValueType {
+    case Int32Type:
+        v := from4BytesToInt32(value)
+        max := (len(p.list) - p.maxIDShift) - 1
+        if v > int32(max) || v < int32(p.maxIDShift) {
+            return fmt.Errorf("The binary value must be comprised between %d and %d", p.maxIDShift,  max)
+        }
+        *dst = v
+    case float32Type:
+        v := from4BytesToFloat32(value)
+        if v > 1 || v < 0 {
+            return fmt.Errorf("The binary value must be comprised between 0 and 1")
+        }
+        *dst = v
+    }
+    return nil
+}
+
+func (p *ListParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *ListParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *ListParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
+
+func (p *ListParam) setValue(dst *interface{}, s string) error {
     found := false
     i := 0
     v := ""
@@ -258,72 +298,22 @@ func (p *ListParam) SetValue(s string) error {
     }
     switch p.binValueType {
     case Int32Type:
-        p.value = int32(i + p.maxIDShift)
+        *dst = int32(i + p.maxIDShift)
     case float32Type:
-        p.value = float32(i) / float32((len(p.list) - 1 + p.maxIDShift))
+        *dst = float32(i) / float32((len(p.list) - 1 + p.maxIDShift))
     }
     return nil
 }
 
-func (p *ListParam) SetBinValue(value [4]byte) error {
-    switch p.binValueType {
-    case Int32Type:
-        p.value = from4BytesToInt32(value)
-    case float32Type:
-        v := from4BytesToFloat32(value)
-        if v > 1 || v < 0 {
-            return fmt.Errorf("The binary value must be comprised between 0 and 1")
-        }
-        p.value = v
-    }
-    return nil
-}
-
-func (p *ListParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *ListParam) UnlockData() { p.parent.UnlockData() }
-
-type ListParam2 struct {
-    name  string
-    list  []string
-    parent PedalBoardItem
-    value float32
-}
-
-type NullParam struct {
-    parent PedalBoardItem
-}
-
-func (p *NullParam) Copy() Parameter {
-    _p := new(NullParam)
-    *_p = *p
-    return _p
-}
-
-func (p *NullParam) IsAllowingOtherValues() bool { return false }
-func (p *NullParam) IsNull() bool { return true }
-func (p *NullParam) GetAllowedValues() []string { return nil }
-func (p *NullParam) GetBinValue() [4]byte { return [4]byte{} }
-func (p *NullParam) GetBinValueType() uint32 { return 0 }
-
-func (p *NullParam) GetID() uint16 {
-    _, id := p.GetParent().GetParamID(p)
-    return id
-}
-
-func (p *NullParam) GetName() string { return "Null" }
-func (p *NullParam) GetParent() PedalBoardItem { return p.parent }
-func (p *NullParam) GetValue() string { return "" }
-func (p *NullParam) LockData() { p.parent.LockData() }
-func (p *NullParam) SetValue(string) error { return fmt.Errorf("Null parameter") }
-func (p *NullParam) SetBinValue([4]byte) error { return fmt.Errorf("Null parameter") }
-func (p *NullParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *NullParam) UnlockData() { p.parent.UnlockData() }
+func (p *ListParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *ListParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *ListParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type PerCentParam struct {
-    name   string
-    parent PedalBoardItem
-    value  float32
-    idAdd  uint16
+    GenericParameter
+    valueCurrent  float32
+    valueMin  float32
+    valueMax  float32
 }
 
 func (p *PerCentParam) Copy() Parameter {
@@ -333,27 +323,34 @@ func (p *PerCentParam) Copy() Parameter {
 }
 
 func (p *PerCentParam) IsAllowingOtherValues() bool { return true }
-func (p *PerCentParam) IsNull() bool { return false }
 func (p *PerCentParam) GetAllowedValues() []string { return nil }
-func (p *PerCentParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *PerCentParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *PerCentParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *PerCentParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *PerCentParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *PerCentParam) GetID() uint16 {
-    _, id := p.GetParent().GetParamID(p)
-    return id
+func (p *PerCentParam) getValue(v float32) string {
+    return fmt.Sprintf("%d%%", int(math.Round(float64(v*100))))
 }
 
-func (p* PerCentParam) GetIDAdd() uint16 { return p.idAdd }
-func (p *PerCentParam) GetName() string { return p.name }
-func (p *PerCentParam) GetParent() PedalBoardItem { return p.parent }
+func (p *PerCentParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *PerCentParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *PerCentParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *PerCentParam) GetValue() string {
-    return fmt.Sprintf("%d%%", int(math.Round(float64(p.value*100))))
+func (p *PerCentParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    *dst = v
+    return nil
 }
 
-func (p *PerCentParam) LockData() { p.parent.LockData() }
+func (p *PerCentParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *PerCentParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *PerCentParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
-func (p *PerCentParam) SetValue(s string) error {
+func (p *PerCentParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
     s = strings.Replace(s, "%", "", -1)
     vi, err := strconv.Atoi(s)
@@ -363,29 +360,21 @@ func (p *PerCentParam) SetValue(s string) error {
     if vi > 100 || vi < 0 {
         return fmt.Errorf("The value must be comprised between 0 and 100")
     }
-    p.value = float32(vi)/100
+    *dst = float32(vi)/100
     return nil
 }
 
-func (p *PerCentParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *PerCentParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *PerCentParam) UnlockData() { p.parent.UnlockData() }
+func (p *PerCentParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *PerCentParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *PerCentParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type RangeParam struct {
-    name      string
-    max       float32
-    min       float32
-    increment float32
-    parent    PedalBoardItem
-    value     float32
+    GenericParameter
+    max          float32
+    min          float32
+    valueCurrent float32
+    valueMin     float32
+    valueMax     float32
 }
 
 func (p *RangeParam) Copy() Parameter {
@@ -395,26 +384,34 @@ func (p *RangeParam) Copy() Parameter {
 }
 
 func (p *RangeParam) IsAllowingOtherValues() bool { return true }
-func (p *RangeParam) IsNull() bool { return false }
 func (p *RangeParam) GetAllowedValues() []string { return nil }
-func (p *RangeParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *RangeParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *RangeParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *RangeParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *RangeParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *RangeParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
+func (p *RangeParam) getValue(v float32) string {
+    return fmt.Sprintf("%.1f", (v * (p.max - p.min)) + p.min)
 }
 
-func (p *RangeParam) GetName() string { return p.name }
-func (p *RangeParam) GetParent() PedalBoardItem { return p.parent }
+func (p *RangeParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *RangeParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *RangeParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *RangeParam) GetValue() string {
-    return fmt.Sprintf("%.1f", (p.value * (p.max - p.min)) + p.min)
+func (p *RangeParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    *dst = v
+    return nil
 }
 
-func (p *RangeParam) LockData() { p.parent.LockData() }
+func (p *RangeParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *RangeParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *RangeParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
-func (p *RangeParam) SetValue(s string) error {
+func (p *RangeParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
     vi, err := strconv.ParseFloat(s, 32)
     if err != nil {
@@ -424,28 +421,21 @@ func (p *RangeParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between %.1f and %.1f", p.min, p.max)
     }
-    p.value = (v - p.min)/(p.max - p.min)
+    *dst = (v - p.min)/(p.max - p.min)
     return nil
 }
 
-func (p *RangeParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *RangeParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *RangeParam) UnlockData() { p.parent.UnlockData() }
+func (p *RangeParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *RangeParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *RangeParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type TempoParam struct {
-    name   string
-    parent PedalBoardItem
-    max    float32
-    min    float32
-    value  float32
+    GenericParameter
+    max          float32
+    min          float32
+    valueCurrent float32
+    valueMin     float32
+    valueMax     float32
 }
 
 func (p *TempoParam) Copy() Parameter {
@@ -455,7 +445,6 @@ func (p *TempoParam) Copy() Parameter {
 }
 
 func (p *TempoParam) IsAllowingOtherValues() bool { return true }
-func (p *TempoParam) IsNull() bool { return false }
 
 func (p *TempoParam) GetAllowedValues() []string {
     return []string{"Whole", "1/2 (dot)", "1/2", "1/2 (3)", "1/4 (dot)", "1/4",
@@ -463,30 +452,40 @@ func (p *TempoParam) GetAllowedValues() []string {
         "32 (dot)", "32", "32 (3)", "64 (dot)", "64", "64 (3)"}
 }
 
-func (p *TempoParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *TempoParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *TempoParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *TempoParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *TempoParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *TempoParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
-}
-
-func (p *TempoParam) GetName() string { return p.name }
-func (p *TempoParam) GetParent() PedalBoardItem { return p.parent }
-
-func (p *TempoParam) GetValue() string {
-    if p.value > 1 {
-        return p.GetAllowedValues()[int(p.value) - 2]
+func (p *TempoParam) getValue(v float32) string {
+    if v > 1 {
+        return p.GetAllowedValues()[int(v) - 2]
     }
-    return fmt.Sprintf("%.2fHz", (p.value * (p.max - p.min)) + p.min)
+    return fmt.Sprintf("%.2fHz", (v * (p.max - p.min)) + p.min)
 }
 
-func (p *TempoParam) LockData() { p.parent.LockData() }
+func (p *TempoParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *TempoParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *TempoParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *TempoParam) SetValue(s string) error {
+func (p *TempoParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    maxV := float32(len(p.GetAllowedValues()))
+    if v > maxV || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and %.1f", maxV)
+    }
+    *dst = v
+    return nil
+}
+
+func (p *TempoParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *TempoParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *TempoParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
+
+func (p *TempoParam) setValue(dst *float32, s string) error {
     for i, _s := range p.GetAllowedValues() {
         if s == _s {
-            p.value = float32(i+2)
+            *dst = float32(i+2)
             return nil
         }
     }
@@ -503,28 +502,20 @@ func (p *TempoParam) SetValue(s string) error {
     if  v > p.max || p.min > v {
         return fmt.Errorf("The value must be comprised between 0.10 and 15 or be in the list")
     }
-    p.value = (v - p.min)/(p.max - p.min)
+    *dst = (v - p.min)/(p.max - p.min)
     return nil
 }
 
-func (p *TempoParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    maxV := float32(len(p.GetAllowedValues()))
-    if v > maxV || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and %.1f", maxV)
-    }
-    p.value = v
-    return nil
-}
-
-func (p *TempoParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *TempoParam) UnlockData() { p.parent.UnlockData() }
+func (p * TempoParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p * TempoParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p * TempoParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
 
 type TimeParam struct {
-    name  string
-    maxMs int
-    parent PedalBoardItem
-    value float32
+    GenericParameter
+    maxMs        int
+    valueCurrent float32
+    valueMin     float32
+    valueMax     float32
 }
 
 func (p *TimeParam) Copy() Parameter {
@@ -534,26 +525,34 @@ func (p *TimeParam) Copy() Parameter {
 }
 
 func (p *TimeParam) IsAllowingOtherValues() bool { return true }
-func (p *TimeParam) IsNull() bool { return false }
 func (p *TimeParam) GetAllowedValues() []string { return nil }
-func (p *TimeParam) GetBinValue() [4]byte { return to4Bytes(p.value) }
+func (p *TimeParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
+func (p *TimeParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
+func (p *TimeParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *TimeParam) GetBinValueType() uint32 { return float32Type }
 
-func (p *TimeParam) GetID() (uint16) {
-    _, id := p.GetParent().GetParamID(p)
-    return id
+func (p *TimeParam) getValue(v float32) string {
+    return fmt.Sprintf("%dms", int(v*float32(p.maxMs)))
 }
 
-func (p *TimeParam) GetName() string { return p.name }
-func (p *TimeParam) GetParent() PedalBoardItem { return p.parent }
+func (p *TimeParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *TimeParam) GetValueMin() string { return p.getValue(p.valueMin) }
+func (p *TimeParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
-func (p *TimeParam) GetValue() string {
-    return fmt.Sprintf("%dms", int(p.value*float32(p.maxMs)))
+func (p *TimeParam) setBinValue(dst *float32, value [4]byte) error {
+    v := from4BytesToFloat32(value)
+    if v > 1 || v < 0 {
+        return fmt.Errorf("The binary value must be comprised between 0 and 1")
+    }
+    *dst = v
+    return nil
 }
 
-func (p *TimeParam) LockData() { p.parent.LockData() }
+func (p *TimeParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
+func (p *TimeParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
+func (p *TimeParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
-func (p *TimeParam) SetValue(s string) error {
+func (p *TimeParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
     s = strings.Replace(s, "ms", "", -1)
     vi, err := strconv.Atoi(s)
@@ -563,18 +562,10 @@ func (p *TimeParam) SetValue(s string) error {
     if  vi > p.maxMs || vi < 0 {
         return fmt.Errorf("The value must be comprised between 0 and %d", p.maxMs)
     }
-    p.value = float32(vi)/float32(p.maxMs)
+    *dst = float32(vi)/float32(p.maxMs)
     return nil
 }
 
-func (p *TimeParam) SetBinValue(value [4]byte) error {
-    v := from4BytesToFloat32(value)
-    if v > 1 || v < 0 {
-        return fmt.Errorf("The binary value must be comprised between 0 and 1")
-    }
-    p.value = v
-    return nil
-}
-
-func (p *TimeParam) SetParent(parent PedalBoardItem) { p.parent = parent }
-func (p *TimeParam) UnlockData() { p.parent.UnlockData() }
+func (p *TimeParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
+func (p *TimeParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
+func (p *TimeParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }

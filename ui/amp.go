@@ -31,42 +31,56 @@ type Amp struct {
     id         int
     ampType    []string
     ctrl       *qtctrl.Controller
-    labels     []*widgets.QLabel
-    mids       []*widgets.QWidget
-    values     []*widgets.QComboBox
-    valuesFunc []func(string)
+    parameters [11]Parameter
     parent     *LPEdit
 }
 
 func NewAmp(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
         at []string, id int, name string) *Amp {
     a := &Amp{AmpUI: NewAmpUI(w), ctrl: c, ampType: at, id: id}
-    a.labels = []*widgets.QLabel{
-        a.Param0Lbl, a.Param1Lbl , a.Param2Lbl, a.Param3Lbl, a.Param4Lbl,
-        a.Param5Lbl, a.Param6Lbl , a.Param7Lbl, a.Param8Lbl, a.Param9Lbl,
-        a.Param10Lbl,
-    }
-    a.mids = []*widgets.QWidget{
-        a.Param0Mid, a.Param1Mid , a.Param2Mid, a.Param3Mid, a.Param4Mid,
-        a.Param5Mid, a.Param6Mid , a.Param7Mid, a.Param8Mid, a.Param9Mid,
-        a.Param10Mid,
-    }
-    a.values = []*widgets.QComboBox{
-        a.Param0Value, a.Param1Value , a.Param2Value, a.Param3Value,
-        a.Param4Value, a.Param5Value, a.Param6Value, a.Param7Value,
-        a.Param8Value, a.Param9Value, a.Param10Value,
-    }
-    a.valuesFunc = []func(string) {
-        a.parameter0Changed, a.parameter1Changed, a.parameter2Changed,
-        a.parameter3Changed, a.parameter4Changed, a.parameter5Changed,
-        a.parameter6Changed, a.parameter7Changed, a.parameter8Changed,
-        a.parameter9Changed, a.parameter10Changed,
-    }
+    a.parameters[0] = Parameter{label: a.Param0Lbl, mid: a.Param0Mid,
+        value: a.Param0Value, vfunc: a.parameter0Changed}
+    a.parameters[1] = Parameter{label: a.Param1Lbl, mid: a.Param1Mid,
+        value: a.Param1Value, vfunc: a.parameter1Changed}
+    a.parameters[2] = Parameter{label: a.Param2Lbl, mid: a.Param2Mid,
+        value: a.Param2Value, vfunc: a.parameter2Changed}
+    a.parameters[3] = Parameter{label: a.Param3Lbl, mid: a.Param3Mid,
+        value: a.Param3Value, vfunc: a.parameter3Changed}
+    a.parameters[4] = Parameter{label: a.Param4Lbl, mid: a.Param4Mid,
+        value: a.Param4Value, vfunc: a.parameter4Changed}
+    a.parameters[5] = Parameter{label: a.Param5Lbl, mid: a.Param5Mid,
+        value: a.Param5Value, vfunc: a.parameter5Changed}
+    a.parameters[6] = Parameter{label: a.Param6Lbl, mid: a.Param6Mid,
+        value: a.Param6Value, vfunc: a.parameter6Changed}
+    a.parameters[7] = Parameter{label: a.Param7Lbl, mid: a.Param7Mid,
+        value: a.Param7Value, vfunc: a.parameter7Changed}
+    a.parameters[8] = Parameter{label: a.Param8Lbl, mid: a.Param8Mid,
+        value: a.Param8Value, vfunc: a.parameter8Changed}
+    a.parameters[9] = Parameter{label: a.Param9Lbl, mid: a.Param9Mid,
+        value: a.Param9Value, vfunc: a.parameter9Changed}
+    a.parameters[10] = Parameter{label: a.Param10Lbl, mid: a.Param10Mid,
+        value: a.Param10Value, vfunc: a.parameter10Changed}
     a.AmpName.SetText(name)
     a.parent = parent
     a.init()
     a.initUI()
     return a
+}
+
+func (a *Amp) connectSignal() {
+    a.AmpModel.ConnectActivated2(a.ampModelUserChanged)
+    for _, p := range a.parameters {
+        p.value.ConnectActivated2(p.vfunc)
+        p.value.SetEditable(true)
+    }
+}
+
+func (a *Amp) disconnectSignal() {
+    a.AmpModel.DisconnectActivated2()
+    for _, p := range a.parameters {
+        p.value.DisconnectActivated2()
+        p.value.SetEditable(false)
+    }
 }
 
 func (a *Amp) initUI() {
@@ -77,46 +91,49 @@ func (a *Amp) initUI() {
     }
     sort.Strings(keys)
 
-    a.AmpModel.ConnectActivated2(a.ampModelUserChanged)
     a.AmpModel.AddItems(keys)
-    for i := range a.values {
-        a.values[i].ConnectActivated2(a.valuesFunc[i])
-        a.values[i].SetEditable(true)
-    }
 }
 
 func (a *Amp) ampModelUserChanged(fxType string) {
     a.ctrl.SetAmpType(uint32(a.id), a.AmpModel.CurrentText())
 }
 
-func (a *Amp) hideParameter(id int) {
-    if id < 0 || id >= len(a.labels) { return }
-    a.labels[id].Hide()
-    a.mids[id].Hide()
-    a.values[id].Hide()
+func (a *Amp) getParameter(id uint32) *Parameter{
+    for i, param := range a.parameters {
+        if param.id == id {
+            return &a.parameters[i]
+        }
+    }
+    return nil
 }
 
-func (a *Amp) parameter0Changed(val string) { a.parameterChanged(0, val) }
-func (a *Amp) parameter1Changed(val string) { a.parameterChanged(1, val) }
-func (a *Amp) parameter2Changed(val string) { a.parameterChanged(2, val) }
-func (a *Amp) parameter3Changed(val string) { a.parameterChanged(3, val) }
-func (a *Amp) parameter4Changed(val string) { a.parameterChanged(4, val) }
-func (a *Amp) parameter5Changed(val string) { a.parameterChanged(5, val) }
-func (a *Amp) parameter6Changed(val string) { a.parameterChanged(6, val) }
-func (a *Amp) parameter7Changed(val string) { a.parameterChanged(7, val) }
-func (a *Amp) parameter8Changed(val string) { a.parameterChanged(8, val) }
-func (a *Amp) parameter9Changed(val string) { a.parameterChanged(9, val) }
-func (a *Amp) parameter10Changed(val string) { a.parameterChanged(10, val) }
+func (a *Amp) hideParameter(p *Parameter) {
+    p.label.Hide()
+    p.mid.Hide()
+    p.value.Hide()
+}
 
-func (a *Amp) parameterChanged(id int, val string) {
-    err := a.ctrl.SetAmpParameterValue(uint32(a.id), uint16(id), val)
+func (a *Amp) parameter0Changed(val string) { a.parameterChanged(&a.parameters[0], val) }
+func (a *Amp) parameter1Changed(val string) { a.parameterChanged(&a.parameters[1], val) }
+func (a *Amp) parameter2Changed(val string) { a.parameterChanged(&a.parameters[2], val) }
+func (a *Amp) parameter3Changed(val string) { a.parameterChanged(&a.parameters[3], val) }
+func (a *Amp) parameter4Changed(val string) { a.parameterChanged(&a.parameters[4], val) }
+func (a *Amp) parameter5Changed(val string) { a.parameterChanged(&a.parameters[5], val) }
+func (a *Amp) parameter6Changed(val string) { a.parameterChanged(&a.parameters[6], val) }
+func (a *Amp) parameter7Changed(val string) { a.parameterChanged(&a.parameters[7], val) }
+func (a *Amp) parameter8Changed(val string) { a.parameterChanged(&a.parameters[8], val) }
+func (a *Amp) parameter9Changed(val string) { a.parameterChanged(&a.parameters[9], val) }
+func (a *Amp) parameter10Changed(val string) { a.parameterChanged(&a.parameters[10], val) }
+
+func (a *Amp) parameterChanged(paramUI *Parameter, val string) {
+    err := a.ctrl.SetAmpParameterValue(uint32(a.id), paramUI.id, val)
     if err != nil {
         mb := widgets.NewQMessageBox(a)
         mb.Critical(a, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
     }
     pb := a.ctrl.GetPedalBoard()
     pb.LockData()
-    param := pb.GetAmp(a.id).GetParam(uint16(id))
+    param := pb.GetAmp(a.id).GetParam(paramUI.id)
     a.updateParam(param)
     pb.UnlockData()
 }
@@ -131,48 +148,46 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
     }
     a.setActive(amp.GetActive())
     a.AmpModel.SetCurrentText(amp.GetName())
-    for i := range a.labels {
-        a.hideParameter(i)
+    for i := range a.parameters {
+        a.parameters[i].id = 0
+        a.hideParameter(&a.parameters[i])
     }
-    for _, param := range amp.GetParams() {
+    for i, param := range amp.GetParams() {
+        a.parameters[i].id = param.GetID()
         a.updateParam(param)
     }
 }
 
 func (a *Amp) updateParam(p pedal.Parameter) {
-    id := int(p.GetID())
-    if id > len(a.labels) { return }
-    a.setParameterValueList(id, []string{p.GetValue()})
-    a.setParameterValue(id, p.GetValue())
-    a.setParameterLabel(id, p.GetName())
-    a.showParameter(id)
+    param := a.getParameter(p.GetID())
+    if param == nil { return }
+    a.setParameterValueList(param, []string{p.GetValueCurrent()})
+    a.setParameterValue(param, p.GetValueCurrent())
+    a.setParameterLabel(param, p.GetName())
+    a.showParameter(param)
 }
 
 func (a *Amp) setActive(status bool) {
     a.OnStatus.SetChecked(status)
 }
 
-func (a *Amp) setParameterLabel(id int, s string) {
-    if id < 0 || id >= len(a.labels) { return }
-    a.labels[id].SetText(s)
+func (a *Amp) setParameterLabel(p *Parameter, s string) {
+    p.label.SetText(s)
 }
 
-func (a *Amp) setParameterValueList(id int, s []string) {
-    if id < 0 || id >= len(a.labels) { return }
-    a.values[id].Clear()
-    a.values[id].AddItems(s)
+func (a *Amp) setParameterValueList(p *Parameter, s []string) {
+    p.value.Clear()
+    p.value.AddItems(s)
 }
 
-func (a *Amp) setParameterValue(id int, s string) {
-    if id < 0 || id >= len(a.labels) { return }
-    a.values[id].SetCurrentText(s)
+func (a *Amp) setParameterValue(p *Parameter, s string) {
+    p.value.SetCurrentText(s)
 }
 
-func (a *Amp) showParameter(id int) {
-    if id < 0 || id >= len(a.labels) { return }
-    a.labels[id].Show()
-    a.mids[id].Show()
-    a.values[id].Show()
+func (a *Amp) showParameter(p *Parameter) {
+    p.label.Show()
+    p.mid.Show()
+    p.value.Show()
 }
 
 func (l *LPEdit) initAmpsCabs() {

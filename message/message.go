@@ -101,6 +101,26 @@ func (m *ParameterChange) Copy() IMessage {
     return _m
 }
 
+type ParameterChangeMin struct {
+    Message
+}
+
+func (m *ParameterChangeMin) Copy() IMessage {
+    _m := new(ParameterChangeMin)
+    *_m = *m
+    return _m
+}
+
+type ParameterChangeMax struct {
+    Message
+}
+
+func (m *ParameterChangeMax) Copy() IMessage {
+    _m := new(ParameterChangeMax)
+    *_m = *m
+    return _m
+}
+
 type ParameterTempoChange struct {
     Message
 }
@@ -210,6 +230,8 @@ var messages = []IMessage{
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
     &PresetQuery{Message: Message{mtype: 2, smtype: 0, msize: 12, mname: "Preset Query"}},
     &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
+    &ParameterChangeMin{Message: Message{mtype: 6, smtype: 11776, msize: 28, mname: "Item Parameter Change Min"}},
+    &ParameterChangeMax{Message: Message{mtype: 6, smtype: 12032, msize: 28, mname: "Item Parameter Change Max"}},
     &ParameterTempoChange{Message: Message{mtype: 4, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
     &ParameterTempoChange2{Message: Message{mtype: 4, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
     &SetChange{Message: Message{mtype: 2, smtype: 11264, msize: 12, mname: "Set Change"}},

@@ -46,39 +46,36 @@ func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
     return m
 }
 
-func GenParameterChange(p pedal.Parameter) IMessage {
-    var m *ParameterChange
-    m = newMessage2(reflect.TypeOf(m)).(*ParameterChange)
-
+func genParameterChange(m IMessage, v [4]byte, p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
     binary.Write(buf, binary.LittleEndian, p.GetBinValueType())
     id := p.GetID()
-    idAdd := uint16(0)
-    p2, ok := p.(*pedal.PerCentParam)
-    if ok {
-        idAdd = p2.GetIDAdd()
-        id -= idAdd
-    }
-    //FIXME: Dirty
-    if p.GetBinValueType() == pedal.Int32Type {
-        id += 6142
-    }
 
     binary.Write(buf, binary.LittleEndian, id)
-    if idAdd == 1 {
-        binary.Write(buf, binary.LittleEndian, uint8(1))
-    } else if id > 6142 {
-        binary.Write(buf, binary.LittleEndian, uint8(0))
-    } else {
-        binary.Write(buf, binary.LittleEndian, uint8(16))
-    }
-    binary.Write(buf, binary.LittleEndian, uint8(63))
-    binary.Write(buf, binary.LittleEndian, p.GetBinValue())
-    m.data = buf.Bytes()
+    binary.Write(buf, binary.LittleEndian, v)
+    m.setData(buf.Bytes())
 
     return m
+}
+
+func GenParameterChange(p pedal.Parameter) IMessage {
+    var m *ParameterChange
+    m = newMessage2(reflect.TypeOf(m)).(*ParameterChange)
+    return genParameterChange(m, p.GetBinValueCurrent(), p)
+}
+
+func GenParameterChangeMin(p pedal.Parameter) IMessage {
+    var m *ParameterChangeMin
+    m = newMessage2(reflect.TypeOf(m)).(*ParameterChangeMin)
+    return genParameterChange(m, p.GetBinValueMin(), p)
+}
+
+func GenParameterChangeMax(p pedal.Parameter) IMessage {
+    var m *ParameterChangeMax
+    m = newMessage2(reflect.TypeOf(m)).(*ParameterChangeMax)
+    return genParameterChange(m, p.GetBinValueMax(), p)
 }
 
 func GenParameterTempoChange(p pedal.Parameter) IMessage {
@@ -88,7 +85,7 @@ func GenParameterTempoChange(p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
-    tmpValue := p.GetBinValue()
+    tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
     if binValue > 1 {
@@ -108,7 +105,7 @@ func GenParameterTempoChange2(p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
-    tmpValue := p.GetBinValue()
+    tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
     if binValue > 1 {

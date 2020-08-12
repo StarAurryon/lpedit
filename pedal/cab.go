@@ -19,7 +19,6 @@
 package pedal
 
 import "fmt"
-import "log"
 
 const (
     noCab uint32 = 17301503
@@ -91,16 +90,12 @@ func (c *Cab) GetName() string {
     return c.name
 }
 
-func (c *Cab) GetParam(id uint16) Parameter {
+func (c *Cab) GetParam(id uint32) Parameter {
     return nil
 }
 
 func (c *Cab) GetParams() []Parameter {
     return nil
-}
-
-func (c *Cab) GetParamID(p Parameter) (error, uint16) {
-    return fmt.Errorf("Parameter %s not found", p.GetName()), 0
 }
 
 func (c *Cab) GetParamLen() uint16 {
@@ -121,7 +116,7 @@ func (c *Cab) SetActive(active bool){
     c.active = active
 }
 
-func (c *Cab) SetPos(pos uint16, posType uint8) { 
+func (c *Cab) SetPos(pos uint16, posType uint8) {
     c.pos = pos
     c.posType = posType
 }
@@ -145,9 +140,3 @@ func (c *Cab) SetType2(name string, none string) {
 }
 
 func (c *Cab) UnlockData() { c.pb.UnlockData() }
-
-func (c *Cab) remove() {}
-
-func (c Cab) LogInfo() {
-    log.Printf("Id %d, Cab Info, Name %s, Active %t\n", c.id, c.name, c.active)
-}

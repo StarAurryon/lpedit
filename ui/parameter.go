@@ -16,34 +16,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package pedal
+package ui
 
-type PedalBoardItem interface {
-    GetActive() bool
-    GetActive2() uint32
-    GetID() uint32
-    GetParam(uint32) Parameter
-    GetParams() []Parameter
-    GetParamLen() uint16
-    GetName() string
-    GetType() uint32
-    GetPos() (uint16, uint8)
-    LockData()
-    SetActive(bool)
-    SetPos(uint16, uint8)
-    SetType(uint32) error
-    SetType2(string, string)
-    UnlockData()
+import "github.com/StarAurryon/qt/widgets"
+
+type Parameter struct {
+    id    uint32
+    label *widgets.QLabel
+    mid   *widgets.QWidget
+    value *widgets.QComboBox
+    vfunc func(string)
 }
-
-type SortablePosPBI []PedalBoardItem
-
-func (s SortablePosPBI) Len() int           { return len(s) }
-
-func (s SortablePosPBI) Less(i, j int) bool {
-    posI, _ := s[i].GetPos()
-    posJ, _ := s[j].GetPos()
-    return posI < posJ
-}
-
-func (s SortablePosPBI) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
