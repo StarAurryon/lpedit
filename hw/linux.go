@@ -100,6 +100,9 @@ func (h *Hwdep) Read(size int) []byte {
     buf := make([]byte, size)
     copied := int(C.snd_hwdep_read(h.hwdep, unsafe.Pointer(&buf[0]),
         C.ulong(size)))
+    if copied <= 0 {
+        return nil
+    }
     return buf[:copied]
 }
 
