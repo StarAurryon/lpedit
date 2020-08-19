@@ -28,6 +28,7 @@ type Amp struct {
     id      uint32
     atype   uint32
     active  bool
+    hasDt   bool
     name    string
     pos     uint16
     posType uint8
@@ -36,8 +37,8 @@ type Amp struct {
 }
 
 var amps = []Amp {
-    Amp{atype: ampDisabled, active: true, name: "Amp Disabled"},
-    Amp{atype: 458752, active: true, name: "phD Motorway",
+    Amp{atype: ampDisabled, hasDt: false, active: true, name: "Amp Disabled"},
+    Amp{atype: 458752, hasDt: true, active: true, name: "phD Motorway",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -51,7 +52,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458753, active: true, name: "Tweed B-Man Normal",
+    Amp{atype: 458753, hasDt: true, active: true, name: "Tweed B-Man Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -65,7 +66,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458754, active: true, name: "Tweed B-Man Bright",
+    Amp{atype: 458754, hasDt: true, active: true, name: "Tweed B-Man Bright",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -79,7 +80,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458755, active: true, name: "Blackface ‘Lux Normal",
+    Amp{atype: 458755, hasDt: true, active: true, name: "Blackface ‘Lux Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -93,7 +94,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458756, active: true, name: "Blackface ‘Lux Vibrato",
+    Amp{atype: 458756, hasDt: true, active: true, name: "Blackface ‘Lux Vibrato",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -107,7 +108,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458757, active: true, name: "Blackface Double Normal",
+    Amp{atype: 458757, hasDt: true, active: true, name: "Blackface Double Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -121,7 +122,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458758, active: true, name: "Blackface Double Vibrato",
+    Amp{atype: 458758, hasDt: true, active: true, name: "Blackface Double Vibrato",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -135,7 +136,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458760, active: true, name: "Hiway 100",
+    Amp{atype: 458760, hasDt: true, active: true, name: "Hiway 100",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -149,7 +150,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458761, active: true, name: "Brit J-45 Normal",
+    Amp{atype: 458761, hasDt: true, active: true, name: "Brit J-45 Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -163,7 +164,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458762, active: true, name: "Brit J-45 Bright",
+    Amp{atype: 458762, hasDt: true, active: true, name: "Brit J-45 Bright",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -177,7 +178,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458763, active: true, name: "Treadplate",
+    Amp{atype: 458763, hasDt: true, active: true, name: "Treadplate",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -191,7 +192,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458764, active: true, name: "Brit P-75 Normal",
+    Amp{atype: 458764, hasDt: true, active: true, name: "Brit P-75 Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -205,7 +206,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458765, active: true, name: "Brit P-75 Bright",
+    Amp{atype: 458765, hasDt: true, active: true, name: "Brit P-75 Bright",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -219,7 +220,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458766, active: true, name: "Super O",
+    Amp{atype: 458766, hasDt: true, active: true, name: "Super O",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -233,7 +234,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458768, active: true, name: "Class A-15",
+    Amp{atype: 458768, hasDt: true, active: true, name: "Class A-15",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -247,7 +248,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458769, active: true, name: "Class A-30 TB",
+    Amp{atype: 458769, hasDt: true, active: true, name: "Class A-30 TB",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -261,7 +262,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458770, active: true, name: "Divide 9/15",
+    Amp{atype: 458770, hasDt: true, active: true, name: "Divide 9/15",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -275,7 +276,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458772, active: true, name: "Gibtone 185",
+    Amp{atype: 458772, hasDt: true, active: true, name: "Gibtone 185",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -289,7 +290,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458773, active: true, name: "Brit J-800",
+    Amp{atype: 458773, hasDt: true, active: true, name: "Brit J-800",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -303,7 +304,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458775, active: true, name: "Bomber Uber",
+    Amp{atype: 458775, hasDt: true, active: true, name: "Bomber Uber",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -317,7 +318,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458777, active: true, name: "Angel F-Ball",
+    Amp{atype: 458777, hasDt: true, active: true, name: "Angel F-Ball",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -331,7 +332,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458779, active: true, name: "phD Motorway Preamp",
+    Amp{atype: 458779, hasDt: true, active: true, name: "phD Motorway Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -340,7 +341,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458780, active: true, name: "Tweed B-Man Normal Preamp",
+    Amp{atype: 458780, hasDt: true, active: true, name: "Tweed B-Man Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -349,7 +350,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458781, active: true, name: "Tweed B-Man Bright Preamp",
+    Amp{atype: 458781, hasDt: true, active: true, name: "Tweed B-Man Bright Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -358,7 +359,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458782, active: true, name: "Blackface ‘Lux Normal Preamp",
+    Amp{atype: 458782, hasDt: true, active: true, name: "Blackface ‘Lux Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -367,7 +368,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458783, active: true, name: "Blackface ‘Lux Vibrato Preamp",
+    Amp{atype: 458783, hasDt: true, active: true, name: "Blackface ‘Lux Vibrato Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -376,7 +377,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458784, active: true, name: "Blackface Double Normal Preamp",
+    Amp{atype: 458784, hasDt: true, active: true, name: "Blackface Double Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -385,7 +386,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458785, active: true, name: "Blackface Double Vibrato Preamp",
+    Amp{atype: 458785, hasDt: true, active: true, name: "Blackface Double Vibrato Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -394,7 +395,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458787, active: true, name: "Hiway 100 Preamp",
+    Amp{atype: 458787, hasDt: true, active: true, name: "Hiway 100 Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -403,7 +404,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458788, active: true, name: "Brit J-45 Normal Preamp",
+    Amp{atype: 458788, hasDt: true, active: true, name: "Brit J-45 Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -412,7 +413,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458789, active: true, name: "Brit J-45 Bright Preamp",
+    Amp{atype: 458789, hasDt: true, active: true, name: "Brit J-45 Bright Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -421,7 +422,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458790, active: true, name: "Treadplate Preamp",
+    Amp{atype: 458790, hasDt: true, active: true, name: "Treadplate Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -430,7 +431,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458791, active: true, name: "Brit P-75 Normal Preamp",
+    Amp{atype: 458791, hasDt: true, active: true, name: "Brit P-75 Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -439,7 +440,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458792, active: true, name: "Brit P-75 Bright Preamp",
+    Amp{atype: 458792, hasDt: true, active: true, name: "Brit P-75 Bright Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -448,7 +449,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458793, active: true, name: "Super O Preamp",
+    Amp{atype: 458793, hasDt: true, active: true, name: "Super O Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -457,7 +458,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458795, active: true, name: "Class A-15 Preamp",
+    Amp{atype: 458795, hasDt: true, active: true, name: "Class A-15 Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -466,7 +467,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458796, active: true, name: "Class A-30 TB Preamp",
+    Amp{atype: 458796, hasDt: true, active: true, name: "Class A-30 TB Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -475,7 +476,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458797, active: true, name: "Divide 9/15 Preamp",
+    Amp{atype: 458797, hasDt: true, active: true, name: "Divide 9/15 Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -484,7 +485,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458799, active: true, name: "Gibtone 185 Preamp",
+    Amp{atype: 458799, hasDt: true, active: true, name: "Gibtone 185 Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -493,7 +494,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458800, active: true, name: "Brit J-800 Preamp",
+    Amp{atype: 458800, hasDt: true, active: true, name: "Brit J-800 Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -502,7 +503,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458802, active: true, name: "Bomber Uber Preamp",
+    Amp{atype: 458802, hasDt: true, active: true, name: "Bomber Uber Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -511,7 +512,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458804, active: true, name: "Angel F-Ball Preamp",
+    Amp{atype: 458804, hasDt: true, active: true, name: "Angel F-Ball Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -520,30 +521,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458834, active: true, name: "Line 6 Elektrik",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
-            }},
-    Amp{atype: 458835, active: true, name: "Line 6 Elektrik Preamp",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            }},
-    Amp{atype: 458837, active: true, name: "Plexi Lead 100 Normal",
+    Amp{atype: 458834, hasDt: true, active: true, name: "Line 6 Elektrik",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -557,7 +535,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458838, active: true, name: "Plexi Lead 100 Normal Preamp",
+    Amp{atype: 458835, hasDt: true, active: true, name: "Line 6 Elektrik Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -566,30 +544,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458840, active: true, name: "Plexi Lead 100 Bright",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
-            }},
-    Amp{atype: 458841, active: true, name: "Plexi Lead 100 Bright Preamp",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            }},
-    Amp{atype: 458843, active: true, name: "Flip Top",
+    Amp{atype: 458837, hasDt: true, active: true, name: "Plexi Lead 100 Normal",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -603,7 +558,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458844, active: true, name: "Flip Top Preamp",
+    Amp{atype: 458838, hasDt: true, active: true, name: "Plexi Lead 100 Normal Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -612,30 +567,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458846, active: true, name: "Solo 100 Clean",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
-            }},
-    Amp{atype: 458847, active: true, name: "Solo 100 Clean Preamp",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            }},
-    Amp{atype: 458849, active: true, name: "Solo 100 Crunch",
+    Amp{atype: 458840, hasDt: true, active: true, name: "Plexi Lead 100 Bright",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -649,7 +581,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458850, active: true, name: "Solo 100 Crunch Preamp",
+    Amp{atype: 458841, hasDt: true, active: true, name: "Plexi Lead 100 Bright Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -658,30 +590,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458852, active: true, name: "Solo 100 OD",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
-            }},
-    Amp{atype: 458853, active: true, name: "Solo 100 OD Preamp",
-        params: []Parameter{
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
-            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
-            }},
-    Amp{atype: 458855, active: true, name: "Line 6 Doom",
+    Amp{atype: 458843, hasDt: true, active: true, name: "Flip Top",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -695,7 +604,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458856, active: true, name: "Line 6 Doom Preamp",
+    Amp{atype: 458844, hasDt: true, active: true, name: "Flip Top Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -704,7 +613,7 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
             }},
-    Amp{atype: 458858, active: true, name: "Line 6 Epic",
+    Amp{atype: 458846, hasDt: true, active: true, name: "Solo 100 Clean",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -718,7 +627,99 @@ var amps = []Amp {
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
             }},
-    Amp{atype: 458859, active: true, name: "Line 6 Epic Preamp",
+    Amp{atype: 458847, hasDt: true, active: true, name: "Solo 100 Clean Preamp",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            }},
+    Amp{atype: 458849, hasDt: true, active: true, name: "Solo 100 Crunch",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
+            }},
+    Amp{atype: 458850, hasDt: true, active: true, name: "Solo 100 Crunch Preamp",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            }},
+    Amp{atype: 458852, hasDt: true, active: true, name: "Solo 100 OD",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
+            }},
+    Amp{atype: 458853, hasDt: true, active: true, name: "Solo 100 OD Preamp",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            }},
+    Amp{atype: 458855, hasDt: true, active: true, name: "Line 6 Doom",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
+            }},
+    Amp{atype: 458856, hasDt: true, active: true, name: "Line 6 Doom Preamp",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            }},
+    Amp{atype: 458858, hasDt: true, active: true, name: "Line 6 Epic",
+        params: []Parameter{
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100001, name: "Mid"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100002, name: "Treble"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100004, name: "Presence"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100005, name: "Volume"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000B, name: "Master"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100008, name: "SAG"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100007, name: "HUM"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100009, name: "Bias"}},
+            &PerCentParam{GenericParameter: GenericParameter{id: 0x3F10000A, name: "Bias X"}},
+            }},
+    Amp{atype: 458859, hasDt: true, active: true, name: "Line 6 Epic Preamp",
         params: []Parameter{
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100003, name: "Drive"}},
             &PerCentParam{GenericParameter: GenericParameter{id: 0x3F100000, name: "Bass"}},
@@ -770,6 +771,10 @@ func GetAmpType() []string {
     return m
 }
 
+func (a *Amp) GetDT() *DT {
+    return a.pb.GetDT2(a.GetID())
+}
+
 func (a *Amp) GetID() uint32 {
     return a.id
 }
@@ -801,6 +806,10 @@ func (a *Amp) GetPos() (uint16, uint8) {
 
 func (a *Amp) GetType() uint32 {
     return a.atype
+}
+
+func (a *Amp) HasDt() bool {
+    return a.hasDt
 }
 
 func (a *Amp) LockData() { a.pb.LockData() }

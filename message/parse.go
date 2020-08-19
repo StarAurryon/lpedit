@@ -150,7 +150,39 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
         copy(data[:], m.data[start:end])
         m.parsePedalBoardItem(pb, data, id)
     }
+    m.parseDT(pb, m.data)
     return nil, pedal.PresetLoad, pb
+}
+
+func (m PresetLoad) parseDT(pb *pedal.PedalBoard, data []byte) {
+    dt := pb.GetDT(0)
+    if dt == nil {
+        log.Printf("Can't find DT ID 0\n")
+    } else {
+        if err := dt.SetBinTopology(data[3124]); err != nil {
+            log.Printf("Error while setting DT ID 0 Topology: %s\n", err)
+        }
+        if err := dt.SetBinClass(data[3125]); err != nil {
+            log.Printf("Error while setting DT ID 0 Class: %s\n", err)
+        }
+        if err := dt.SetBinMode(data[3126]); err != nil {
+            log.Printf("Error while setting DT ID 0 Mode: %s\n", err)
+        }
+    }
+    dt = pb.GetDT(1)
+    if dt == nil {
+        log.Printf("Can't find DT ID 1\n")
+    } else {
+        if err := dt.SetBinTopology(data[3132]); err != nil {
+            log.Printf("Error while setting DT ID 1 Topology: %s\n", err)
+        }
+        if err := dt.SetBinClass(data[3133]); err != nil {
+            log.Printf("Error while setting DT ID 1 Class: %s\n", err)
+        }
+        if err := dt.SetBinMode(data[3134]); err != nil {
+            log.Printf("Error while setting DT ID 1 Mode: %s\n", err)
+        }
+    }
 }
 
 func (m PresetLoad) parsePedalBoardItem(pb *pedal.PedalBoard, data [256]byte, pbiID uint32) {

@@ -65,6 +65,7 @@ type PedalBoardSplitChannel struct{
 
 type PedalBoard struct {
     items         []PedalBoardItem
+    dts           []*DT
     split         PedalBoardSplitChannel
     tempo         float32
     mux           sync.Mutex
@@ -90,6 +91,11 @@ func NewPedalBoard() *PedalBoard {
     for id := uint32(4); id <= 11; id++ {
         pb.items[id] = newNonePedal(id, uint16(id - 4), PedalPosStart, pb)
     }
+
+    pb.dts = make([]*DT, 2)
+    pb.dts[0] = newDT(0, uint32(0),pb)
+    pb.dts[1] = newDT(1, uint32(2),pb)
+
     return pb
 }
 
@@ -105,6 +111,24 @@ func (pb *PedalBoard) GetItem(id uint32) PedalBoardItem {
     for _, pbi := range pb.items {
         if pbi.GetID() == id {
             return pbi
+        }
+    }
+    return nil
+}
+
+func (pb *PedalBoard) GetDT(ID int) *DT {
+    for _, dt := range pb.dts {
+        if dt.GetID() == ID {
+            return dt
+        }
+    }
+    return nil
+}
+
+func (pb *PedalBoard) GetDT2(ampID uint32) *DT {
+    for _, dt := range pb.dts {
+        if dt.GetAmpID() == ampID {
+            return dt
         }
     }
     return nil

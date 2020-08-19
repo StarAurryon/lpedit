@@ -33,6 +33,34 @@ func genHeader(m IMessage) *bytes.Buffer {
     return buf
 }
 
+func genSetupChange(paramID uint32, value uint32) IMessage {
+    var m *SetupChange
+    m = newMessage2(reflect.TypeOf(m)).(*SetupChange)
+    
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, [8]byte{})
+    binary.Write(buf, binary.LittleEndian, paramID)
+    binary.Write(buf, binary.LittleEndian, value)
+    m.data = buf.Bytes()
+
+    return m
+}
+
+func GenDTClassChange(dt *pedal.DT) IMessage {
+    var paramID uint32 = 0x28 + (uint32(dt.GetID()) * 3)
+    return genSetupChange(paramID, uint32(dt.GetBinClass()))
+}
+
+func GenDTModeChange(dt *pedal.DT) IMessage {
+    var paramID uint32 = 0x27 + (uint32(dt.GetID()) * 3)
+    return genSetupChange(paramID, uint32(dt.GetBinMode()))
+}
+
+func GenDTTopologyChange(dt *pedal.DT) IMessage {
+    var paramID uint32 = 0x26 + (uint32(dt.GetID()) * 3)
+    return genSetupChange(paramID, uint32(dt.GetBinTopology()))
+}
+
 func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
     var m *ActiveChange
     m = newMessage2(reflect.TypeOf(m)).(*ActiveChange)

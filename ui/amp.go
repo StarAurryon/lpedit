@@ -73,6 +73,10 @@ func (a *Amp) connectSignal() {
         p.value.ConnectActivated2(p.vfunc)
         p.value.SetEditable(true)
     }
+    a.OnStatus.ConnectClicked(a.onStatusUserChanged)
+    a.ClassAAB.ConnectClicked(a.dtClassAABUserChanged)
+    a.ModeTriPent.ConnectClicked(a.dtModeTriPentUserChanged)
+    a.Topology.ConnectActivated2(a.dtTopologyUserChanged)
 }
 
 func (a *Amp) disconnectSignal() {
@@ -81,6 +85,10 @@ func (a *Amp) disconnectSignal() {
         p.value.DisconnectActivated2()
         p.value.SetEditable(false)
     }
+    a.OnStatus.DisconnectClicked()
+    a.ClassAAB.DisconnectClicked()
+    a.ModeTriPent.DisconnectClicked()
+    a.Topology.DisconnectActivated2()
 }
 
 func (a *Amp) initUI() {
@@ -92,10 +100,45 @@ func (a *Amp) initUI() {
     sort.Strings(keys)
 
     a.AmpModel.AddItems(keys)
+    a.Topology.AddItems(pedal.GetAllowedTopology())
 }
 
 func (a *Amp) ampModelUserChanged(fxType string) {
     a.ctrl.SetAmpType(uint32(a.id), a.AmpModel.CurrentText())
+}
+
+func (a *Amp) dtClassAABUserChanged(state bool) {
+    var value string
+    if state {
+        value = "A/B"
+    } else {
+        value = "A"
+    }
+    if err := a.ctrl.SetDTClass(a.id, value); err != nil {
+        mb := widgets.NewQMessageBox(a)
+        mb.Critical(a, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
+    }
+}
+
+func (a *Amp) dtModeTriPentUserChanged(state bool) {
+    var value string
+    if state {
+        value = "Pent"
+    } else {
+        value = "Tri"
+    }
+
+    if err := a.ctrl.SetDTMode(a.id, value); err != nil {
+        mb := widgets.NewQMessageBox(a)
+        mb.Critical(a, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
+    }
+}
+
+func (a *Amp) dtTopologyUserChanged(value string) {
+    if err := a.ctrl.SetDTTopology(a.id, value); err != nil {
+        mb := widgets.NewQMessageBox(a)
+        mb.Critical(a, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
+    }
 }
 
 func (a *Amp) getParameter(id uint32) *Parameter{
@@ -107,10 +150,22 @@ func (a *Amp) getParameter(id uint32) *Parameter{
     return nil
 }
 
+func (a *Amp) hideDt() {
+    a.DtLabel.Hide()
+    a.ClassAAB.Hide()
+    a.ModeTriPent.Hide()
+    a.Topology.Hide()
+    a.TopologyLbl.Hide()
+}
+
 func (a *Amp) hideParameter(p *Parameter) {
     p.label.Hide()
     p.mid.Hide()
     p.value.Hide()
+}
+
+func (a *Amp) onStatusUserChanged(state bool) {
+    a.ctrl.SetAmpActive(uint32(a.id), state)
 }
 
 func (a *Amp) parameter0Changed(val string) { a.parameterChanged(&a.parameters[0], val) }
@@ -145,6 +200,15 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
         } else {
             a.parent.amps[1].Show()
         }
+    }
+    if amp.HasDt() {
+        a.showDt()
+        dt := amp.GetDT()
+        a.ClassAAB.SetChecked(dt.GetClass() == "A/B")
+        a.ModeTriPent.SetChecked(dt.GetMode() == "Pent")
+        a.Topology.SetCurrentText(dt.GetTopology())
+    } else {
+        a.hideDt()
     }
     a.setActive(amp.GetActive())
     a.AmpModel.SetCurrentText(amp.GetName())
@@ -182,6 +246,14 @@ func (a *Amp) setParameterValueList(p *Parameter, s []string) {
 
 func (a *Amp) setParameterValue(p *Parameter, s string) {
     p.value.SetCurrentText(s)
+}
+
+func (a *Amp) showDt() {
+    a.DtLabel.Show()
+    a.ClassAAB.Show()
+    a.ModeTriPent.Show()
+    a.Topology.Show()
+    a.TopologyLbl.Show()
 }
 
 func (a *Amp) showParameter(p *Parameter) {

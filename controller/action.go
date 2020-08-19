@@ -20,6 +20,7 @@ package controller
 
 import "bytes"
 import "encoding/binary"
+import "fmt"
 
 import "github.com/StarAurryon/lpedit/pedal"
 import "github.com/StarAurryon/lpedit/message"
@@ -78,6 +79,102 @@ func (c *Controller) QueryAllSets() {
         c.syncPreset = false
     }
     go f()
+}
+
+func (c *Controller) SetDTClass(dtID int, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT(dtID)
+    if dt == nil {
+        return fmt.Errorf("DT not found ID:%d", dtID)
+    }
+    return c.setDTClass(dt, value)
+}
+
+func (c *Controller) SetDTClass2(ampID uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT2(ampID)
+    if dt == nil {
+        return fmt.Errorf("DT not found AmpID:%d", ampID)
+    }
+    return c.setDTClass(dt, value)
+}
+
+func (c *Controller) setDTClass(dt *pedal.DT, value string) error {
+    err := dt.SetClass(value)
+    if err != nil {
+        return err
+    }
+    m := message.GenDTClassChange(dt)
+    go c.writeMessage(m, 0, 0)
+    return nil
+}
+
+func (c *Controller) SetDTMode(dtID int, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT(dtID)
+    if dt == nil {
+        return fmt.Errorf("DT not found ID:%d", dtID)
+    }
+    return c.setDTMode(dt, value)
+}
+
+func (c *Controller) SetDTMode2(ampID uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT2(ampID)
+    if dt == nil {
+        return fmt.Errorf("DT not found AmpID:%d", ampID)
+    }
+    return c.setDTMode(dt, value)
+}
+
+func (c *Controller) setDTMode(dt *pedal.DT, value string) error {
+    err := dt.SetMode(value)
+    if err != nil {
+        return err
+    }
+    m := message.GenDTModeChange(dt)
+    go c.writeMessage(m, 0, 0)
+    return nil
+}
+
+func (c *Controller) SetDTTopology(dtID int, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT(dtID)
+    if dt == nil {
+        return fmt.Errorf("DT not found ID:%d", dtID)
+    }
+    return c.setDTTopology(dt, value)
+}
+
+func (c *Controller) SetDTTopology2(ampID uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    dt := c.pb.GetDT2(ampID)
+    if dt == nil {
+        return fmt.Errorf("DT not found AmpID:%d", ampID)
+    }
+    return c.setDTTopology(dt, value)
+}
+
+func (c *Controller) setDTTopology(dt *pedal.DT, value string) error {
+    err := dt.SetTopology(value)
+    if err != nil {
+        return err
+    }
+    m := message.GenDTTopologyChange(dt)
+    go c.writeMessage(m, 0, 0)
+    return nil
 }
 
 func (c *Controller) SetAmpParameterValue(id uint32, pid uint32, value string) error {
@@ -177,6 +274,10 @@ func (c *Controller) SetPedalBoardItemParameterValueMax(id uint32, pid uint32, v
     go c.writeMessage(m, 0, 0)
     c.pb.UnlockData()
     return nil
+}
+
+func (c *Controller) SetAmpActive(id uint32, active bool) {
+    c.SetPedalBoardItemActive(id*2, active)
 }
 
 func (c *Controller) SetPedalActive(id uint32, active bool) {
