@@ -181,7 +181,9 @@ func (c *Controller) processRawMessage() {
                 }
                 m = _m
             case message.RawMessageExt:
-                m.Extend(_m)
+                if m != nil {
+                    m.Extend(_m)
+                }
             }
         }
     }
@@ -197,7 +199,7 @@ func (c *Controller) readRawMessage() {
         default:
             buf := c.hwdep.Read(1000)
             if len(buf) == 0 {
-                time.Sleep(100 * time.Millisecond)
+                time.Sleep(1 * time.Millisecond)
                 continue
             }
             c.readQueue <- message.NewRawMessage(buf)
