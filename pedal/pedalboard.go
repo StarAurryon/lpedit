@@ -85,9 +85,9 @@ func NewPedalBoard() *PedalBoard {
     pb.items = make([]PedalBoardItem, 12)
 
     pb.items[0] = newDisAmp(uint32(0), uint16(0), AmpAPos, pb)
-    pb.items[1] = newNoCab(uint32(1), pb)
+    pb.items[1] = newNoCab(uint32(1), uint16(0), AmpAPos, pb)
     pb.items[2] = newDisAmp(uint32(2), uint16(0), AmpBPos, pb)
-    pb.items[3] = newNoCab(uint32(3), pb)
+    pb.items[3] = newNoCab(uint32(3), uint16(0), AmpBPos, pb)
     for id := uint32(4); id <= 11; id++ {
         pb.items[id] = newNonePedal(id, uint16(id - 4), PedalPosStart, pb)
     }
@@ -104,6 +104,14 @@ func (pb *PedalBoard) GetAmp(id int) *Amp {
         return nil
     }
     a, _ := pb.GetItem(uint32(id*2)).(*Amp)
+    return a
+}
+
+func (pb *PedalBoard) GetCab(id int) *Cab {
+    if id < 0 || id > 2 {
+        return nil
+    }
+    a, _ := pb.GetItem(uint32((id*2) + 1)).(*Cab)
     return a
 }
 

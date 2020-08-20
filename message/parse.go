@@ -26,6 +26,22 @@ import "reflect"
 
 import "github.com/StarAurryon/lpedit/pedal"
 
+const (
+    setupMessageTempo uint32 = 0x17
+    setupMessageCab0ER uint32 = 0x32
+    setupMessageCab1ER uint32 = 0x33
+    setupMessageCab0Mic uint32 = 0x34
+    setupMessageCab1Mic uint32 = 0x35
+    setupMessageCab0LoCut uint32 = 0x57
+    setupMessageCab1LoCut uint32 = 0x58
+    setupMessageCab0ResLvl uint32 = 0x59
+    setupMessageCab1ResLvl uint32 = 0x5a
+    setupMessageCab0Thump uint32 = 0x5b
+    setupMessageCab1Thump uint32 = 0x5c
+    setupMessageCab0Decay uint32 = 0x5d
+    setupMessageCab1Decay uint32 = 0x5e
+)
+
 type presetPedalPos struct {
     pid   uint32
     ptype uint8
@@ -151,36 +167,51 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
         m.parsePedalBoardItem(pb, data, id)
     }
     m.parseDT(pb, m.data)
+    m.parseCabs(pb, m.data)
     return nil, pedal.PresetLoad, pb
 }
 
-func (m PresetLoad) parseDT(pb *pedal.PedalBoard, data []byte) {
-    dt := pb.GetDT(0)
-    if dt == nil {
-        log.Printf("Can't find DT ID 0\n")
-    } else {
-        if err := dt.SetBinTopology(data[3124]); err != nil {
-            log.Printf("Error while setting DT ID 0 Topology: %s\n", err)
+func (m PresetLoad) parseCabs(pb *pedal.PedalBoard, data []byte) {
+    cabs := []*pedal.Cab {pb.GetCab(0), pb.GetCab(1)}
+    offset := [2][2]int{[2]int{3412, 4096}, [2]int{3420, 4097}}
+    parametersID := [2]uint32{pedal.CabERID, pedal.CabMicID}
+    parametersSize := [2]int{4, 1}
+    for i, cab := range cabs {
+        if cab == nil {
+            log.Printf("Can't find Cab ID %d\n", i)
+            continue
         }
-        if err := dt.SetBinClass(data[3125]); err != nil {
-            log.Printf("Error while setting DT ID 0 Class: %s\n", err)
-        }
-        if err := dt.SetBinMode(data[3126]); err != nil {
-            log.Printf("Error while setting DT ID 0 Mode: %s\n", err)
+        for j, pType := range parametersID {
+            p := cab.GetParam(pType)
+            if p == nil {
+                log.Printf("Can't find Cab ID %d, parameter %d\n", i, pType)
+                continue
+            }
+            value := [4]byte{}
+            copy(value[:], data[offset[i][j]:offset[i][j]+parametersSize[j]])
+            if err := p.SetBinValueCurrent(value); err != nil {
+                log.Printf("Can't set value Cab ID %d, parameter %d: %s\n", i, pType, err)
+            }
         }
     }
-    dt = pb.GetDT(1)
-    if dt == nil {
-        log.Printf("Can't find DT ID 1\n")
-    } else {
-        if err := dt.SetBinTopology(data[3132]); err != nil {
-            log.Printf("Error while setting DT ID 1 Topology: %s\n", err)
-        }
-        if err := dt.SetBinClass(data[3133]); err != nil {
-            log.Printf("Error while setting DT ID 1 Class: %s\n", err)
-        }
-        if err := dt.SetBinMode(data[3134]); err != nil {
-            log.Printf("Error while setting DT ID 1 Mode: %s\n", err)
+}
+
+func (m PresetLoad) parseDT(pb *pedal.PedalBoard, data []byte) {
+    dts := []*pedal.DT{pb.GetDT(0), pb.GetDT(1)}
+    offset := [2][3]int{[3]int{3124,3125,3126}, [3]int{3132, 3133, 3134}}
+    for i, dt := range dts {
+        if dt == nil {
+            log.Printf("Can't find DT ID %d\n", i)
+        } else {
+            if err := dt.SetBinTopology(data[offset[i][0]]); err != nil {
+                log.Printf("Error while setting DT ID %d Topology: %s\n", i, err)
+            }
+            if err := dt.SetBinClass(data[offset[i][1]]); err != nil {
+                log.Printf("Error while setting DT ID %d Class: %s\n", i, err)
+            }
+            if err := dt.SetBinMode(data[offset[i][2]]); err != nil {
+                log.Printf("Error while setting DT ID %d Mode: %s\n", i, err)
+            }
         }
     }
 }
@@ -203,15 +234,40 @@ func (m PresetLoad) parsePedalBoardItem(pb *pedal.PedalBoard, data [256]byte, pb
 
     const offset = 16
     var paramData [20]byte
-    for i := uint16(0); i < pbi.GetParamLen(); i++ {
-        start := offset + (i * 20)
-        end := start + 20
-        copy(paramData[:], data[start:end])
-        m.parseParameter(pbi, paramData, &tempos)
+    switch pbi.(type) {
+    case *pedal.Cab:
+        for i, pType := range []uint32{pedal.CabLowCutID, pedal.CabResLevelID,
+            pedal.CabThumpID, pedal.CabDecayID} {
+            start := offset + (i * 20)
+            end := start + 20
+            copy(paramData[:], data[start:end])
+            m.parseParameterCab(pbi, paramData, pType)
+        }
+    default:
+        for i := uint16(0); i < pbi.GetParamLen(); i++ {
+            start := offset + (i * 20)
+            end := start + 20
+            copy(paramData[:], data[start:end])
+            m.parseParameterNormal(pbi, paramData, &tempos)
+        }
     }
 }
 
-func (m PresetLoad) parseParameter(pbi pedal.PedalBoardItem, data [20]byte, tempos *[]uint8) {
+func (m PresetLoad) parseParameterCab(pbi pedal.PedalBoardItem, data [20]byte, paramID uint32) {
+    param := pbi.GetParam(paramID)
+    if param == nil {
+        log.Printf("TODO: Parameter ID %d does not exist on item type %s\n",
+            paramID, pbi.GetName())
+        return
+    }
+    binValue := [4]byte{}
+    copy(binValue[:], data[4:8])
+    if err := param.SetBinValueCurrent(binValue); err != nil {
+        log.Printf("TODO: Fix the parameter type on pedal %s, parameter %s current : %s \n", pbi.GetName(), param.GetName(), err)
+    }
+}
+
+func (m PresetLoad) parseParameterNormal(pbi pedal.PedalBoardItem, data [20]byte, tempos *[]uint8) {
     paramID := binary.LittleEndian.Uint32(data[0:4])
     param := pbi.GetParam(paramID)
     if param == nil {
@@ -220,7 +276,7 @@ func (m PresetLoad) parseParameter(pbi pedal.PedalBoardItem, data [20]byte, temp
         return
     }
 
-    var v, vMin, vMax float32
+    var v float32
     switch param.(type) {
     case *pedal.TempoParam:
         var tempo uint8
@@ -234,8 +290,6 @@ func (m PresetLoad) parseParameter(pbi pedal.PedalBoardItem, data [20]byte, temp
         binary.Read(bytes.NewReader(data[4:8]), binary.LittleEndian, &v)
     }
 
-    binary.Read(bytes.NewReader(data[8:12]), binary.LittleEndian, &vMin)
-    binary.Read(bytes.NewReader(data[12:16]), binary.LittleEndian, &vMax)
     binValue := [4]byte{}
     buf := new(bytes.Buffer)
     binary.Write(buf, binary.LittleEndian, v)
@@ -243,9 +297,11 @@ func (m PresetLoad) parseParameter(pbi pedal.PedalBoardItem, data [20]byte, temp
     if err := param.SetBinValueCurrent(binValue); err != nil {
         log.Printf("TODO: Fix the parameter type on pedal %s, parameter %s current : %s \n", pbi.GetName(), param.GetName(), err)
     }
+    copy(binValue[:], data[8:12])
     if err := param.SetBinValueMin(binValue); err != nil {
         log.Printf("TODO: Fix the parameter type on pedal %s, parameter %s min: %s \n", pbi.GetName(), param.GetName(), err)
     }
+    copy(binValue[:], data[12:16])
     if err := param.SetBinValueMax(binValue); err != nil {
         log.Printf("TODO: Fix the parameter type on pedal %s, parameter %s max: %s \n", pbi.GetName(), param.GetName(), err)
     }
@@ -262,8 +318,58 @@ func (m SetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface
 }
 
 func (m SetupChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+    setupType := binary.LittleEndian.Uint32(m.data[16:20])
+    var value [4]byte
+    copy(value[:], m.data[20:])
+
+    switch setupType {
+    case setupMessageTempo:
+        return m.parseTempo(pb, value)
+    case setupMessageCab0ER:
+        return m.parseCab(pb, 0, pedal.CabERID, value)
+    case setupMessageCab1ER:
+        return m.parseCab(pb, 1, pedal.CabERID, value)
+    case setupMessageCab0Mic:
+        return m.parseCab(pb, 0, pedal.CabMicID, value)
+    case setupMessageCab1Mic:
+        return m.parseCab(pb, 1, pedal.CabMicID, value)
+    case setupMessageCab0LoCut:
+        return m.parseCab(pb, 0, pedal.CabLowCutID, value)
+    case setupMessageCab1LoCut:
+        return m.parseCab(pb, 1, pedal.CabLowCutID, value)
+    case setupMessageCab0ResLvl:
+        return m.parseCab(pb, 0, pedal.CabResLevelID, value)
+    case setupMessageCab1ResLvl:
+        return m.parseCab(pb, 1, pedal.CabResLevelID, value)
+    case setupMessageCab0Thump:
+        return m.parseCab(pb, 0, pedal.CabThumpID, value)
+    case setupMessageCab1Thump:
+        return m.parseCab(pb, 1, pedal.CabThumpID, value)
+    case setupMessageCab0Decay:
+        return m.parseCab(pb, 0, pedal.CabDecayID, value)
+    case setupMessageCab1Decay:
+        return m.parseCab(pb, 1, pedal.CabDecayID, value)
+    }
+
+    return nil, pedal.None, nil
+}
+
+func (m SetupChange) parseCab(pb *pedal.PedalBoard, ID int, paramID uint32, value [4]byte) (error, pedal.ChangeType, interface{}) {
+    c := pb.GetCab(ID)
+    if c == nil {
+        return fmt.Errorf("Can't find Cab %d", ID), pedal.Warning, nil
+    }
+    p := c.GetParam(paramID)
+    if p == nil {
+        return fmt.Errorf("Can't get param %d, for Cab %d", paramID, ID), pedal.Warning, nil
+    }
+    p.SetBinValueCurrent(value)
+    return nil, pedal.ParameterChange, p
+}
+
+func (m SetupChange) parseTempo(pb *pedal.PedalBoard, value [4]byte) (error, pedal.ChangeType, interface{}) {
     var v float32
-    err := binary.Read(bytes.NewReader(m.data[20:]), binary.LittleEndian, &v)
+    err := binary.Read(bytes.NewReader(value[:]), binary.LittleEndian, &v)
     if err != nil {
         return err, pedal.Warning, nil
     }

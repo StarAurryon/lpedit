@@ -134,12 +134,6 @@ func (p *Pedal) getParameter(id uint32) *Parameter{
     return nil
 }
 
-func (p *Pedal) hideParameter(param *Parameter) {
-    param.label.Hide()
-    param.mid.Hide()
-    param.value.Hide()
-}
-
 func (p *Pedal) parameter0Changed(v string){ p.parameterChanged(&p.parameters[0], v) }
 func (p *Pedal) parameter1Changed(v string){ p.parameterChanged(&p.parameters[1], v) }
 func (p *Pedal) parameter2Changed(v string){ p.parameterChanged(&p.parameters[2], v) }
@@ -167,36 +161,13 @@ func (p *Pedal) setActive(status bool) {
     p.OnStatus.SetChecked(status)
 }
 
-func (p *Pedal) setParameterLabel(param *Parameter, s string) {
-    param.label.SetText(s)
-}
-
-func (p *Pedal) setParameterValueEditable(param *Parameter, editable bool) {
-    param.value.SetEditable(editable)
-}
-
-func (p *Pedal) setParameterValueList(param *Parameter, s []string) {
-    param.value.Clear()
-    param.value.AddItems(s)
-}
-
-func (p *Pedal) setParameterValue(param *Parameter, s string) {
-    param.value.SetCurrentText(s)
-}
-
-func (p *Pedal) showParameter(param *Parameter) {
-    param.label.Show()
-    param.mid.Show()
-    param.value.Show()
-}
-
 func (pUI *Pedal) updatePedal(p *pedal.Pedal) {
     pUI.setActive(p.GetActive())
     pUI.FxType.SetCurrentText(p.GetSType())
     pUI.FxModel.SetCurrentText(p.GetName())
     for i := range pUI.parameters {
         pUI.parameters[i].id = 0
-        pUI.hideParameter(&pUI.parameters[i])
+        pUI.parameters[i].hide()
     }
     for i, param := range p.GetParams() {
         pUI.parameters[i].id = param.GetID()
@@ -221,13 +192,13 @@ func (pUI * Pedal) updateParam(p pedal.Parameter) {
         values = append([]string{p.GetValueCurrent()}, values...)
     }
 
-    pUI.setParameterValueList(param, values)
+    param.setValueList(values)
     if p.IsAllowingOtherValues() {
-        pUI.setParameterValueEditable(param, true)
+        param.setValueEditable(true)
     } else {
-        pUI.setParameterValueEditable(param, false)
+        param.setValueEditable(false)
     }
-    pUI.setParameterValue(param, p.GetValueCurrent())
-    pUI.setParameterLabel(param, p.GetName())
-    pUI.showParameter(param)
+    param.setValue(p.GetValueCurrent())
+    param.setLabel(p.GetName())
+    param.show()
 }

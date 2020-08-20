@@ -181,6 +181,27 @@ func (c *Controller) SetAmpParameterValue(id uint32, pid uint32, value string) e
     return c.SetPedalBoardItemParameterValue(id*2, pid, value)
 }
 
+func (c *Controller) SetCabParameterValue(id uint32, pid uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    pbi := c.pb.GetItem((id*2) + 1);
+    if pbi == nil {
+        return nil
+    }
+    p := pbi.GetParam(pid)
+    if p == nil {
+        return nil
+    }
+    err := p.SetValueCurrent(value)
+    if err != nil {
+        return err
+    }
+    m := message.GenParameterCabChange(p)
+    go c.writeMessage(m, 0, 0)
+    return nil
+}
+
 func (c *Controller) SetPedalParameterValue(id uint32, pid uint32, value string) error {
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)
 }
@@ -188,19 +209,17 @@ func (c *Controller) SetPedalParameterValue(id uint32, pid uint32, value string)
 func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
     c.pb.LockData()
+    defer c.pb.UnlockData()
     pbi := c.pb.GetItem(id);
     if pbi == nil {
-        c.pb.UnlockData()
         return nil
     }
     p := pbi.GetParam(pid)
     if p == nil {
-        c.pb.UnlockData()
         return nil
     }
     err := p.SetValueCurrent(value)
     if err != nil {
-        c.pb.UnlockData()
         return err
     }
     switch p2 := p.(type) {
@@ -224,7 +243,6 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, valu
         m := message.GenParameterChange(p)
         go c.writeMessage(m, 0, 0)
     }
-    c.pb.UnlockData()
     return nil
 }
 

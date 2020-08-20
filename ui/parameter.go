@@ -27,3 +27,52 @@ type Parameter struct {
     value *widgets.QComboBox
     vfunc func(string)
 }
+
+func (param *Parameter) setLabel(s string) {
+    if param.label != nil {
+        param.label.SetText(s)
+    }
+}
+
+func (param *Parameter) setValueEditable(editable bool) {
+    if param.value != nil {
+        param.value.SetEditable(editable)
+    }
+}
+
+func (param *Parameter) setValueList(s []string) {
+    if param.value != nil {
+        param.value.Clear()
+        param.value.AddItems(s)
+    }
+}
+
+func (param *Parameter) setValue( s string) {
+    if param.value != nil {
+        param.value.SetCurrentText(s)
+    }
+}
+
+func (param *Parameter) hide() {
+    if param.label != nil {
+        param.label.Hide()
+    }
+    if param.mid != nil {
+        param.mid.Hide()
+    }
+    if param.value != nil {
+        param.value.Hide()
+    }
+}
+
+func (param *Parameter) show() {
+    if param.label != nil {
+        param.label.Show()
+    }
+    if param.mid != nil {
+        param.mid.Show()
+    }
+    if param.value != nil {
+        param.value.Show()
+    }
+}

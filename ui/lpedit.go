@@ -33,6 +33,7 @@ type LPEdit struct {
     pbSelector *PBSelector
     ctrl       *qtctrl.Controller
     amps       []*Amp
+    cabs       []*Cab
     pedals     []*Pedal
 }
 
@@ -59,6 +60,9 @@ func (l *LPEdit) connectSignal() {
     for _, amp := range l.amps {
         amp.connectSignal()
     }
+    for _, cab := range l.cabs {
+        cab.connectSignal()
+    }
     for _, pedal := range l.pedals {
         pedal.connectSignal()
     }
@@ -78,6 +82,9 @@ func (l *LPEdit) disconnectSignal() {
     for _, amp := range l.amps {
         amp.disconnectSignal()
     }
+    for _, cab := range l.cabs {
+        cab.disconnectSignal()
+    }
     for _, pedal := range l.pedals {
         pedal.disconnectSignal()
     }
@@ -95,8 +102,34 @@ func (l *LPEdit) init() {
     l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
 }
 
+func (l *LPEdit) initAmpsCabs() {
+    ampType := pedal.GetAmpType()
+    cabType := pedal.GetCabType()
+
+    names := []string{"Amp A", "Amp B"}
+
+    for i := 0; i <= len(names); i++ {
+        line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
+        line.SetFrameShape(widgets.QFrame__HLine)
+        line.SetFrameShadow(widgets.QFrame__Sunken)
+        l.ScrollAmpW.Layout().AddWidget(line)
+        if i < len(names) {
+            a := NewAmp(l, l.ScrollAmpW, l.ctrl, ampType, i, names[i])
+            l.ScrollAmpW.Layout().AddWidget(a)
+            l.amps = append(l.amps, a)
+            line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
+            line.SetFrameShape(widgets.QFrame__HLine)
+            line.SetFrameShadow(widgets.QFrame__Sunken)
+            l.ScrollAmpW.Layout().AddWidget(line)
+            c := NewCab(l, l.ScrollAmpW, l.ctrl, cabType, i)
+            l.ScrollAmpW.Layout().AddWidget(c)
+            l.cabs = append(l.cabs, c)
+        }
+    }
+}
+
 func (l *LPEdit) initPedals() {
-    pedalType := l.ctrl.GetPedalType()
+    pedalType := pedal.GetPedalType()
 
     for i := 0; i < 9; i++ {
         line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
@@ -153,6 +186,8 @@ func (l *LPEdit) updateParameter(param pedal.Parameter) {
     switch p := pbi.(type) {
     case *pedal.Amp:
         l.amps[p.GetID()/2].updateParam(param)
+    case *pedal.Cab:
+        l.cabs[p.GetID()/2].updateParam(param)
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].updateParam(param)
     }
@@ -165,6 +200,9 @@ func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
     l.updatePedalBoardView(pb)
     for i, a := range l.amps {
         a.updateAmp(pb.GetAmp(i))
+    }
+    for i, c := range l.cabs {
+        c.updateCab(pb.GetCab(i))
     }
     for i, p := range l.pedals {
         p.updatePedal(pb.GetPedal2(i))

@@ -18,7 +18,6 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/core"
 import "github.com/StarAurryon/qt/widgets"
 
 import "sort"
@@ -158,12 +157,6 @@ func (a *Amp) hideDt() {
     a.TopologyLbl.Hide()
 }
 
-func (a *Amp) hideParameter(p *Parameter) {
-    p.label.Hide()
-    p.mid.Hide()
-    p.value.Hide()
-}
-
 func (a *Amp) onStatusUserChanged(state bool) {
     a.ctrl.SetAmpActive(uint32(a.id), state)
 }
@@ -197,8 +190,10 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
     if a.id == 0 {
         if pos, _ := amp.GetPos(); pos != 0 {
             a.parent.amps[1].Hide()
+            a.parent.cabs[1].Hide()
         } else {
             a.parent.amps[1].Show()
+            a.parent.cabs[1].Show()
         }
     }
     if amp.HasDt() {
@@ -214,7 +209,7 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
     a.AmpModel.SetCurrentText(amp.GetName())
     for i := range a.parameters {
         a.parameters[i].id = 0
-        a.hideParameter(&a.parameters[i])
+        a.parameters[i].hide()
     }
     for i, param := range amp.GetParams() {
         a.parameters[i].id = param.GetID()
@@ -224,28 +219,14 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
 
 func (a *Amp) updateParam(p pedal.Parameter) {
     param := a.getParameter(p.GetID())
-    if param == nil { return }
-    a.setParameterValueList(param, []string{p.GetValueCurrent()})
-    a.setParameterValue(param, p.GetValueCurrent())
-    a.setParameterLabel(param, p.GetName())
-    a.showParameter(param)
+    param.setValueList([]string{p.GetValueCurrent()})
+    param.setValue(p.GetValueCurrent())
+    param.setLabel(p.GetName())
+    param.show()
 }
 
 func (a *Amp) setActive(status bool) {
     a.OnStatus.SetChecked(status)
-}
-
-func (a *Amp) setParameterLabel(p *Parameter, s string) {
-    p.label.SetText(s)
-}
-
-func (a *Amp) setParameterValueList(p *Parameter, s []string) {
-    p.value.Clear()
-    p.value.AddItems(s)
-}
-
-func (a *Amp) setParameterValue(p *Parameter, s string) {
-    p.value.SetCurrentText(s)
 }
 
 func (a *Amp) showDt() {
@@ -254,28 +235,4 @@ func (a *Amp) showDt() {
     a.ModeTriPent.Show()
     a.Topology.Show()
     a.TopologyLbl.Show()
-}
-
-func (a *Amp) showParameter(p *Parameter) {
-    p.label.Show()
-    p.mid.Show()
-    p.value.Show()
-}
-
-func (l *LPEdit) initAmpsCabs() {
-    pedalType := l.ctrl.GetAmpType()
-
-    names := []string{"Amp A", "Amp B"}
-
-    for i := 0; i <= len(names); i++ {
-        line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
-        line.SetFrameShape(widgets.QFrame__HLine)
-        line.SetFrameShadow(widgets.QFrame__Sunken)
-        l.ScrollAmpW.Layout().AddWidget(line)
-        if i < len(names) {
-            a := NewAmp(l, l.ScrollPedalW, l.ctrl, pedalType, i, names[i])
-            l.ScrollAmpW.Layout().AddWidget(a)
-            l.amps = append(l.amps, a)
-        }
-    }
 }

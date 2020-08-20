@@ -33,12 +33,13 @@ func genHeader(m IMessage) *bytes.Buffer {
     return buf
 }
 
-func genSetupChange(paramID uint32, value uint32) IMessage {
+func genSetupChange(paramID uint32, vtype uint32, value [4]byte) IMessage {
     var m *SetupChange
     m = newMessage2(reflect.TypeOf(m)).(*SetupChange)
-    
+
     buf := genHeader(m)
-    binary.Write(buf, binary.LittleEndian, [8]byte{})
+    binary.Write(buf, binary.LittleEndian, [4]byte{})
+    binary.Write(buf, binary.LittleEndian, vtype)
     binary.Write(buf, binary.LittleEndian, paramID)
     binary.Write(buf, binary.LittleEndian, value)
     m.data = buf.Bytes()
@@ -48,17 +49,20 @@ func genSetupChange(paramID uint32, value uint32) IMessage {
 
 func GenDTClassChange(dt *pedal.DT) IMessage {
     var paramID uint32 = 0x28 + (uint32(dt.GetID()) * 3)
-    return genSetupChange(paramID, uint32(dt.GetBinClass()))
+    value := [4]byte{dt.GetBinClass()}
+    return genSetupChange(paramID, pedal.Int32Type, value)
 }
 
 func GenDTModeChange(dt *pedal.DT) IMessage {
     var paramID uint32 = 0x27 + (uint32(dt.GetID()) * 3)
-    return genSetupChange(paramID, uint32(dt.GetBinMode()))
+    value := [4]byte{dt.GetBinMode()}
+    return genSetupChange(paramID, pedal.Int32Type, value)
 }
 
 func GenDTTopologyChange(dt *pedal.DT) IMessage {
     var paramID uint32 = 0x26 + (uint32(dt.GetID()) * 3)
-    return genSetupChange(paramID, uint32(dt.GetBinTopology()))
+    value := [4]byte{dt.GetBinTopology()}
+    return genSetupChange(paramID, pedal.Int32Type, value)
 }
 
 func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
@@ -92,6 +96,39 @@ func GenParameterChange(p pedal.Parameter) IMessage {
     var m *ParameterChange
     m = newMessage2(reflect.TypeOf(m)).(*ParameterChange)
     return genParameterChange(m, p.GetBinValueCurrent(), p)
+}
+
+func GenParameterCabChange(p pedal.Parameter) IMessage {
+    var paramID uint32
+    cabID, pID := p.GetParent().GetID()/2, p.GetID()
+
+    switch  {
+    case cabID == 0 && pID == pedal.CabERID:
+        paramID = setupMessageCab0ER
+    case cabID == 1 && pID == pedal.CabERID:
+        paramID = setupMessageCab1ER
+    case cabID == 0 && pID == pedal.CabMicID:
+        paramID = setupMessageCab0Mic
+    case cabID == 1 && pID == pedal.CabMicID:
+        paramID = setupMessageCab1Mic
+    case cabID == 0 && pID == pedal.CabLowCutID:
+        paramID = setupMessageCab0LoCut
+    case cabID == 1 && pID == pedal.CabLowCutID:
+        paramID = setupMessageCab1LoCut
+    case cabID == 0 && pID == pedal.CabResLevelID:
+        paramID = setupMessageCab0ResLvl
+    case cabID == 1 && pID == pedal.CabResLevelID:
+        paramID = setupMessageCab1ResLvl
+    case cabID == 0 && pID == pedal.CabThumpID:
+        paramID = setupMessageCab0Thump
+    case cabID == 1 && pID == pedal.CabThumpID:
+        paramID = setupMessageCab1Thump
+    case cabID == 0 && pID == pedal.CabDecayID:
+        paramID = setupMessageCab0Decay
+    case cabID == 1 && pID == pedal.CabDecayID:
+        paramID = setupMessageCab1Decay
+    }
+    return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
 }
 
 func GenParameterChangeMin(p pedal.Parameter) IMessage {

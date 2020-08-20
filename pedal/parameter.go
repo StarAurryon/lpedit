@@ -244,6 +244,9 @@ func (p *ListParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *ListParam) GetBinValueType() uint32 { return p.binValueType }
 
 func (p *ListParam) getValue(v interface{}) string {
+    if v == nil {
+        return p.list[0]
+    }
     switch p.binValueType {
     case Int32Type:
         value := v.(int32)
