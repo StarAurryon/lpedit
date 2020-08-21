@@ -35,10 +35,18 @@ type LPEdit struct {
     amps       []*Amp
     cabs       []*Cab
     pedals     []*Pedal
+    parameters []Parameter
 }
 
 func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
     l := &LPEdit{LPEditUI: NewLPEditUI(p), ctrl: c}
+    l.parameters = make([]Parameter, 3)
+    l.parameters[0] = Parameter{label: l.InputSource1Lbl,
+        value: l.InputSource1, vfunc: l.parameter0Changed}
+    l.parameters[1] = Parameter{label: l.InputSource2Lbl,
+        value: l.InputSource2, vfunc: l.parameter1Changed}
+    l.parameters[2] = Parameter{label: l.GuitarInZLbl,
+        value: l.GuitarInZ, vfunc: l.parameter2Changed}
     l.init()
     return l
 }
@@ -66,6 +74,11 @@ func (l *LPEdit) connectSignal() {
     for _, pedal := range l.pedals {
         pedal.connectSignal()
     }
+
+    for _, p := range l.parameters {
+        p.value.ConnectActivated2(p.vfunc)
+        p.value.SetEditable(true)
+    }
 }
 
 func (l *LPEdit) disconnectSignal() {
@@ -87,6 +100,11 @@ func (l *LPEdit) disconnectSignal() {
     }
     for _, pedal := range l.pedals {
         pedal.disconnectSignal()
+    }
+
+    for _, p := range l.parameters {
+        p.value.DisconnectActivated2()
+        p.value.SetEditable(false)
     }
 }
 
@@ -156,6 +174,24 @@ func (l *LPEdit) aboutClick(vbo bool) {
     l.about.Raise()
 }
 
+func (l *LPEdit) getParameter(id uint32) *Parameter{
+    for i, param := range l.parameters {
+        if param.id == id {
+            return &l.parameters[i]
+        }
+    }
+    return nil
+}
+
+func (l *LPEdit) parameter0Changed(val string) { l.parameterChanged(&l.parameters[0], val) }
+func (l *LPEdit) parameter1Changed(val string) { l.parameterChanged(&l.parameters[1], val) }
+func (l *LPEdit) parameter2Changed(val string) { l.parameterChanged(&l.parameters[2], val) }
+func (l *LPEdit) parameter3Changed(val string) { l.parameterChanged(&l.parameters[3], val) }
+
+func (l *LPEdit) parameterChanged(param *Parameter, val string) {
+    l.ctrl.SetPedalBoardParameterValue(param.id, val)
+}
+
 func (l *LPEdit) pbSelectorClick(vbo bool) {
     if l.pbSelector == nil {
         l.pbSelector = NewPBSelector(l.ctrl, l, l)
@@ -190,6 +226,41 @@ func (l *LPEdit) updateParameter(param pedal.Parameter) {
         l.cabs[p.GetID()/2].updateParam(param)
     case *pedal.Pedal:
         l.pedals[p.GetID()-4].updateParam(param)
+    case *pedal.PedalBoard:
+        l.updateParam(param)
+    }
+}
+
+func (l *LPEdit) updateParam(p pedal.Parameter) {
+    param := l.getParameter(p.GetID())
+    if param == nil { return }
+    values := p.GetAllowedValues()
+
+    valueIn := false
+    for _, v := range values {
+        if v == p.GetValueCurrent() {
+            valueIn = true
+            break
+        }
+    }
+
+    if !valueIn {
+        values = append([]string{p.GetValueCurrent()}, values...)
+    }
+
+    param.setValueList(values)
+    if p.IsAllowingOtherValues() {
+        param.setValueEditable(true)
+    } else {
+        param.setValueEditable(false)
+    }
+    param.setValue(p.GetValueCurrent())
+}
+
+func  (l *LPEdit) updateParameters(pb *pedal.PedalBoard) {
+    for i, param := range pb.GetParams() {
+        l.parameters[i].id = param.GetID()
+        l.updateParam(param)
     }
 }
 
@@ -198,6 +269,7 @@ func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
     defer pb.UnlockData()
     l.updatePreset(pb)
     l.updatePedalBoardView(pb)
+    l.updateParameters(pb)
     for i, a := range l.amps {
         a.updateAmp(pb.GetAmp(i))
     }

@@ -32,6 +32,9 @@ const (
     setupMessageCab1ER uint32 = 0x33
     setupMessageCab0Mic uint32 = 0x34
     setupMessageCab1Mic uint32 = 0x35
+    setupMessageInput1Source uint32 = 0x36
+    setupMessageInput2Source uint32 = 0x37
+    setupMessageGuitarInZ uint32 = 0x55
     setupMessageCab0LoCut uint32 = 0x57
     setupMessageCab1LoCut uint32 = 0x58
     setupMessageCab0ResLvl uint32 = 0x59
@@ -168,6 +171,7 @@ func (m PresetLoad) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, interf
     }
     m.parseDT(pb, m.data)
     m.parseCabs(pb, m.data)
+    m.parseSetup(pb, m.data)
     return nil, pedal.PresetLoad, pb
 }
 
@@ -212,6 +216,24 @@ func (m PresetLoad) parseDT(pb *pedal.PedalBoard, data []byte) {
             if err := dt.SetBinMode(data[offset[i][2]]); err != nil {
                 log.Printf("Error while setting DT ID %d Mode: %s\n", i, err)
             }
+        }
+    }
+}
+
+func (m PresetLoad) parseSetup(pb *pedal.PedalBoard, data []byte) {
+    params := []uint32{pedal.PedalBoardGuitarInZ, pedal.PedalBoardInput1Source,
+        pedal.PedalBoardInput2Source}
+    offset := []int{3546, 4102, 4103}
+    for i, pType := range params {
+        p := pb.GetParam(pType)
+        if p == nil {
+            log.Printf("Can't find PedalBoard Parameter ID %d\n", pType)
+            continue
+        }
+        value := [4]byte{}
+        value[0] = data[offset[i]]
+        if err := p.SetBinValueCurrent(value); err != nil {
+            log.Printf("Error while setting PedalBoard Parameter ID %d: %s\n", pType, err)
         }
     }
 }
@@ -349,6 +371,12 @@ func (m SetupChange) Parse(pb *pedal.PedalBoard) (error, pedal.ChangeType, inter
         return m.parseCab(pb, 0, pedal.CabDecayID, value)
     case setupMessageCab1Decay:
         return m.parseCab(pb, 1, pedal.CabDecayID, value)
+    case setupMessageInput1Source:
+        return m.parsePedalBoard(pb, pedal.PedalBoardInput1Source, value)
+    case setupMessageInput2Source:
+        return m.parsePedalBoard(pb, pedal.PedalBoardInput2Source, value)
+    case setupMessageGuitarInZ:
+        return m.parsePedalBoard(pb, pedal.PedalBoardGuitarInZ, value)
     }
 
     return nil, pedal.None, nil
@@ -363,7 +391,20 @@ func (m SetupChange) parseCab(pb *pedal.PedalBoard, ID int, paramID uint32, valu
     if p == nil {
         return fmt.Errorf("Can't get param %d, for Cab %d", paramID, ID), pedal.Warning, nil
     }
-    p.SetBinValueCurrent(value)
+    if err := p.SetBinValueCurrent(value); err != nil {
+        return fmt.Errorf("Cant set Cab ID %d parameter ID %d value: %s", ID, paramID, err), pedal.Warning, nil
+    }
+    return nil, pedal.ParameterChange, p
+}
+
+func (m SetupChange) parsePedalBoard(pb *pedal.PedalBoard, parameterID uint32, value [4]byte) (error, pedal.ChangeType, interface{}) {
+    p := pb.GetParam(parameterID)
+    if p == nil {
+        return fmt.Errorf("Can't get PedalBoard parameter ID %d", parameterID), pedal.Warning, nil
+    }
+    if err := p.SetBinValueCurrent(value); err != nil {
+        return fmt.Errorf("Cant set PedalBoard parameter ID %d value: %s", parameterID, err), pedal.Warning, nil
+    }
     return nil, pedal.ParameterChange, p
 }
 

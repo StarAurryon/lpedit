@@ -19,13 +19,10 @@
 package pedal
 
 type PedalBoardItem interface {
+    LPEObject
     GetActive() bool
     GetActive2() uint32
     GetID() uint32
-    GetParam(uint32) Parameter
-    GetParams() []Parameter
-    GetParamLen() uint16
-    GetName() string
     GetType() uint32
     GetPos() (uint16, uint8)
     LockData()
@@ -33,7 +30,6 @@ type PedalBoardItem interface {
     SetPos(uint16, uint8)
     SetType(uint32) error
     SetType2(string, string)
-    UnlockData()
 }
 
 type SortablePosPBI []PedalBoardItem

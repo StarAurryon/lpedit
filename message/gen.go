@@ -81,7 +81,7 @@ func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
 func genParameterChange(m IMessage, v [4]byte, p pedal.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
     binary.Write(buf, binary.LittleEndian, p.GetBinValueType())
     id := p.GetID()
 
@@ -100,7 +100,7 @@ func GenParameterChange(p pedal.Parameter) IMessage {
 
 func GenParameterCabChange(p pedal.Parameter) IMessage {
     var paramID uint32
-    cabID, pID := p.GetParent().GetID()/2, p.GetID()
+    cabID, pID := p.GetParent().(pedal.PedalBoardItem).GetID()/2, p.GetID()
 
     switch  {
     case cabID == 0 && pID == pedal.CabERID:
@@ -131,6 +131,20 @@ func GenParameterCabChange(p pedal.Parameter) IMessage {
     return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
 }
 
+func GenParameterPedalBoardChange(p pedal.Parameter) IMessage {
+    var paramID uint32
+
+    switch p.GetID() {
+    case pedal.PedalBoardInput1Source:
+        paramID = setupMessageInput1Source
+    case pedal.PedalBoardInput2Source:
+        paramID = setupMessageInput2Source
+    case pedal.PedalBoardGuitarInZ:
+        paramID = setupMessageGuitarInZ
+    }
+    return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
+}
+
 func GenParameterChangeMin(p pedal.Parameter) IMessage {
     var m *ParameterChangeMin
     m = newMessage2(reflect.TypeOf(m)).(*ParameterChangeMin)
@@ -149,7 +163,7 @@ func GenParameterTempoChange(p pedal.Parameter) IMessage {
 
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
     tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
@@ -169,7 +183,7 @@ func GenParameterTempoChange2(p pedal.Parameter) IMessage {
 
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
     tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)

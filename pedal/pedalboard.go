@@ -56,6 +56,21 @@ const (
     AmpBPos        uint8 = 8
 )
 
+const (
+    PedalBoardInput1Source uint32 = iota
+    PedalBoardInput2Source
+    PedalBoardGuitarInZ
+)
+
+type LPEObject interface {
+    GetParam(uint32) Parameter
+    GetParams() []Parameter
+    GetParamLen() uint16
+    GetName() string
+    LockData()
+    UnlockData()
+}
+
 type PedalBoardSplitChannel struct{
     aVol   float32
     bVol   float32
@@ -72,6 +87,7 @@ type PedalBoard struct {
     currentSet    *set
     currentPreset *preset
     setList       [NumberSet]*set
+    parameters    []Parameter
 }
 
 func NewPedalBoard() *PedalBoard {
@@ -96,6 +112,20 @@ func NewPedalBoard() *PedalBoard {
     pb.dts[0] = newDT(0, uint32(0),pb)
     pb.dts[1] = newDT(1, uint32(2),pb)
 
+    pb.parameters = make([]Parameter, 3)
+    pb.parameters[0] = &ListParam{GenericParameter: GenericParameter{id: PedalBoardInput1Source,
+            name: "Input 1 Source", parent: pb},
+        binValueType: Int32Type, maxIDShift: 1,
+        list: []string{"Guitar", "Mic", "Aux", "", "Guitar+Aux", "Guitar+Variax", "Guitar+Aux+Variax",
+            "Variax", "Variax Mags"}}
+    pb.parameters[1] = &ListParam{GenericParameter: GenericParameter{id: PedalBoardInput2Source,
+            name: "Input 2 Source", parent: pb}, binValueType: Int32Type,
+        list: []string{"Same", "Guitar", "Mic", "Aux", "", "Guitar+Aux", "Guitar+Variax", "Guitar+Aux+Variax",
+            "Variax", "Variax Mags"}}
+    pb.parameters[2] = &ListParam{GenericParameter: GenericParameter{id: PedalBoardGuitarInZ,
+            name: "Guitar In-Z", parent: pb}, binValueType: Int32Type,
+        list: []string{"Auto", "22K", "32K", "70K", "90K", "136K", "230K", "1M", "3.5M"}}
+
     return pb
 }
 
@@ -113,15 +143,6 @@ func (pb *PedalBoard) GetCab(id int) *Cab {
     }
     a, _ := pb.GetItem(uint32((id*2) + 1)).(*Cab)
     return a
-}
-
-func (pb *PedalBoard) GetItem(id uint32) PedalBoardItem {
-    for _, pbi := range pb.items {
-        if pbi.GetID() == id {
-            return pbi
-        }
-    }
-    return nil
 }
 
 func (pb *PedalBoard) GetDT(ID int) *DT {
@@ -142,6 +163,15 @@ func (pb *PedalBoard) GetDT2(ampID uint32) *DT {
     return nil
 }
 
+func (pb *PedalBoard) GetItem(id uint32) PedalBoardItem {
+    for _, pbi := range pb.items {
+        if pbi.GetID() == id {
+            return pbi
+        }
+    }
+    return nil
+}
+
 func (pb *PedalBoard) GetItems(posType uint8) []PedalBoardItem{
     ret := []PedalBoardItem{}
     if posType == AmpBPos && len(pb.GetItems(AmpAPos)) == 0 { return ret }
@@ -152,6 +182,27 @@ func (pb *PedalBoard) GetItems(posType uint8) []PedalBoardItem{
     }
     sort.Sort(SortablePosPBI(ret))
     return ret
+}
+
+func (pb *PedalBoard) GetName() string {
+    return ""
+}
+
+func (pb *PedalBoard) GetParam(id uint32) Parameter {
+    for _, p := range pb.parameters {
+        if p.GetID() == id {
+            return p
+        }
+    }
+    return nil
+}
+
+func (pb *PedalBoard) GetParams() []Parameter {
+    return pb.parameters
+}
+
+func (pb *PedalBoard) GetParamLen() uint16 {
+    return uint16(len(pb.parameters))
 }
 
 func (pb *PedalBoard) GetPedal(pos uint16) PedalBoardItem {

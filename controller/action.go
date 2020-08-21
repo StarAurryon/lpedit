@@ -206,6 +206,23 @@ func (c *Controller) SetPedalParameterValue(id uint32, pid uint32, value string)
     return c.SetPedalBoardItemParameterValue(id+4, pid, value)
 }
 
+func (c *Controller) SetPedalBoardParameterValue(pid uint32, value string) error {
+    if !c.started { return nil }
+    c.pb.LockData()
+    defer c.pb.UnlockData()
+    p := c.pb.GetParam(pid)
+    if p == nil {
+        return nil
+    }
+    err := p.SetValueCurrent(value)
+    if err != nil {
+        return err
+    }
+    m := message.GenParameterPedalBoardChange(p)
+    go c.writeMessage(m, 0, 0)
+    return nil
+}
+
 func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
     c.pb.LockData()

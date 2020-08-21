@@ -39,7 +39,7 @@ type Parameter interface {
     GetBinValueType() uint32
     GetID() uint32
     GetName() string
-    GetParent() PedalBoardItem
+    GetParent() LPEObject
     GetValueCurrent() string
     GetValueMin() string
     GetValueMax() string
@@ -58,12 +58,12 @@ type Parameter interface {
 type GenericParameter struct {
     id        uint32
     name      string
-    parent    PedalBoardItem
+    parent    LPEObject
 }
 
 func (p *GenericParameter) GetID() uint32 { return p.id }
 func (p *GenericParameter) GetName() string { return p.name }
-func (p *GenericParameter) GetParent() PedalBoardItem { return p.parent }
+func (p *GenericParameter) GetParent() LPEObject { return p.parent }
 func (p *GenericParameter) LockData() { p.parent.LockData() }
 func (p *GenericParameter) SetParent(parent PedalBoardItem) { p.parent = parent }
 func (p *GenericParameter) UnlockData() { p.parent.UnlockData() }
@@ -237,7 +237,17 @@ func (p *ListParam) Copy() Parameter {
 }
 
 func (p *ListParam) IsAllowingOtherValues() bool { return false }
-func (p *ListParam) GetAllowedValues() []string { return p.list }
+
+func (p *ListParam) GetAllowedValues() []string {
+    ret := []string{}
+    for _, s := range p.list {
+        if s != "" {
+            ret = append(ret, s)
+        }
+    }
+    return ret
+}
+
 func (p *ListParam) GetBinValueCurrent() [4]byte { return to4Bytes(p.valueCurrent) }
 func (p *ListParam) GetBinValueMin() [4]byte { return to4Bytes(p.valueMin) }
 func (p *ListParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
@@ -267,9 +277,12 @@ func (p *ListParam) setBinValue(dst *interface{}, value [4]byte) error {
     switch p.binValueType {
     case Int32Type:
         v := from4BytesToInt32(value)
-        max := (len(p.list) - p.maxIDShift) - 1
+        max := (len(p.list) + p.maxIDShift) - 1
         if v > int32(max) || v < int32(p.maxIDShift) {
             return fmt.Errorf("The binary value must be comprised between %d and %d", p.maxIDShift,  max)
+        }
+        if p.list[v - int32(p.maxIDShift)] == "" {
+            return fmt.Errorf("The binary value is not valid %d", v)
         }
         *dst = v
     case float32Type:
@@ -287,6 +300,10 @@ func (p *ListParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&
 func (p *ListParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
 
 func (p *ListParam) setValue(dst *interface{}, s string) error {
+    if s == "" {
+        return fmt.Errorf("The value must not be empty")
+    }
+
     found := false
     i := 0
     v := ""
