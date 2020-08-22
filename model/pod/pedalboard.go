@@ -16,34 +16,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package pedal
+package pod
 
 import "fmt"
 import "sort"
 import "sync"
-
-type ChangeType int
-
-const (
-    ActiveChange ChangeType = iota
-    Error
-    ErrorStop
-    None
-    NormalStop
-    NormalStart
-    ParameterChange
-    ParameterChangeMin
-    ParameterChangeMax
-    PresetChange
-    PresetLoad
-    PresetLoadProgress
-    SetChange
-    SetLoad
-    SetLoadProgress
-    TempoChange
-    TypeChange
-    Warning
-)
 
 const (
     PedalPosStart  uint8 = 0

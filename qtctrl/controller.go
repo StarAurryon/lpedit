@@ -21,22 +21,24 @@ package qtctrl
 import "github.com/StarAurryon/qt/core"
 
 import "github.com/StarAurryon/lpedit/controller"
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
+
+var sg controller.Signal
 
 type Controller struct {
     core.QObject
     controller.Controller
     _ func() `constructor:"init"`
-    _ func(pedal.PedalBoardItem) `signal:ActiveChange`
+    _ func(pod.PedalBoardItem) `signal:ActiveChange`
     _ func() `signal:"Loop"`
     _ func(string) `signal:"LoopError"`
-    _ func(pedal.Parameter) `signal:ParameterChange`
-    _ func(*pedal.PedalBoard) `signal:PresetLoad`
-    _ func(int) `signal:PresetLoadProgress`
-    _ func(*pedal.PedalBoard) `signal:SetChange`
-    _ func(int) `signal:SetLoadProgress`
-    _ func(*pedal.PedalBoard) `signal:TempoChange`
-    _ func(pedal.PedalBoardItem) `signal:TypeChange`
+    _ func() `signal:InitDone`
+    _ func(pod.Parameter) `signal:ParameterChange`
+    _ func(*pod.PedalBoard) `signal:PresetLoad`
+    _ func(int) `signal:Progress`
+    _ func(*pod.PedalBoard) `signal:SetChange`
+    _ func(*pod.PedalBoard) `signal:TempoChange`
+    _ func(pod.PedalBoardItem) `signal:TypeChange`
 }
 
 func (c *Controller) init() {
@@ -44,29 +46,29 @@ func (c *Controller) init() {
     c.SetNotify(c.notif)
 }
 
-func (c *Controller) notif(err error, n pedal.ChangeType, obj interface{}) {
+func (c *Controller) notif(err error, n int, obj interface{}) {
     switch n {
-    case pedal.ActiveChange:
-        c.ActiveChange(obj.(pedal.PedalBoardItem))
-    case pedal.NormalStart:
+    case sg.StatusActiveChange():
+        c.ActiveChange(obj.(pod.PedalBoardItem))
+    case sg.StatusNormalStart():
         c.Loop()
-    case pedal.NormalStop:
+    case sg.StatusNormalStop():
         c.Loop()
-    case pedal.ErrorStop:
+    case sg.StatusErrorStop():
         c.LoopError(err.Error())
-    case pedal.ParameterChange:
-        c.ParameterChange(obj.(pedal.Parameter))
-    case pedal.PresetLoad:
-        c.PresetLoad(obj.(*pedal.PedalBoard))
-    case pedal.PresetLoadProgress:
-        c.PresetLoadProgress(obj.(int))
-    case pedal.SetChange:
-        c.SetChange(obj.(*pedal.PedalBoard))
-    case pedal.SetLoadProgress:
-        c.SetLoadProgress(obj.(int))
-    case pedal.TypeChange:
-        c.TypeChange(obj.(pedal.PedalBoardItem))
-    case pedal.TempoChange:
-        c.TempoChange(obj.(*pedal.PedalBoard))
+    case sg.StatusInitDone():
+        c.InitDone()
+    case sg.StatusParameterChange():
+        c.ParameterChange(obj.(pod.Parameter))
+    case sg.StatusPresetLoad():
+        c.PresetLoad(obj.(*pod.PedalBoard))
+    case sg.StatusProgress():
+        c.Progress(obj.(int))
+    case sg.StatusSetChange():
+        c.SetChange(obj.(*pod.PedalBoard))
+    case sg.StatusTypeChange():
+        c.TypeChange(obj.(pod.PedalBoardItem))
+    case sg.StatusTempoChange():
+        c.TempoChange(obj.(*pod.PedalBoard))
     }
 }

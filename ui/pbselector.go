@@ -26,12 +26,16 @@ import "github.com/StarAurryon/lpedit/qtctrl"
 type PBSelector struct {
     *PBSelectorUI
     ctrl *qtctrl.Controller
-    progress *widgets.QProgressDialog
     parent *LPEdit
 }
 
 func NewPBSelector(c *qtctrl.Controller, p widgets.QWidget_ITF, parent *LPEdit) *PBSelector {
     pb := &PBSelector{PBSelectorUI: NewPBSelectorUI(p), ctrl: c, parent: parent}
+    wndFlags := pb.WindowFlags()
+    wndFlags ^= core.Qt__CustomizeWindowHint ^ core.Qt__WindowCloseButtonHint
+    wndFlags ^= core.Qt__WindowMinimizeButtonHint ^ core.Qt__WindowContextHelpButtonHint
+    wndFlags ^= core.Qt__WindowMaximizeButtonHint
+    pb.SetWindowFlags(wndFlags)
     pb.init()
     pb.update()
     return pb
@@ -40,11 +44,15 @@ func NewPBSelector(c *qtctrl.Controller, p widgets.QWidget_ITF, parent *LPEdit) 
 func (pb *PBSelector) init() {
     pb.ctrl.ConnectLoop(pb.loop)
     pb.ctrl.ConnectLoopError(pb.loopError)
-    pb.ctrl.ConnectPresetLoadProgress(pb.presetLoadProgress)
-    pb.ctrl.ConnectSetLoadProgress(pb.setLoadProgress)
+    pb.ctrl.ConnectInitDone(pb.initDone)
     pb.CloseButton.ConnectClicked(pb.clickClose)
     pb.StartButton.ConnectClicked(pb.clickStart)
     pb.StopButton.ConnectClicked(pb.clickStop)
+}
+
+func (pb *PBSelector) initDone() {
+    pb.parent.connectSignal()
+    pb.Close()
 }
 
 func (pb *PBSelector) clickClose(bool) {
@@ -65,7 +73,8 @@ func (pb *PBSelector) clickStop(bool) {
 func(pb *PBSelector) loop() {
     pb.updateButtons()
     if pb.ctrl.IsStarted() {
-        pb.ctrl.QueryAllSets()
+        pb.ctrl.InitPOD()
+        pb.SetEnabled(false)
     }
 }
 
@@ -74,40 +83,6 @@ func (pb *PBSelector) loopError(err string) {
     mb := widgets.NewQMessageBox(pb)
     mb.Critical(pb, "An error occured", err, widgets.QMessageBox__Ok, 0)
     pb.parent.disconnectSignal()
-}
-
-func (pb *PBSelector) setLoadProgress(progress int) {
-    if progress != 100 {
-        if pb.progress == nil {
-            pb.progress = widgets.NewQProgressDialog2("Progress", "", 0, 100, pb, 0)
-            pb.progress.SetWindowTitle("Progress")
-        }
-        pb.progress.SetValue(progress)
-    } else {
-        if pb.progress != nil {
-            pb.progress.Close()
-            pb.progress.DestroyQObject()
-            pb.progress = nil
-        }
-        pb.ctrl.QueryAllPresets()
-    }
-}
-
-func (pb *PBSelector) presetLoadProgress(progress int) {
-    if progress != 100 {
-        if pb.progress == nil {
-            pb.progress = widgets.NewQProgressDialog2("Progress", "", 0, 100, pb, 0)
-            pb.progress.SetWindowTitle("Progress")
-        }
-        pb.progress.SetValue(progress)
-    } else {
-        if pb.progress != nil {
-            pb.progress.Close()
-            pb.progress.DestroyQObject()
-            pb.progress = nil
-            pb.parent.connectSignal()
-        }
-    }
 }
 
 func (pb *PBSelector) update() {
@@ -119,6 +94,7 @@ func (pb *PBSelector) update() {
     for _, dev := range devs {
         pb.ListDev.AddItem(dev[0], core.NewQVariant15(dev[1]))
     }
+    pb.ListDev.SetCurrentText(pb.ctrl.GetCurrentDevice())
 }
 
 func(pb *PBSelector) updateButtons() {

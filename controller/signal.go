@@ -16,30 +16,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-package pedal
+package controller
 
-type PedalBoardItem interface {
-    LPEObject
-    GetActive() bool
-    GetActive2() uint32
-    GetID() uint32
-    GetType() uint32
-    GetPos() (uint16, uint8)
-    LockData()
-    SetActive(bool)
-    SetPos(uint16, uint8)
-    SetType(uint32) error
-    SetType2(string, string)
+import "github.com/StarAurryon/lpedit/model/pod/message"
+
+type Signal struct {
+    message.ChangeType
 }
 
-type SortablePosPBI []PedalBoardItem
+func (Signal) StatusError() int { return 0 + (1 << 8) }
+func (Signal) StatusErrorStop() int { return 1 + (1 << 8) }
+func (Signal) StatusInitDone() int { return 2 + (1 << 8) }
+func (Signal) StatusNormalStop() int { return 3 + (1 << 8) }
+func (Signal) StatusNormalStart() int { return 4 + (1 << 8) }
+func (Signal) StatusProgress() int { return 5 + (1 << 8) }
 
-func (s SortablePosPBI) Len() int           { return len(s) }
-
-func (s SortablePosPBI) Less(i, j int) bool {
-    posI, _ := s[i].GetPos()
-    posJ, _ := s[j].GetPos()
-    return posI < posJ
-}
-
-func (s SortablePosPBI) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+var sg Signal

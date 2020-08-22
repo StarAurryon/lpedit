@@ -23,7 +23,7 @@ import "encoding/binary"
 import "math"
 import "reflect"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 
 func genHeader(m IMessage) *bytes.Buffer {
     buf := new(bytes.Buffer)
@@ -47,25 +47,25 @@ func genSetupChange(paramID uint32, vtype uint32, value [4]byte) IMessage {
     return m
 }
 
-func GenDTClassChange(dt *pedal.DT) IMessage {
+func GenDTClassChange(dt *pod.DT) IMessage {
     var paramID uint32 = 0x28 + (uint32(dt.GetID()) * 3)
     value := [4]byte{dt.GetBinClass()}
-    return genSetupChange(paramID, pedal.Int32Type, value)
+    return genSetupChange(paramID, pod.Int32Type, value)
 }
 
-func GenDTModeChange(dt *pedal.DT) IMessage {
+func GenDTModeChange(dt *pod.DT) IMessage {
     var paramID uint32 = 0x27 + (uint32(dt.GetID()) * 3)
     value := [4]byte{dt.GetBinMode()}
-    return genSetupChange(paramID, pedal.Int32Type, value)
+    return genSetupChange(paramID, pod.Int32Type, value)
 }
 
-func GenDTTopologyChange(dt *pedal.DT) IMessage {
+func GenDTTopologyChange(dt *pod.DT) IMessage {
     var paramID uint32 = 0x26 + (uint32(dt.GetID()) * 3)
     value := [4]byte{dt.GetBinTopology()}
-    return genSetupChange(paramID, pedal.Int32Type, value)
+    return genSetupChange(paramID, pod.Int32Type, value)
 }
 
-func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
+func GenActiveChange(pbi pod.PedalBoardItem) IMessage {
     var m *ActiveChange
     m = newMessage2(reflect.TypeOf(m)).(*ActiveChange)
 
@@ -78,10 +78,10 @@ func GenActiveChange(pbi pedal.PedalBoardItem) IMessage {
     return m
 }
 
-func genParameterChange(m IMessage, v [4]byte, p pedal.Parameter) IMessage {
+func genParameterChange(m IMessage, v [4]byte, p pod.Parameter) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pod.PedalBoardItem).GetID())
     binary.Write(buf, binary.LittleEndian, p.GetBinValueType())
     id := p.GetID()
 
@@ -92,78 +92,78 @@ func genParameterChange(m IMessage, v [4]byte, p pedal.Parameter) IMessage {
     return m
 }
 
-func GenParameterChange(p pedal.Parameter) IMessage {
+func GenParameterChange(p pod.Parameter) IMessage {
     var m *ParameterChange
     m = newMessage2(reflect.TypeOf(m)).(*ParameterChange)
     return genParameterChange(m, p.GetBinValueCurrent(), p)
 }
 
-func GenParameterCabChange(p pedal.Parameter) IMessage {
+func GenParameterCabChange(p pod.Parameter) IMessage {
     var paramID uint32
-    cabID, pID := p.GetParent().(pedal.PedalBoardItem).GetID()/2, p.GetID()
+    cabID, pID := p.GetParent().(pod.PedalBoardItem).GetID()/2, p.GetID()
 
     switch  {
-    case cabID == 0 && pID == pedal.CabERID:
+    case cabID == 0 && pID == pod.CabERID:
         paramID = setupMessageCab0ER
-    case cabID == 1 && pID == pedal.CabERID:
+    case cabID == 1 && pID == pod.CabERID:
         paramID = setupMessageCab1ER
-    case cabID == 0 && pID == pedal.CabMicID:
+    case cabID == 0 && pID == pod.CabMicID:
         paramID = setupMessageCab0Mic
-    case cabID == 1 && pID == pedal.CabMicID:
+    case cabID == 1 && pID == pod.CabMicID:
         paramID = setupMessageCab1Mic
-    case cabID == 0 && pID == pedal.CabLowCutID:
+    case cabID == 0 && pID == pod.CabLowCutID:
         paramID = setupMessageCab0LoCut
-    case cabID == 1 && pID == pedal.CabLowCutID:
+    case cabID == 1 && pID == pod.CabLowCutID:
         paramID = setupMessageCab1LoCut
-    case cabID == 0 && pID == pedal.CabResLevelID:
+    case cabID == 0 && pID == pod.CabResLevelID:
         paramID = setupMessageCab0ResLvl
-    case cabID == 1 && pID == pedal.CabResLevelID:
+    case cabID == 1 && pID == pod.CabResLevelID:
         paramID = setupMessageCab1ResLvl
-    case cabID == 0 && pID == pedal.CabThumpID:
+    case cabID == 0 && pID == pod.CabThumpID:
         paramID = setupMessageCab0Thump
-    case cabID == 1 && pID == pedal.CabThumpID:
+    case cabID == 1 && pID == pod.CabThumpID:
         paramID = setupMessageCab1Thump
-    case cabID == 0 && pID == pedal.CabDecayID:
+    case cabID == 0 && pID == pod.CabDecayID:
         paramID = setupMessageCab0Decay
-    case cabID == 1 && pID == pedal.CabDecayID:
+    case cabID == 1 && pID == pod.CabDecayID:
         paramID = setupMessageCab1Decay
     }
     return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
 }
 
-func GenParameterPedalBoardChange(p pedal.Parameter) IMessage {
+func GenParameterPedalBoardChange(p pod.Parameter) IMessage {
     var paramID uint32
 
     switch p.GetID() {
-    case pedal.PedalBoardInput1Source:
+    case pod.PedalBoardInput1Source:
         paramID = setupMessageInput1Source
-    case pedal.PedalBoardInput2Source:
+    case pod.PedalBoardInput2Source:
         paramID = setupMessageInput2Source
-    case pedal.PedalBoardGuitarInZ:
+    case pod.PedalBoardGuitarInZ:
         paramID = setupMessageGuitarInZ
     }
     return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
 }
 
-func GenParameterChangeMin(p pedal.Parameter) IMessage {
+func GenParameterChangeMin(p pod.Parameter) IMessage {
     var m *ParameterChangeMin
     m = newMessage2(reflect.TypeOf(m)).(*ParameterChangeMin)
     return genParameterChange(m, p.GetBinValueMin(), p)
 }
 
-func GenParameterChangeMax(p pedal.Parameter) IMessage {
+func GenParameterChangeMax(p pod.Parameter) IMessage {
     var m *ParameterChangeMax
     m = newMessage2(reflect.TypeOf(m)).(*ParameterChangeMax)
     return genParameterChange(m, p.GetBinValueMax(), p)
 }
 
-func GenParameterTempoChange(p pedal.Parameter) IMessage {
+func GenParameterTempoChange(p pod.Parameter) IMessage {
     var m *ParameterTempoChange
     m = newMessage2(reflect.TypeOf(m)).(*ParameterTempoChange)
 
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pod.PedalBoardItem).GetID())
     tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
@@ -177,13 +177,13 @@ func GenParameterTempoChange(p pedal.Parameter) IMessage {
     return m
 }
 
-func GenParameterTempoChange2(p pedal.Parameter) IMessage {
+func GenParameterTempoChange2(p pod.Parameter) IMessage {
     var m *ParameterTempoChange2
     m = newMessage2(reflect.TypeOf(m)).(*ParameterTempoChange2)
 
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
-    binary.Write(buf, binary.LittleEndian, p.GetParent().(pedal.PedalBoardItem).GetID())
+    binary.Write(buf, binary.LittleEndian, p.GetParent().(pod.PedalBoardItem).GetID())
     tmpValue := p.GetBinValueCurrent()
     var binValue float32
     binary.Read(bytes.NewReader(tmpValue[:]), binary.LittleEndian, &binValue)
@@ -212,6 +212,7 @@ func GenPresetChangeAlert() IMessage {
 func GenPresetLoad() IMessage {
     var m *PresetLoad
     m = newMessage2(reflect.TypeOf(m)).(*PresetLoad)
+
     return m
 }
 
@@ -250,7 +251,7 @@ func GenSetupChange() IMessage {
     return m
 }
 
-func GenTypeChange(pbi pedal.PedalBoardItem) IMessage {
+func GenTypeChange(pbi pod.PedalBoardItem) IMessage {
     var m *TypeChange
     m = newMessage2(reflect.TypeOf(m)).(*TypeChange)
 

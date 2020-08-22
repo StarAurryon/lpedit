@@ -22,8 +22,8 @@ import "bytes"
 import "encoding/binary"
 import "fmt"
 
-import "github.com/StarAurryon/lpedit/pedal"
-import "github.com/StarAurryon/lpedit/message"
+import "github.com/StarAurryon/lpedit/model/pod"
+import "github.com/StarAurryon/lpedit/model/pod/message"
 
 
 func (c *Controller) QueryCurrentPreset() {
@@ -35,48 +35,65 @@ func (c *Controller) QueryCurrentPreset() {
     go f()
 }
 
-func (c *Controller) QueryAllPresets() {
+func (c *Controller) QueryAllPresets(async bool) {
     if !c.started { return }
     f := func() {
-        c.syncPreset = true
-        max := pedal.NumberSet * pedal.PresetPerSet
+        c.syncMode = true
+        max := pod.NumberSet * pod.PresetPerSet
         pb := c.GetPedalBoard()
-        for i := 0; i < pedal.NumberSet; i++ {
+        for i := 0; i < pod.NumberSet; i++ {
             pb.LockData()
             pb.SetCurrentSet(uint32(i))
             pb.UnlockData()
-            for j := 0; j < pedal.PresetPerSet; j++ {
+            for j := 0; j < pod.PresetPerSet; j++ {
                 pb.LockData()
                 pb.SetCurrentPreset(uint32(j))
                 pb.UnlockData()
                 m := message.GenPresetQuery(uint16(j), uint16(i))
                 c.writeMessage(m, 0, 0)
-                <- c.presetLoaded
-                progress := (((i * pedal.PresetPerSet) + (j + 1)) * 100) / max
-                c.notify(nil, pedal.PresetLoadProgress, progress)
+                <- c.syncModeChan
+                progress := (((i * pod.PresetPerSet) + (j + 1)) * 100) / max
+                c.notify(nil, sg.StatusProgress(), progress)
             }
         }
-        c.syncPreset = false
+        c.syncMode = false
     }
-    go f()
+    if async {
+        go f()
+    } else {
+        f()
+    }
 }
 
-func (c *Controller) QueryAllSets() {
+func (c *Controller) QueryAllSets(async bool) {
     if !c.started { return }
     f := func() {
         pb := c.GetPedalBoard()
-        c.syncPreset = true
-        for i := 0; i < pedal.NumberSet; i++ {
+        c.syncMode = true
+        for i := 0; i < pod.NumberSet; i++ {
             pb.LockData()
             pb.SetCurrentSet(uint32(i))
             pb.UnlockData()
             m := message.GenSetQuery(uint32(i))
             c.writeMessage(m, 0, 0)
-            <- c.presetLoaded
-            progress := ((i + 1) * 100) / pedal.NumberSet
-            c.notify(nil, pedal.SetLoadProgress, progress)
+            <- c.syncModeChan
+            progress := ((i + 1) * 100) / pod.NumberSet
+            c.notify(nil, sg.StatusProgress(), progress)
         }
-        c.syncPreset = false
+        c.syncMode = false
+    }
+    if async {
+        go f()
+    } else {
+        f()
+    }
+}
+
+func (c *Controller) InitPOD() {
+    f := func() {
+        c.QueryAllSets(false)
+        c.QueryAllPresets(false)
+        c.notify(nil, sg.StatusInitDone(), nil)
     }
     go f()
 }
@@ -103,7 +120,7 @@ func (c *Controller) SetDTClass2(ampID uint32, value string) error {
     return c.setDTClass(dt, value)
 }
 
-func (c *Controller) setDTClass(dt *pedal.DT, value string) error {
+func (c *Controller) setDTClass(dt *pod.DT, value string) error {
     err := dt.SetClass(value)
     if err != nil {
         return err
@@ -135,7 +152,7 @@ func (c *Controller) SetDTMode2(ampID uint32, value string) error {
     return c.setDTMode(dt, value)
 }
 
-func (c *Controller) setDTMode(dt *pedal.DT, value string) error {
+func (c *Controller) setDTMode(dt *pod.DT, value string) error {
     err := dt.SetMode(value)
     if err != nil {
         return err
@@ -167,7 +184,7 @@ func (c *Controller) SetDTTopology2(ampID uint32, value string) error {
     return c.setDTTopology(dt, value)
 }
 
-func (c *Controller) setDTTopology(dt *pedal.DT, value string) error {
+func (c *Controller) setDTTopology(dt *pod.DT, value string) error {
     err := dt.SetTopology(value)
     if err != nil {
         return err
@@ -240,7 +257,7 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, valu
         return err
     }
     switch p2 := p.(type) {
-    case *pedal.TempoParam:
+    case *pod.TempoParam:
         switch p2.GetID() {
         case 0x3F100000:
             m := message.GenParameterTempoChange(p2)

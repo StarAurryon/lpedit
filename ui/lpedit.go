@@ -24,18 +24,19 @@ import "github.com/StarAurryon/qt/widgets"
 
 import "fmt"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type LPEdit struct {
     *LPEditUI
-    about      *AboutUI
-    pbSelector *PBSelector
-    ctrl       *qtctrl.Controller
-    amps       []*Amp
-    cabs       []*Cab
-    pedals     []*Pedal
-    parameters []Parameter
+    about       *AboutUI
+    pbSelector  *PBSelector
+    ctrl        *qtctrl.Controller
+    amps        []*Amp
+    cabs        []*Cab
+    pedals      []*Pedal
+    parameters  []Parameter
+    progressWnd *widgets.QProgressDialog
 }
 
 func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
@@ -54,6 +55,7 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
 func (l *LPEdit) connectSignal() {
     l.updateSets()
     l.updatePresets(0)
+    l.updatePedalBoard(l.ctrl.GetPedalBoard())
 
     //UI Connections
     l.SetList.ConnectCurrentIndexChanged(l.updatePresets)
@@ -71,7 +73,7 @@ func (l *LPEdit) connectSignal() {
     for _, cab := range l.cabs {
         cab.connectSignal()
     }
-    for _, pedal := range l.pedals {
+    for _, pedal:= range l.pedals {
         pedal.connectSignal()
     }
 
@@ -98,7 +100,7 @@ func (l *LPEdit) disconnectSignal() {
     for _, cab := range l.cabs {
         cab.disconnectSignal()
     }
-    for _, pedal := range l.pedals {
+    for _, pedal:= range l.pedals {
         pedal.disconnectSignal()
     }
 
@@ -118,11 +120,13 @@ func (l *LPEdit) init() {
     l.ActionAbout.ConnectTriggered(l.aboutClick)
     l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
     l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
+    l.ctrl.ConnectLoopError(l.loopError)
+    l.ctrl.ConnectProgress(l.progress)
 }
 
 func (l *LPEdit) initAmpsCabs() {
-    ampType := pedal.GetAmpType()
-    cabType := pedal.GetCabType()
+    ampType := pod.GetAmpType()
+    cabType := pod.GetCabType()
 
     names := []string{"Amp A", "Amp B"}
 
@@ -147,7 +151,7 @@ func (l *LPEdit) initAmpsCabs() {
 }
 
 func (l *LPEdit) initPedals() {
-    pedalType := pedal.GetPedalType()
+    pedalype := pod.GetPedalType()
 
     for i := 0; i < 9; i++ {
         line := widgets.NewQFrame(l.ScrollPedalW, core.Qt__Widget)
@@ -155,7 +159,7 @@ func (l *LPEdit) initPedals() {
         line.SetFrameShadow(widgets.QFrame__Sunken)
         l.PedalsLayout.AddWidget(line, 0, 0)
         if i != 8 {
-            p := NewPedal(l, l.ScrollPedalW, l.ctrl, pedalType, i)
+            p := NewPedal(l, l.ScrollPedalW, l.ctrl, pedalype, i)
             l.PedalsLayout.AddWidget(p, 0, 0)
             l.pedals = append(l.pedals, p)
         }
@@ -204,34 +208,34 @@ func (l *LPEdit) pbSelectorClick(vbo bool) {
     l.pbSelector.Raise()
 }
 
-func (l *LPEdit) updateActive(pbi pedal.PedalBoardItem) {
+func (l *LPEdit) updateActive(pbi pod.PedalBoardItem) {
     pbi.LockData()
     defer pbi.UnlockData()
     switch p := pbi.(type) {
-    case *pedal.Amp:
+    case *pod.Amp:
         l.amps[p.GetID()/2].setActive(p.GetActive())
-    case *pedal.Pedal:
+    case *pod.Pedal:
         l.pedals[p.GetID()-4].setActive(p.GetActive())
     }
 }
 
-func (l *LPEdit) updateParameter(param pedal.Parameter) {
+func (l *LPEdit) updateParameter(param pod.Parameter) {
     param.LockData()
     defer param.UnlockData()
     pbi := param.GetParent()
     switch p := pbi.(type) {
-    case *pedal.Amp:
+    case *pod.Amp:
         l.amps[p.GetID()/2].updateParam(param)
-    case *pedal.Cab:
+    case *pod.Cab:
         l.cabs[p.GetID()/2].updateParam(param)
-    case *pedal.Pedal:
+    case *pod.Pedal:
         l.pedals[p.GetID()-4].updateParam(param)
-    case *pedal.PedalBoard:
+    case *pod.PedalBoard:
         l.updateParam(param)
     }
 }
 
-func (l *LPEdit) updateParam(p pedal.Parameter) {
+func (l *LPEdit) updateParam(p pod.Parameter) {
     param := l.getParameter(p.GetID())
     if param == nil { return }
     values := p.GetAllowedValues()
@@ -257,14 +261,14 @@ func (l *LPEdit) updateParam(p pedal.Parameter) {
     param.setValue(p.GetValueCurrent())
 }
 
-func  (l *LPEdit) updateParameters(pb *pedal.PedalBoard) {
+func  (l *LPEdit) updateParameters(pb *pod.PedalBoard) {
     for i, param := range pb.GetParams() {
         l.parameters[i].id = param.GetID()
         l.updateParam(param)
     }
 }
 
-func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
+func (l *LPEdit) updatePedalBoard(pb *pod.PedalBoard) {
     pb.LockData()
     defer pb.UnlockData()
     l.updatePreset(pb)
@@ -281,8 +285,8 @@ func (l *LPEdit) updatePedalBoard(pb *pedal.PedalBoard) {
     }
 }
 
-func (l *LPEdit) updatePedalBoardView(pb *pedal.PedalBoard) {
-    fillLayout := func (lay widgets.QLayout_ITF, line bool, pbis ...pedal.PedalBoardItem) {
+func (l *LPEdit) updatePedalBoardView(pb *pod.PedalBoard) {
+    fillLayout := func (lay widgets.QLayout_ITF, line bool, pbis ...pod.PedalBoardItem) {
         max := len(pbis)
         for i := 0; i < (max + 1); i ++ {
             if line {
@@ -301,23 +305,23 @@ func (l *LPEdit) updatePedalBoardView(pb *pedal.PedalBoard) {
         item.DestroyQObject()
     }
 
-    ampA := pb.GetItems(pedal.AmpAPos)[0]
+    ampA := pb.GetItems(pod.AmpAPos)[0]
     posA, _ := ampA.GetPos()
-    aStart := pb.GetItems(pedal.PedalPosAStart)
-    aEnd := pb.GetItems(pedal.PedalPosAEnd)
-    ampB := pb.GetItems(pedal.AmpBPos)[0]
-    bStart := pb.GetItems(pedal.PedalPosBStart)
-    bEnd := pb.GetItems(pedal.PedalPosBEnd)
+    aStart := pb.GetItems(pod.PedalPosAStart)
+    aEnd := pb.GetItems(pod.PedalPosAEnd)
+    ampB := pb.GetItems(pod.AmpBPos)[0]
+    bStart := pb.GetItems(pod.PedalPosBStart)
+    bEnd := pb.GetItems(pod.PedalPosBEnd)
 
     l.PedalBoardView.SetLayout(widgets.NewQHBoxLayout2(l.PedalBoardView))
 
     //Start
-    startItems := pb.GetItems(pedal.PedalPosStart)
+    startItems := pb.GetItems(pod.PedalPosStart)
     if posA == 5 { startItems = append(startItems, ampA) }
     fillLayout(l.PedalBoardView.Layout(), true, startItems...)
 
     //Split
-    var top, bot []pedal.PedalBoardItem
+    var top, bot []pod.PedalBoardItem
     if posA != 0 {
         top = append(aStart, aEnd...)
         bot = append(bStart, bEnd...)
@@ -356,12 +360,12 @@ func (l *LPEdit) updatePedalBoardView(pb *pedal.PedalBoard) {
     l.PedalBoardView.Layout().AddWidget(pbiUI)
 
     //End
-    endItems := pb.GetItems(pedal.PedalPosEnd)
+    endItems := pb.GetItems(pod.PedalPosEnd)
     if posA == 7 { endItems = append(endItems, ampA) }
     fillLayout(l.PedalBoardView.Layout(), true, endItems...)
 }
 
-func (l *LPEdit) updatePreset(pb *pedal.PedalBoard) {
+func (l *LPEdit) updatePreset(pb *pod.PedalBoard) {
     err, id := pb.GetCurrentPreset()
     pname := pb.GetCurrentPresetName()
 
@@ -398,7 +402,7 @@ func (l *LPEdit) updatePresets(index int) {
     }
 }
 
-func (l *LPEdit) updateSet(pb *pedal.PedalBoard) {
+func (l *LPEdit) updateSet(pb *pod.PedalBoard) {
     pb.LockData()
     err, id := pb.GetCurrentSet()
     pb.UnlockData()
@@ -417,7 +421,7 @@ func (l *LPEdit) updateSets() {
     l.SetList.AddItems(setList)
 }
 
-func (l *LPEdit) updateTempo(pb *pedal.PedalBoard) {
+func (l *LPEdit) updateTempo(pb *pod.PedalBoard) {
     pb.LockData()
     text := fmt.Sprintf("%.2f", pb.GetTempo())
     pb.UnlockData()
@@ -425,13 +429,13 @@ func (l *LPEdit) updateTempo(pb *pedal.PedalBoard) {
     l.Tempo.SetText(text)
 }
 
-func (l *LPEdit) updateType(pbi pedal.PedalBoardItem) {
+func (l *LPEdit) updateType(pbi pod.PedalBoardItem) {
     pbi.LockData()
     defer pbi.UnlockData()
     switch p := pbi.(type) {
-    case *pedal.Amp:
+    case *pod.Amp:
         l.amps[p.GetID()/2].updateAmp(p)
-    case *pedal.Pedal:
+    case *pod.Pedal:
         l.pedals[p.GetID()-4].updatePedal(p)
     }
     l.updatePedalBoardView(l.ctrl.GetPedalBoard())

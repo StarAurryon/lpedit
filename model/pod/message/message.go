@@ -23,11 +23,30 @@ import "fmt"
 import "log"
 import "reflect"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 
 const (
     messageRead uint32  = 1073743882
     messageWrite uint32 = 134299658
+)
+
+const (
+    setupMessageTempo uint32 = 0x17
+    setupMessageCab0ER uint32 = 0x32
+    setupMessageCab1ER uint32 = 0x33
+    setupMessageCab0Mic uint32 = 0x34
+    setupMessageCab1Mic uint32 = 0x35
+    setupMessageInput1Source uint32 = 0x36
+    setupMessageInput2Source uint32 = 0x37
+    setupMessageGuitarInZ uint32 = 0x55
+    setupMessageCab0LoCut uint32 = 0x57
+    setupMessageCab1LoCut uint32 = 0x58
+    setupMessageCab0ResLvl uint32 = 0x59
+    setupMessageCab1ResLvl uint32 = 0x5a
+    setupMessageCab0Thump uint32 = 0x5b
+    setupMessageCab1Thump uint32 = 0x5c
+    setupMessageCab0Decay uint32 = 0x5d
+    setupMessageCab1Decay uint32 = 0x5e
 )
 
 type IMessage interface {
@@ -37,7 +56,7 @@ type IMessage interface {
     GetSubType() uint16
     IsOk() bool
     LogInfo()
-    Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{})
+    Parse(*pod.PedalBoard) (error, int, interface{})
     setData([]byte)
 }
 
@@ -64,10 +83,10 @@ func (m *Message) GetSubType() uint16 { return m.smtype }
 func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
 func (m *Message) setData(data []byte) { m.data = data }
 
-func (m *Message) Parse(*pedal.PedalBoard) (error, pedal.ChangeType, interface{}) {
+func (m *Message) Parse(*pod.PedalBoard) (error, int, interface{}) {
     info := fmt.Sprintf("No defined pase fuction for %s message, mtype: %d, smtype %d",
         m.mname, m.mtype, m.smtype)
-    return fmt.Errorf(info), pedal.Warning, nil
+    return fmt.Errorf(info), ct.StatusWarning(), nil
 }
 
 

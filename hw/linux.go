@@ -68,6 +68,7 @@ func ListHWDev() [][]string {
 type Hwdep struct {
     hwdep   *C.snd_hwdep_t
     started bool
+    dev string
 }
 
 func (h *Hwdep) Close() error {
@@ -80,6 +81,8 @@ func (h *Hwdep) Close() error {
     return nil
 }
 
+func (h *Hwdep) GetDevice() string { return h.dev }
+
 func (h *Hwdep) IsOpen() bool {
     if h.hwdep == nil { return false }
     return true
@@ -87,6 +90,7 @@ func (h *Hwdep) IsOpen() bool {
 
 func (h *Hwdep) Open(dev string) error {
     if(h.hwdep != nil) {fmt.Errorf("Device is already open")}
+    h.dev = dev
     c_dev := C.CString(dev)
     defer C.free(unsafe.Pointer(c_dev))
     var err C.int = C.snd_hwdep_open(&h.hwdep, c_dev, C.O_RDWR | C.O_NONBLOCK)

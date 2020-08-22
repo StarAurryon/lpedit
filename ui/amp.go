@@ -22,7 +22,7 @@ import "github.com/StarAurryon/qt/widgets"
 
 import "sort"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type Amp struct {
@@ -99,7 +99,7 @@ func (a *Amp) initUI() {
     sort.Strings(keys)
 
     a.AmpModel.AddItems(keys)
-    a.Topology.AddItems(pedal.GetAllowedTopology())
+    a.Topology.AddItems(pod.GetAllowedTopology())
 }
 
 func (a *Amp) ampModelUserChanged(fxType string) {
@@ -186,7 +186,7 @@ func (a *Amp) parameterChanged(paramUI *Parameter, val string) {
     pb.UnlockData()
 }
 
-func (a *Amp) updateAmp(amp *pedal.Amp) {
+func (a *Amp) updateAmp(amp *pod.Amp) {
     if a.id == 0 {
         if pos, _ := amp.GetPos(); pos != 0 {
             a.parent.amps[1].Hide()
@@ -217,7 +217,7 @@ func (a *Amp) updateAmp(amp *pedal.Amp) {
     }
 }
 
-func (a *Amp) updateParam(p pedal.Parameter) {
+func (a *Amp) updateParam(p pod.Parameter) {
     param := a.getParameter(p.GetID())
     param.setValueList([]string{p.GetValueCurrent()})
     param.setValue(p.GetValueCurrent())

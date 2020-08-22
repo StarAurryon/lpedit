@@ -26,7 +26,7 @@ import "github.com/StarAurryon/qt/widgets"
 import "fmt"
 import "sort"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type Pedal struct {
@@ -93,7 +93,7 @@ func (p *Pedal) initUI() {
     pal.SetBrush(gui.QPalette__Background, gui.NewQBrush7(pix))
     p.Param1Knob.SetPalette(pal)*/
 
-    //Setting up pedal type
+    //Setting up pod.type
     keys := make([]string, 0, len(p.pedalType))
 
     for k := range p.pedalType {
@@ -161,7 +161,7 @@ func (p *Pedal) setActive(status bool) {
     p.OnStatus.SetChecked(status)
 }
 
-func (pUI *Pedal) updatePedal(p *pedal.Pedal) {
+func (pUI *Pedal) updatePedal(p *pod.Pedal) {
     pUI.setActive(p.GetActive())
     pUI.FxType.SetCurrentText(p.GetSType())
     pUI.FxModel.SetCurrentText(p.GetName())
@@ -175,7 +175,7 @@ func (pUI *Pedal) updatePedal(p *pedal.Pedal) {
     }
 }
 
-func (pUI * Pedal) updateParam(p pedal.Parameter) {
+func (pUI * Pedal) updateParam(p pod.Parameter) {
     param := pUI.getParameter(p.GetID())
     if param == nil { return }
     values := p.GetAllowedValues()

@@ -22,7 +22,7 @@ import "github.com/StarAurryon/qt/widgets"
 
 import "sort"
 
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type Cab struct {
@@ -103,7 +103,7 @@ func (c *Cab) parameterChanged(param *Parameter, val string) {
     c.ctrl.SetCabParameterValue(uint32(c.id), param.id, val)
 }
 
-func (c *Cab) updateCab(cab *pedal.Cab) {
+func (c *Cab) updateCab(cab *pod.Cab) {
     c.CabModel.SetCurrentText(cab.GetName())
     if cab.GetHideParams() {
         for i := range c.parameters {
@@ -117,7 +117,7 @@ func (c *Cab) updateCab(cab *pedal.Cab) {
     }
 }
 
-func (c *Cab) updateParam(p pedal.Parameter) {
+func (c *Cab) updateParam(p pod.Parameter) {
     param := c.getParameter(p.GetID())
     if param == nil { return }
     values := p.GetAllowedValues()

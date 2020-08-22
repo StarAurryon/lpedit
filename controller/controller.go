@@ -24,14 +24,14 @@ import "sync"
 import "time"
 
 import "github.com/StarAurryon/lpedit/hw"
-import "github.com/StarAurryon/lpedit/message"
-import "github.com/StarAurryon/lpedit/pedal"
+import "github.com/StarAurryon/lpedit/model/pod"
+import "github.com/StarAurryon/lpedit/model/pod/message"
 
 type Controller struct {
-    pb           *pedal.PedalBoard
+    pb           *pod.PedalBoard
     dev          string
     hwdep        hw.Hwdep
-    notifyCB     func(error, pedal.ChangeType, interface{}) // notifyCallBack
+    notifyCB     func(error, int, interface{}) // notifyCallBack
     //Status
     started      bool
     //Threads
@@ -43,26 +43,28 @@ type Controller struct {
     writeMux     sync.Mutex
     writeQueue   chan *message.RawMessage
     //Query sync
-    presetLoaded chan int
-    syncPreset   bool
+    syncModeChan chan int
+    syncMode     bool
 }
 
 func NewController() *Controller {
-    c := &Controller{pb: pedal.NewPedalBoard(), started: false}
-    c.presetLoaded = make(chan int, 10)
+    c := &Controller{pb: pod.NewPedalBoard(), started: false}
+    c.syncModeChan = make(chan int, 10)
     return c
 }
 
-func (c *Controller) GetPedalBoard() *pedal.PedalBoard {
+func (c *Controller) GetPedalBoard() *pod.PedalBoard {
     return c.pb
 }
 
+func (c *Controller) GetCurrentDevice() string { return c.hwdep.GetDevice() }
+
 func (c *Controller) GetAmpType() []string {
-    return pedal.GetAmpType()
+    return pod.GetAmpType()
 }
 
 func (c *Controller) GetPedalType() map[string][]string {
-    return pedal.GetPedalType()
+    return pod.GetPedalType()
 }
 
 func (c *Controller) ListDevices() [][]string {
@@ -73,7 +75,7 @@ func (c *Controller) IsStarted() bool {
     return c.started
 }
 
-func (c *Controller) SetNotify(n func(error, pedal.ChangeType, interface{})) {
+func (c *Controller) SetNotify(n func(error, int, interface{})) {
     c.notifyCB = n
 }
 
@@ -86,13 +88,13 @@ func (c *Controller) Start(dev string) {
 
     if err := c.hwdep.Open(dev); err != nil {
         c.notify(fmt.Errorf("Could not open device %s: %s\n", dev, err),
-            pedal.ErrorStop, nil)
+            sg.StatusErrorStop(), nil)
         c.signalStop()
         return
     }
 
     c.started = true
-    c.notify(nil, pedal.NormalStart, nil)
+    c.notify(nil, sg.StatusNormalStart(), nil)
     go c.readRawMessage()
     go c.processRawMessage()
     go c.writeRawMessage()
@@ -111,15 +113,15 @@ func (c *Controller) Stop() {
     if c.hwdep.IsOpen() {
         if err := c.hwdep.Close(); err != nil {
             c.notify(fmt.Errorf("Could not close device %s: %s\n", c.dev, err),
-                pedal.ErrorStop, nil)
+                sg.StatusErrorStop(), nil)
         } else {
-            c.notify(nil, pedal.NormalStop, nil)
+            c.notify(nil, sg.StatusNormalStop(), nil)
         }
     }
 }
 
-func (c *Controller) notify(err error, ntype pedal.ChangeType, obj interface{}) {
-    n := func(err error, ntype pedal.ChangeType, obj interface{}) {
+func (c *Controller) notify(err error, ntype int, obj interface{}) {
+    n := func(err error, ntype int, obj interface{}) {
         if err != nil {
             log.Println(err)
         }
@@ -149,12 +151,12 @@ func (c *Controller) parseMessage(rm *message.RawMessage) {
     err, ct, obj := m.Parse(c.pb)
     c.pb.UnlockData()
     c.notify(err, ct, obj)
-    if c.syncPreset {
+    if c.syncMode {
         switch ct {
-        case pedal.PresetLoad:
-            c.presetLoaded <- 0
-        case pedal.SetLoad:
-            c.presetLoaded <- 0
+        case sg.StatusPresetLoad():
+            c.syncModeChan <- 0
+        case sg.StatusSetLoad():
+            c.syncModeChan <- 0
         }
     }
 }
