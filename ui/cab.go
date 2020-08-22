@@ -81,7 +81,9 @@ func (c *Cab) initUI() {
     c.CabModel.AddItems(keys)
 }
 
-func (c *Cab) cabModelUserChanged(value string) {}
+func (c *Cab) cabModelUserChanged(value string) {
+    c.ctrl.SetCabType(uint32(c.id), value)
+}
 
 func (c *Cab) getParameter(id uint32) *Parameter{
     for i, param := range c.parameters {

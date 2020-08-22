@@ -106,18 +106,10 @@ func (p *Pedal) initUI() {
 
 func (p *Pedal) fxModelUserChanged(fxModel string) {
     p.ctrl.SetPedalType(uint32(p.id), p.FxType.CurrentText(), fxModel)
-    pb := p.ctrl.GetPedalBoard()
-    pb.LockData()
-    p.parent.updatePedalBoardView(pb)
-    pb.UnlockData()
 }
 
 func (p *Pedal) fxTypeUserChanged(fxType string) {
     p.ctrl.SetPedalType(uint32(p.id), fxType, p.FxModel.CurrentText())
-    pb := p.ctrl.GetPedalBoard()
-    pb.LockData()
-    p.parent.updatePedalBoardView(pb)
-    pb.UnlockData()
 }
 
 func (p *Pedal) fxTypeChanged(fxType string) {

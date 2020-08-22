@@ -216,6 +216,7 @@ func (c *Controller) SetCabParameterValue(id uint32, pid uint32, value string) e
     }
     m := message.GenParameterCabChange(p)
     go c.writeMessage(m, 0, 0)
+    c.notify(nil, sg.StatusParameterChange(), p)
     return nil
 }
 
@@ -237,6 +238,7 @@ func (c *Controller) SetPedalBoardParameterValue(pid uint32, value string) error
     }
     m := message.GenParameterPedalBoardChange(p)
     go c.writeMessage(m, 0, 0)
+    c.notify(nil, sg.StatusParameterChange(), p)
     return nil
 }
 
@@ -277,6 +279,7 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, valu
         m := message.GenParameterChange(p)
         go c.writeMessage(m, 0, 0)
     }
+    c.notify(nil, sg.StatusParameterChange(), p)
     return nil
 }
 
@@ -357,6 +360,10 @@ func (c *Controller) SetAmpType(id uint32, name string) {
     c.SetPedalBoardItemType(id*2, name, "")
 }
 
+func (c *Controller) SetCabType(id uint32, name string) {
+    c.SetPedalBoardItemType(id*2+1, name, "")
+}
+
 func (c *Controller) SetPedalType(id uint32, fxType string, fxModel string) {
     c.SetPedalBoardItemType(id+4, fxType, fxModel)
 }
@@ -373,7 +380,9 @@ func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel str
     m := message.GenTypeChange(pbi)
     m2 := message.GenPresetQuery(uint16(0xFFFF), uint16(0xFFFF))
     c.pb.UnlockData()
-    go c.writeMessage(m, 0, 0)
-    //go c.writeMessage(m2, 0x62, 0x71)
-    go c.writeMessage(m2, 0, 0)
+    f := func() {
+        c.writeMessage(m, 0, 0)
+        c.writeMessage(m2, 0, 0)
+    }
+    go f()
 }
