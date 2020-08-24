@@ -309,7 +309,9 @@ func (c *Cab) SetActive(active bool){
     c.active = active
 }
 
-func (c *Cab) SetPos(pos uint16, posType uint8) {
+func (c *Cab) SetPos(pos uint16, posType uint8) {}
+
+func (c *Cab) SetPosWithoutCheck(pos uint16, posType uint8) {
     c.pos = pos
     c.posType = posType
 }

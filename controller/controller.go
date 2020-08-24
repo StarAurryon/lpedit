@@ -45,6 +45,8 @@ type Controller struct {
     //Query sync
     syncModeChan chan int
     syncMode     bool
+    //DirtyHack
+    lastLoadPreset *message.PresetLoad
 }
 
 func NewController() *Controller {
@@ -145,6 +147,10 @@ func (c *Controller) parseMessage(rm *message.RawMessage) {
     if err != nil {
         log.Println(err)
         return
+    }
+    switch pl := m.(type) {
+    case *message.PresetLoad:
+        c.lastLoadPreset = pl
     }
     m.LogInfo()
     c.pb.LockData()

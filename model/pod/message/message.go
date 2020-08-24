@@ -51,13 +51,13 @@ const (
 
 type IMessage interface {
     Copy() IMessage
-    getData() []byte
+    GetData() []byte
     GetType() uint16
     GetSubType() uint16
     IsOk() bool
     LogInfo()
     Parse(*pod.PedalBoard) (error, int, interface{})
-    setData([]byte)
+    SetData([]byte)
 }
 
 type Message struct {
@@ -74,14 +74,14 @@ func (m *Message) Copy() IMessage {
     return _m
 }
 
-func (m *Message) getData() []byte {
+func (m *Message) GetData() []byte {
     return m.data
 }
 
 func (m *Message) GetType() uint16 { return m.mtype }
 func (m *Message) GetSubType() uint16 { return m.smtype }
 func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
-func (m *Message) setData(data []byte) { m.data = data }
+func (m *Message) SetData(data []byte) { m.data = data }
 
 func (m *Message) Parse(*pod.PedalBoard) (error, int, interface{}) {
     info := fmt.Sprintf("No defined pase fuction for %s message, mtype: %d, smtype %d",
@@ -190,6 +190,16 @@ func (m *PresetLoad) Copy() IMessage {
     return _m
 }
 
+type PresetSet struct {
+    Message
+}
+
+func (m *PresetSet) Copy() IMessage {
+    _m := new(PresetSet)
+    *_m = *m
+    return _m
+}
+
 type PresetQuery struct {
     Message
 }
@@ -247,6 +257,7 @@ var messages = []IMessage{
     &PresetChange{Message: Message{mtype: 2, smtype: 9984, msize: 12, mname: "Preset change"}},
     &PresetChangeAlert{Message: Message{mtype: 1, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
+    &PresetSet{Message: Message{mtype: 1026, smtype: 512, msize: 4108, mname: "Preset Set"}},
     &PresetQuery{Message: Message{mtype: 2, smtype: 0, msize: 12, mname: "Preset Query"}},
     &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
     &ParameterChangeMin{Message: Message{mtype: 6, smtype: 11776, msize: 28, mname: "Item Parameter Change Min"}},
@@ -293,7 +304,7 @@ func NewMessage(rm RawMessage) (error, IMessage) {
             mtype: mtype, smtype: smtype}
     }
 
-    m.setData(rm.data)
+    m.SetData(rm.data)
     if !m.IsOk() {
         return fmt.Errorf("The size of the RawMessage is too small\n"), nil
     }

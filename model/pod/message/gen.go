@@ -87,7 +87,7 @@ func genParameterChange(m IMessage, v [4]byte, p pod.Parameter) IMessage {
 
     binary.Write(buf, binary.LittleEndian, id)
     binary.Write(buf, binary.LittleEndian, v)
-    m.setData(buf.Bytes())
+    m.SetData(buf.Bytes())
 
     return m
 }
@@ -223,6 +223,37 @@ func GenPresetQuery(presetID uint16, setID uint16) IMessage {
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, presetID)
     binary.Write(buf, binary.LittleEndian, setID)
+    m.data = buf.Bytes()
+
+    return m
+}
+
+//DirtyHack TODO: Cleanup
+func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad) IMessage {
+    var m *PresetSet
+    m = newMessage2(reflect.TypeOf(m)).(*PresetSet)
+
+    data := oldMsg.data
+
+    pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
+    offset := 48
+
+    for _, id := range pbiOrder {
+        pbi := pb.GetItem(id)
+        pos, posType := pbi.GetPos()
+        bPos := make([]byte, 2)
+        binary.LittleEndian.PutUint16(bPos, pos)
+
+        data[offset+4] = bPos[0]
+        data[offset+5] = bPos[1]
+        data[offset+6] = posType
+
+        offset += 256
+    }
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(0xffffffff))
+    binary.Write(buf, binary.LittleEndian, data[8:])
     m.data = buf.Bytes()
 
     return m

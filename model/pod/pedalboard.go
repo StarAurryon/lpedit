@@ -78,8 +78,8 @@ func NewPedalBoard() *PedalBoard {
     pb.items = make([]PedalBoardItem, 12)
 
     pb.items[0] = newDisAmp(uint32(0), uint16(0), AmpAPos, pb)
-    pb.items[1] = newNoCab(uint32(1), uint16(0), AmpAPos, pb)
-    pb.items[2] = newDisAmp(uint32(2), uint16(0), AmpBPos, pb)
+    pb.items[1] = newNoCab(uint32(1), uint16(0), AmpBPos, pb)
+    pb.items[2] = newDisAmp(uint32(2), uint16(0), AmpAPos, pb)
     pb.items[3] = newNoCab(uint32(3), uint16(0), AmpBPos, pb)
     for id := uint32(4); id <= 11; id++ {
         pb.items[id] = newNonePedal(id, uint16(id - 4), PedalPosStart, pb)
@@ -182,10 +182,13 @@ func (pb *PedalBoard) GetParamLen() uint16 {
     return uint16(len(pb.parameters))
 }
 
-func (pb *PedalBoard) GetPedal(pos uint16) PedalBoardItem {
+func (pb *PedalBoard) GetPedal(pos uint16) *Pedal {
     for _, pbi := range pb.items {
-        if _pos, _ := pbi.GetPos(); _pos == pos {
-            return pbi
+        switch p := pbi.(type) {
+        case *Pedal:
+            if _pos, _ := pbi.GetPos(); _pos == pos {
+                return p
+            }
         }
     }
     return nil

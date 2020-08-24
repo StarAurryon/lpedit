@@ -58,6 +58,13 @@ func NewPedal(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
 }
 
 func (p *Pedal) connectSignal() {
+    keys := make([]string, 0, len(p.pedalType))
+    for k := range p.pedalType {
+        keys = append(keys, k)
+    }
+    sort.Strings(keys)
+    p.FxType.AddItems(keys)
+
     p.OnStatus.ConnectClicked(p.onStatusChanged)
     p.FxModel.ConnectActivated2(p.fxModelUserChanged)
     p.FxType.ConnectActivated2(p.fxTypeUserChanged)
@@ -72,9 +79,17 @@ func (p *Pedal) disconnectSignal() {
     p.FxModel.DisconnectActivated2()
     p.FxType.DisconnectActivated2()
     p.FxType.DisconnectCurrentTextChanged()
-    for _, param := range p.parameters {
+    for i, param := range p.parameters {
+        param.show()
+        param.label.SetText(fmt.Sprintf("Parameter %d", i))
         param.value.DisconnectActivated2()
+        param.value.Clear()
+        param.value.SetEditable(false)
     }
+
+    p.FxType.Clear()
+    p.FxModel.Clear()
+    p.OnStatus.SetChecked(false)
 }
 
 func (p *Pedal) initUI() {
@@ -94,14 +109,6 @@ func (p *Pedal) initUI() {
     p.Param1Knob.SetPalette(pal)*/
 
     //Setting up pod.type
-    keys := make([]string, 0, len(p.pedalType))
-
-    for k := range p.pedalType {
-        keys = append(keys, k)
-    }
-    sort.Strings(keys)
-
-    p.FxType.AddItems(keys)
 }
 
 func (p *Pedal) fxModelUserChanged(fxModel string) {

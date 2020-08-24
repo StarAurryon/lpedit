@@ -1054,6 +1054,24 @@ func (p *Pedal) GetSType() string {
 func (p *Pedal) LockData() { p.pb.LockData() }
 
 func (p *Pedal) SetPos(pos uint16, posType uint8) {
+    if posType == AmpAPos || posType == AmpBPos || pos >= 8 { return }
+    var incr int
+    if int(pos) - int(p.pos) > 0 {
+        incr = 1
+    } else {
+        incr = -1
+    }
+    for i := int(p.pos) + incr; i != int(pos) + incr ; i += incr {
+        p2 := p.pb.GetPedal(uint16(i))
+        p2Pos, p2PosType := p2.GetPos()
+        p2.SetPosWithoutCheck(uint16(int(p2Pos)-incr), p2PosType)
+        p2Pos, _ = p2.GetPos()
+    }
+    p.pos = pos
+    p.posType = posType
+}
+
+func (p *Pedal) SetPosWithoutCheck(pos uint16, posType uint8) {
     if posType == AmpAPos || posType == AmpBPos { return }
     p.pos = pos
     p.posType = posType

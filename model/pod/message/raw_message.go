@@ -26,7 +26,7 @@ import "log"
 const (
     RawMessageBegin uint8 = 1
     RawMessageExt   uint8 = 4
-    maxDataSize       int = 60
+    maxDataSize       int = 252
 )
 
 type RawMessage struct {
@@ -51,10 +51,10 @@ func NewRawMessage(data []byte) *RawMessage {
 
 func NewRawMessages(m IMessage, ukno0 uint8, ukno1 uint8) []*RawMessage {
     var buf []byte
-    data := m.getData()
+    data := m.GetData()
     size := len(data) / maxDataSize
     if len(data) % maxDataSize != 0 {
-        size ++
+        size++
     }
     ret := make([]*RawMessage, size)
     mtype := RawMessageBegin

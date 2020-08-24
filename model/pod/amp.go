@@ -819,6 +819,23 @@ func (a *Amp) SetActive(active bool){
 }
 
 func (a *Amp) SetPos(pos uint16, posType uint8) {
+    if a.id != 0 { return }
+    cabA := a.pb.GetCab(0)
+    pos = 0
+    switch posType {
+    case PedalPosStart:
+        a.pos = 5
+        cabA.pos = 6
+    case PedalPosEnd:
+        a.pos = 7
+        cabA.pos = 8
+    default:
+        a.pos = 0
+        cabA.pos = 3
+    }
+}
+
+func (a *Amp) SetPosWithoutCheck(pos uint16, posType uint8) {
     if posType == PedalPosAStart || posType == PedalPosBStart ||
      posType == PedalPosAEnd || posType == PedalPosBEnd { return }
     a.pos = pos

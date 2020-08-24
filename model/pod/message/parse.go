@@ -227,7 +227,7 @@ func (m PresetLoad) parsePedalBoardItem(pb *pod.PedalBoard, data [256]byte, pbiI
 
     pos := binary.LittleEndian.Uint16(data[4:6])
     posType := uint8(data[6])
-    pbi.SetPos(pos, posType)
+    pbi.SetPosWithoutCheck(pos, posType)
 
     active := false
     if data[8] == 1 { active = true }

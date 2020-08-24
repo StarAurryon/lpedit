@@ -18,26 +18,20 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/core"
 import "github.com/StarAurryon/qt/widgets"
 
-func AddWidget(lay widgets.QLayout_ITF, widget widgets.QWidget_ITF) {
+func AddWidget(lay widgets.QLayout_ITF, widget widgets.QWidget_ITF, x int, y int,) {
      switch _lay := lay.(type) {
      case *widgets.QHBoxLayout:
          _lay.AddWidget(widget, 0, 0)
      case *widgets.QVBoxLayout:
          _lay.AddWidget(widget, 0, 0)
+     case *widgets.QGridLayout:
+         _lay.AddWidget2(widget, y, x, 0)
      case *widgets.QLayout:
          _lay.AddWidget(widget)
     }
  }
-
-func AddLine(lay widgets.QLayout_ITF, w widgets.QWidget_ITF, s widgets.QFrame__Shape) {
-    line := widgets.NewQFrame(w, core.Qt__Widget)
-    line.SetFrameShape(s)
-    line.SetFrameShadow(widgets.QFrame__Sunken)
-    AddWidget(lay, line)
-}
 
 func Max(a, b int) int {
     if a > b {

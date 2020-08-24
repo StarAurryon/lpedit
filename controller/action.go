@@ -331,6 +331,28 @@ func (c *Controller) SetPedalBoardItemParameterValueMax(id uint32, pid uint32, v
     return nil
 }
 
+func (c *Controller) SetPedalBoardItemPosition(id uint32, pos uint16, posType uint8) {
+    f := func() {
+        if !c.started { return }
+
+        c.syncMode = true
+        c.QueryCurrentPreset()
+        <- c.syncModeChan
+        c.syncMode = false
+
+        c.pb.LockData()
+        defer c.pb.UnlockData()
+        pbi := c.pb.GetItem(id);
+        if pbi == nil {
+            return
+        }
+        pbi.SetPos(pos, posType)
+        m := message.GenPresetSet(c.pb, c.lastLoadPreset)
+        c.writeMessage(m, 0, 0)
+    }
+    go f()
+}
+
 func (c *Controller) SetAmpActive(id uint32, active bool) {
     c.SetPedalBoardItemActive(id*2, active)
 }

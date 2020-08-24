@@ -28,6 +28,7 @@ type PedalBoardItem interface {
     LockData()
     SetActive(bool)
     SetPos(uint16, uint8)
+    SetPosWithoutCheck(uint16, uint8)
     SetType(uint32) error
     SetType2(string, string)
 }
