@@ -23,6 +23,7 @@ import "github.com/StarAurryon/qt/gui"
 import "github.com/StarAurryon/qt/widgets"
 
 import "fmt"
+import "os"
 
 import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
@@ -64,6 +65,13 @@ func (l *LPEdit) init() {
     l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.ctrl.ConnectLoopError(l.loopError)
     l.ctrl.ConnectProgress(l.progress)
+
+    //Icon
+    ps := string(os.PathSeparator)
+    iconPath := "ui" + ps + "knob.png"
+    fmt.Println(iconPath)
+    icon := gui.NewQIcon5(iconPath)
+    l.SetWindowIcon(icon)
 }
 
 func (l *LPEdit) connectSignal() {

@@ -38,32 +38,47 @@ func NewAmp(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
         at []string, id int, name string) *Amp {
     a := &Amp{AmpUI: NewAmpUI(w), ctrl: c, ampType: at, id: id}
     a.parameters[0] = Parameter{label: a.Param0Lbl, mid: a.Param0Mid,
-        value: a.Param0Value, vfunc: a.parameter0Changed}
+        value: a.Param0Value, knob: a.Param0Knob, vfunc: a.parameter0Changed}
     a.parameters[1] = Parameter{label: a.Param1Lbl, mid: a.Param1Mid,
-        value: a.Param1Value, vfunc: a.parameter1Changed}
+        value: a.Param1Value, knob: a.Param1Knob, vfunc: a.parameter1Changed}
     a.parameters[2] = Parameter{label: a.Param2Lbl, mid: a.Param2Mid,
-        value: a.Param2Value, vfunc: a.parameter2Changed}
+        value: a.Param2Value, knob: a.Param2Knob, vfunc: a.parameter2Changed}
     a.parameters[3] = Parameter{label: a.Param3Lbl, mid: a.Param3Mid,
-        value: a.Param3Value, vfunc: a.parameter3Changed}
+        value: a.Param3Value, knob: a.Param3Knob, vfunc: a.parameter3Changed}
     a.parameters[4] = Parameter{label: a.Param4Lbl, mid: a.Param4Mid,
-        value: a.Param4Value, vfunc: a.parameter4Changed}
+        value: a.Param4Value, knob: a.Param4Knob, vfunc: a.parameter4Changed}
     a.parameters[5] = Parameter{label: a.Param5Lbl, mid: a.Param5Mid,
-        value: a.Param5Value, vfunc: a.parameter5Changed}
+        value: a.Param5Value, knob: a.Param5Knob, vfunc: a.parameter5Changed}
     a.parameters[6] = Parameter{label: a.Param6Lbl, mid: a.Param6Mid,
-        value: a.Param6Value, vfunc: a.parameter6Changed}
+        value: a.Param6Value, knob: a.Param6Knob, vfunc: a.parameter6Changed}
     a.parameters[7] = Parameter{label: a.Param7Lbl, mid: a.Param7Mid,
-        value: a.Param7Value, vfunc: a.parameter7Changed}
+        value: a.Param7Value, knob: a.Param7Knob, vfunc: a.parameter7Changed}
     a.parameters[8] = Parameter{label: a.Param8Lbl, mid: a.Param8Mid,
-        value: a.Param8Value, vfunc: a.parameter8Changed}
+        value: a.Param8Value, knob: a.Param8Knob, vfunc: a.parameter8Changed}
     a.parameters[9] = Parameter{label: a.Param9Lbl, mid: a.Param9Mid,
-        value: a.Param9Value, vfunc: a.parameter9Changed}
+        value: a.Param9Value, knob: a.Param9Knob, vfunc: a.parameter9Changed}
     a.parameters[10] = Parameter{label: a.Param10Lbl, mid: a.Param10Mid,
-        value: a.Param10Value, vfunc: a.parameter10Changed}
+        value: a.Param10Value, knob: a.Param10Knob, vfunc: a.parameter10Changed}
     a.AmpName.SetText(name)
     a.parent = parent
     a.init()
-    a.initUI()
     return a
+}
+
+func (a *Amp) init() {
+    keys := make([]string, 0, len(a.ampType))
+
+    for _, k := range a.ampType {
+        keys = append(keys, k)
+    }
+    sort.Strings(keys)
+
+    a.AmpModel.AddItems(keys)
+    a.Topology.AddItems(pod.GetAllowedTopology())
+
+    for i := range a.parameters {
+        a.parameters[i].setupKnob()
+    }
 }
 
 func (a *Amp) connectSignal() {
@@ -88,18 +103,6 @@ func (a *Amp) disconnectSignal() {
     a.ClassAAB.DisconnectClicked()
     a.ModeTriPent.DisconnectClicked()
     a.Topology.DisconnectActivated2()
-}
-
-func (a *Amp) initUI() {
-    keys := make([]string, 0, len(a.ampType))
-
-    for _, k := range a.ampType {
-        keys = append(keys, k)
-    }
-    sort.Strings(keys)
-
-    a.AmpModel.AddItems(keys)
-    a.Topology.AddItems(pod.GetAllowedTopology())
 }
 
 func (a *Amp) ampModelUserChanged(fxType string) {

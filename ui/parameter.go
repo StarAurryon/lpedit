@@ -18,19 +18,32 @@
 
 package ui
 
+import "github.com/StarAurryon/qt/gui"
 import "github.com/StarAurryon/qt/widgets"
+
+import "os"
 
 type Parameter struct {
     id    uint32
     label *widgets.QLabel
     mid   *widgets.QWidget
     value *widgets.QComboBox
+    knob  *widgets.QLabel
     vfunc func(string)
 }
 
 func (param *Parameter) setLabel(s string) {
     if param.label != nil {
         param.label.SetText(s)
+    }
+}
+
+func (param *Parameter) setupKnob() {
+    if param.knob != nil {
+        ps := string(os.PathSeparator)
+        iconPath := "ui" + ps + "knob.png"
+        pixmap := gui.NewQPixmap3(iconPath, "", 0)
+        param.knob.SetPixmap(pixmap)
     }
 }
 

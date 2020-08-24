@@ -18,9 +18,6 @@
 
 package ui
 
-/*import "github.com/StarAurryon/qt/core"
-import "github.com/StarAurryon/qt/gui"
-import "github.com/StarAurryon/qt/svg"*/
 import "github.com/StarAurryon/qt/widgets"
 
 import "fmt"
@@ -42,19 +39,27 @@ func NewPedal(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
         pt map[string][]string, id int) *Pedal {
     p := &Pedal{PedalUI: NewPedalUI(w), ctrl: c, pedalType: pt, id: id}
     p.parameters[0] = Parameter{label: p.Param0Lbl, mid: p.Param0Mid,
-        value: p.Param0Value, vfunc: p.parameter0Changed}
+        value: p.Param0Value, knob: p.Param0Knob, vfunc: p.parameter0Changed}
     p.parameters[1] = Parameter{label: p.Param1Lbl, mid: p.Param1Mid,
-        value: p.Param1Value, vfunc: p.parameter1Changed}
+        value: p.Param1Value, knob: p.Param1Knob, vfunc: p.parameter1Changed}
     p.parameters[2] = Parameter{label: p.Param2Lbl, mid: p.Param2Mid,
-        value: p.Param2Value, vfunc: p.parameter2Changed}
+        value: p.Param2Value, knob: p.Param2Knob, vfunc: p.parameter2Changed}
     p.parameters[3] = Parameter{label: p.Param3Lbl, mid: p.Param3Mid,
-        value: p.Param3Value, vfunc: p.parameter3Changed}
+        value: p.Param3Value, knob: p.Param3Knob, vfunc: p.parameter3Changed}
     p.parameters[4] = Parameter{label: p.Param4Lbl, mid: p.Param4Mid,
-        value: p.Param4Value, vfunc: p.parameter4Changed}
+        value: p.Param4Value, knob: p.Param4Knob, vfunc: p.parameter4Changed}
     p.parent = parent
     p.init()
-    p.initUI()
     return p
+}
+
+func (p *Pedal) init() {
+    for i := range p.parameters {
+        parameter := p.parameters[i]
+        if parameter.mid != nil {
+            parameter.setupKnob()
+        }
+    }
 }
 
 func (p *Pedal) connectSignal() {
@@ -90,25 +95,6 @@ func (p *Pedal) disconnectSignal() {
     p.FxType.Clear()
     p.FxModel.Clear()
     p.OnStatus.SetChecked(false)
-}
-
-func (p *Pedal) initUI() {
-    //Setting up knob
-    /*svg := svg.NewQSvgRenderer2("ui/knob.svg", p)
-    pix := gui.NewQPixmap2(p.Param1Knob.SizeHint())
-    paint := gui.NewQPainter()
-    paint.Scale(1, 1)
-
-    pix.Fill(gui.NewQColor2(core.Qt__transparent))
-    paint.Begin(pix)
-    svg.Render(paint)
-    paint.End()
-
-    pal := gui.NewQPalette()
-    pal.SetBrush(gui.QPalette__Background, gui.NewQBrush7(pix))
-    p.Param1Knob.SetPalette(pal)*/
-
-    //Setting up pod.type
 }
 
 func (p *Pedal) fxModelUserChanged(fxModel string) {

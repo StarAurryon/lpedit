@@ -38,21 +38,34 @@ func NewCab(parent *LPEdit, w widgets.QWidget_ITF, ctrl *qtctrl.Controller,
         ct []string, id int) *Cab {
     c := &Cab{CabUI: NewCabUI(w), ctrl: ctrl, cabType: ct, id: id}
     c.parameters[0] = Parameter{label: c.Param0Lbl, mid: c.Param0Mid,
-        value: c.Param0Value, vfunc: c.parameter0Changed}
+        value: c.Param0Value, knob: c.Param0Knob, vfunc: c.parameter0Changed}
     c.parameters[1] = Parameter{label: c.Param1Lbl, mid: c.Param1Mid,
-        value: c.Param1Value, vfunc: c.parameter1Changed}
+        value: c.Param1Value, knob: c.Param1Knob, vfunc: c.parameter1Changed}
     c.parameters[2] = Parameter{label: c.Param2Lbl, mid: c.Param2Mid,
-        value: c.Param2Value, vfunc: c.parameter2Changed}
+        value: c.Param2Value, knob: c.Param2Knob, vfunc: c.parameter2Changed}
     c.parameters[3] = Parameter{label: c.Param3Lbl, mid: c.Param3Mid,
-        value: c.Param3Value, vfunc: c.parameter3Changed}
+        value: c.Param3Value, knob: c.Param3Knob, vfunc: c.parameter3Changed}
     c.parameters[4] = Parameter{label: c.Param4Lbl, mid: c.Param4Mid,
-        value: c.Param4Value, vfunc: c.parameter4Changed}
+        value: c.Param4Value, knob: c.Param4Knob, vfunc: c.parameter4Changed}
     c.parameters[5] = Parameter{label: c.MicModelLbl, mid: nil,
         value: c.MicModel, vfunc: c.parameter5Changed}
     c.parent = parent
     c.init()
-    c.initUI()
     return c
+}
+
+func (c *Cab) init() {
+    keys := make([]string, 0, len(c.cabType))
+
+    for _, k := range c.cabType {
+        keys = append(keys, k)
+    }
+    sort.Strings(keys)
+    c.CabModel.AddItems(keys)
+
+    for i := range c.parameters {
+        c.parameters[i].setupKnob()
+    }
 }
 
 func (c *Cab) connectSignal() {
@@ -69,16 +82,6 @@ func (c *Cab) disconnectSignal() {
         p.value.DisconnectActivated2()
         p.value.SetEditable(false)
     }
-}
-
-func (c *Cab) initUI() {
-    keys := make([]string, 0, len(c.cabType))
-
-    for _, k := range c.cabType {
-        keys = append(keys, k)
-    }
-    sort.Strings(keys)
-    c.CabModel.AddItems(keys)
 }
 
 func (c *Cab) cabModelUserChanged(value string) {

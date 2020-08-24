@@ -97,7 +97,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param4Knob" native="true">
+          <widget class="QLabel" name="param4Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -109,6 +109,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -202,7 +205,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param7Knob" native="true">
+          <widget class="QLabel" name="param7Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -214,6 +217,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -307,7 +313,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param0Knob" native="true">
+          <widget class="QLabel" name="param0Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -319,6 +325,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -431,7 +440,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param9Knob" native="true">
+          <widget class="QLabel" name="param9Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -443,6 +452,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -524,7 +536,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_6">
          <item row="0" column="0">
-          <widget class="QWidget" name="param5Knob" native="true">
+          <widget class="QLabel" name="param5Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -536,6 +548,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -616,7 +631,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param8Knob" native="true">
+          <widget class="QLabel" name="param8Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -628,6 +643,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -718,7 +736,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param2Knob" native="true">
+          <widget class="QLabel" name="param2Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -730,6 +748,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -820,7 +841,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param3Knob" native="true">
+          <widget class="QLabel" name="param3Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -832,6 +853,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -925,7 +949,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param10Knob" native="true">
+          <widget class="QLabel" name="param10Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -937,6 +961,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -1030,7 +1057,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param1Knob" native="true">
+          <widget class="QLabel" name="param1Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -1042,6 +1069,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
@@ -1135,7 +1165,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QWidget" name="param6Knob" native="true">
+          <widget class="QLabel" name="param6Knob">
            <property name="minimumSize">
             <size>
              <width>35</width>
@@ -1147,6 +1177,9 @@
              <width>35</width>
              <height>35</height>
             </size>
+           </property>
+           <property name="text">
+            <string>Knob</string>
            </property>
           </widget>
          </item>
