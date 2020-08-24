@@ -43,6 +43,7 @@ func (param *Parameter) setupKnob() {
         ps := string(os.PathSeparator)
         iconPath := "ui" + ps + "knob.png"
         pixmap := gui.NewQPixmap3(iconPath, "", 0)
+        param.knob.SetScaledContents(true)
         param.knob.SetPixmap(pixmap)
     }
 }
