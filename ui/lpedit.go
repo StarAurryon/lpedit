@@ -82,9 +82,12 @@ func (l *LPEdit) initUI() {
 }
 
 func (l *LPEdit) connectSignal() {
+    pb := l.ctrl.GetPedalBoard()
     l.updateSets()
-    l.updatePresets(0)
-    l.updatePedalBoard(l.ctrl.GetPedalBoard())
+    l.updateSet(pb)
+    l.updatePresets(l.SetList.CurrentIndex())
+    l.updatePreset(pb)
+    l.updatePedalBoard(pb)
 
     //UI Connections
     l.DiscardChanges.ConnectClicked(l.discardPresetChanges)
@@ -95,6 +98,7 @@ func (l *LPEdit) connectSignal() {
     //PedalBoard Connections
     l.ctrl.ConnectActiveChange(l.updateActive)
     l.ctrl.ConnectParameterChange(l.updateParameter)
+    l.ctrl.ConnectPresetChange(l.updatePreset)
     l.ctrl.ConnectPresetLoad(l.updatePedalBoard)
     l.ctrl.ConnectSetChange(l.updateSet)
     l.ctrl.ConnectTempoChange(l.updateTempo)
@@ -112,7 +116,6 @@ func (l *LPEdit) connectSignal() {
 
     for _, p := range l.parameters {
         p.value.ConnectActivated2(p.vfunc)
-        p.value.SetEditable(true)
     }
 }
 
@@ -126,6 +129,7 @@ func (l *LPEdit) disconnectSignal() {
     //PedalBoard Connections
     l.ctrl.DisconnectActiveChange()
     l.ctrl.DisconnectParameterChange()
+    l.ctrl.DisconnectPresetChange()
     l.ctrl.DisconnectPresetLoad()
     l.ctrl.DisconnectSetChange()
     l.ctrl.DisconnectTempoChange()
@@ -322,7 +326,6 @@ func  (l *LPEdit) updateParameters(pb *pod.PedalBoard) {
 func (l *LPEdit) updatePedalBoard(pb *pod.PedalBoard) {
     pb.LockData()
     defer pb.UnlockData()
-    l.updatePreset(pb)
     l.updatePedalBoardView(pb)
     l.updateParameters(pb)
     for i, a := range l.amps {

@@ -413,3 +413,19 @@ func (m TypeChange) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
     }
     return nil, ct.StatusTypeChange(), p
 }
+
+func (m StatusResponse) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
+    status := binary.LittleEndian.Uint32(m.data[12:16])
+    value := binary.LittleEndian.Uint32(m.data[16:])
+
+    switch status {
+    case statusIDPreset:
+        pb.SetCurrentPreset(uint8(value))
+        return nil, ct.StatusPresetChange(), pb
+    case statusIDSet:
+        pb.SetCurrentSet(uint8(value))
+        return nil, ct.StatusSetChange(), pb
+    }
+
+    return nil, ct.StatusNone(), nil
+}

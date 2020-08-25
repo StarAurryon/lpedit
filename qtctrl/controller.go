@@ -34,6 +34,7 @@ type Controller struct {
     _ func(string) `signal:"LoopError"`
     _ func() `signal:InitDone`
     _ func(pod.Parameter) `signal:ParameterChange`
+    _ func(*pod.PedalBoard) `signal:PresetChange`
     _ func(*pod.PedalBoard) `signal:PresetLoad`
     _ func(int) `signal:Progress`
     _ func(*pod.PedalBoard) `signal:SetChange`
@@ -60,6 +61,8 @@ func (c *Controller) notif(err error, n int, obj interface{}) {
         c.InitDone()
     case sg.StatusParameterChange():
         c.ParameterChange(obj.(pod.Parameter))
+    case sg.StatusPresetChange():
+        c.PresetChange(obj.(*pod.PedalBoard))
     case sg.StatusPresetLoad():
         c.PresetLoad(obj.(*pod.PedalBoard))
     case sg.StatusProgress():

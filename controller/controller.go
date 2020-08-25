@@ -158,12 +158,7 @@ func (c *Controller) parseMessage(rm *message.RawMessage) {
     c.pb.UnlockData()
     c.notify(err, ct, obj)
     if c.syncMode {
-        switch ct {
-        case sg.StatusPresetLoad():
-            c.syncModeChan <- 0
-        case sg.StatusSetLoad():
-            c.syncModeChan <- 0
-        }
+        c.syncModeChan <- 0
     }
 }
 

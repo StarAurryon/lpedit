@@ -47,6 +47,9 @@ const (
     setupMessageCab1Thump uint32 = 0x5c
     setupMessageCab0Decay uint32 = 0x5d
     setupMessageCab1Decay uint32 = 0x5e
+
+    statusIDSet uint32 = 0x09
+    statusIDPreset uint32 = 0x08
 )
 
 type IMessage interface {
@@ -251,6 +254,26 @@ func (m *SetupChange) Copy() IMessage {
     return _m
 }
 
+type StatusResponse struct {
+    Message
+}
+
+func (m *StatusResponse) Copy() IMessage {
+    _m := new(StatusResponse)
+    *_m = *m
+    return _m
+}
+
+type StatusQuery struct {
+    Message
+}
+
+func (m *StatusQuery) Copy() IMessage {
+    _m := new(StatusQuery)
+    *_m = *m
+    return _m
+}
+
 var messages = []IMessage{
     &ActiveChange{Message: Message{mtype: 0x0004, smtype: 4864, msize: 20, mname: "Item Active Change"}},
     &TypeChange{Message: Message{mtype: 0x0004, smtype: 4352, msize: 20, mname: "Item Type Change"}},
@@ -268,6 +291,8 @@ var messages = []IMessage{
     &SetLoad{Message: Message{mtype: 0x0006, smtype: 10496, msize: 12, mname: "Set Query"}},
     &SetQuery{Message: Message{mtype: 0x0002, smtype: 10240, msize: 12, mname: "Set Query"}},
     &SetupChange{Message: Message{mtype: 0x0005, smtype: 5632, msize: 24, mname: "Setup Change"}},
+    &StatusResponse{Message: Message{mtype: 0x0004, smtype: 0x2200, msize: 20, mname: "Status Response"}},
+    &StatusQuery{Message: Message{mtype: 0x0002, smtype: 0x2100, msize: 12, mname: "Status Query"}},
 }
 
 func newMessage(mtype uint16, smtype uint16) IMessage {

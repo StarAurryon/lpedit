@@ -314,3 +314,22 @@ func GenTypeChange(pbi pod.PedalBoardItem) IMessage {
 
     return m
 }
+
+func genStatusQuery(statusID uint32) IMessage {
+    var m *StatusQuery
+    m = newMessage2(reflect.TypeOf(m)).(*StatusQuery)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, statusID)
+    m.data = buf.Bytes()
+
+    return m
+}
+
+func GenStatusQueryPresetID() IMessage {
+    return genStatusQuery(statusIDPreset)
+}
+
+func GenStatusQuerySetID() IMessage {
+    return genStatusQuery(statusIDSet)
+}

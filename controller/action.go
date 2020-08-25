@@ -29,6 +29,9 @@ func (c *Controller) InitPOD() {
     f := func() {
         c.QueryAllSets(false)
         c.QueryAllPresets(false)
+        c.QueryCurrentSetID(false)
+        c.QueryCurrentPresetID(false)
+        c.QueryCurrentPreset(false)
         c.notify(nil, sg.StatusInitDone(), nil)
     }
     go f()
@@ -87,9 +90,41 @@ func (c *Controller) QueryAllSets(async bool) {
     }
 }
 
-func (c *Controller) QueryCurrentPreset() {
+func (c *Controller) QueryCurrentPreset(async bool) {
     if !c.started { return }
-    c.QueryPreset(true, message.CurrentPreset, message.CurrentSet)
+    c.QueryPreset(async, message.CurrentPreset, message.CurrentSet)
+}
+
+func (c *Controller) QueryCurrentPresetID(async bool) {
+    f := func() {
+        if !c.started { return }
+        m := message.GenStatusQueryPresetID()
+        c.syncMode = true
+        c.writeMessage(m, 0, 0)
+        <- c.syncModeChan
+        c.syncMode = false
+    }
+    if async {
+        go f()
+    } else {
+        f()
+    }
+}
+
+func (c *Controller) QueryCurrentSetID(async bool) {
+    f := func() {
+        if !c.started { return }
+        m := message.GenStatusQuerySetID()
+        c.syncMode = true
+        c.writeMessage(m, 0, 0)
+        <- c.syncModeChan
+        c.syncMode = false
+    }
+    if async {
+        go f()
+    } else {
+        f()
+    }
 }
 
 func (c *Controller) QueryPreset(async bool, presetID uint16, setID uint16) {
@@ -124,7 +159,7 @@ func (c *Controller) SavePreset() {
         if !c.started { return }
 
         c.syncMode = true
-        c.QueryCurrentPreset()
+        c.QueryCurrentPreset(false)
         <- c.syncModeChan
         c.syncMode = false
 
@@ -379,7 +414,7 @@ func (c *Controller) SetPedalBoardItemPosition(id uint32, pos uint16, posType ui
         if !c.started { return }
 
         c.syncMode = true
-        c.QueryCurrentPreset()
+        c.QueryCurrentPreset(false)
         <- c.syncModeChan
         c.syncMode = false
 
@@ -487,7 +522,7 @@ func (c *Controller) SetCurrentPresetName(name string) {
         if !c.started { return }
 
         c.syncMode = true
-        c.QueryCurrentPreset()
+        c.QueryCurrentPreset(false)
         <- c.syncModeChan
         c.syncMode = false
 
@@ -496,7 +531,7 @@ func (c *Controller) SetCurrentPresetName(name string) {
 
         c.pb.SetCurrentPresetName2(name)
         c.setCurrentPreset(c.pb)
-        c.QueryCurrentPreset()
+        c.QueryCurrentPreset(false)
     }
     go f()
 }
