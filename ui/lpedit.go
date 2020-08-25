@@ -308,11 +308,10 @@ func (l *LPEdit) updatePedalBoard(pb *pod.PedalBoard) {
 
 func (l *LPEdit) updatePreset(pb *pod.PedalBoard) {
     err, id := pb.GetCurrentPreset()
-    pname := pb.GetCurrentPresetName()
+    pname := pb.GetCurrentPresetName2()
 
     if err != nil { return }
     for i, s := range pname {
-        l.PresetList.Item(int(id), i).SetText(s)
         l.PresetList.Item(int(id), i).SetText(s)
     }
     l.PresetList.SelectRow(int(id))
@@ -333,14 +332,13 @@ func (l *LPEdit) updatePresets(index int) {
     l.PresetList.VerticalHeader().SetVisible(false)
     l.PresetList.SetRowCount(len(presets))
     l.PresetList.SetColumnCount(2)
-    l.PresetList.SetColumnWidth(0, 10)
-    l.PresetList.SetColumnWidth(1, 200)
     for i, preset := range presets {
         id := widgets.NewQTableWidgetItem2(preset[0], 0)
         id.SetFlags(core.Qt__ItemIsSelectable|core.Qt__ItemIsEnabled)
         l.PresetList.SetItem(i, 0, id)
         l.PresetList.SetItem(i, 1, widgets.NewQTableWidgetItem2(preset[1], 0))
     }
+    l.PresetList.ResizeColumnsToContents()
 }
 
 func (l *LPEdit) updateSet(pb *pod.PedalBoard) {
