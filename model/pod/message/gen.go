@@ -202,9 +202,14 @@ func GenParameterTempoChange2(p pod.Parameter) IMessage {
     return m
 }
 
-func GenPresetChange() IMessage {
+func GenPresetChange(presetID uint8) IMessage {
     var m *PresetChange
     m = newMessage2(reflect.TypeOf(m)).(*PresetChange)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(presetID))
+    m.data = buf.Bytes()
+
     return m
 }
 
@@ -256,18 +261,27 @@ func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad, presetID uint16, setID
         offset += 256
     }
 
+    //TODO: FIX
+    name := pb.GetCurrentPresetName()
+
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, presetID)
     binary.Write(buf, binary.LittleEndian, setID)
-    binary.Write(buf, binary.LittleEndian, data[8:])
+    binary.Write(buf, binary.LittleEndian, name)
+    binary.Write(buf, binary.LittleEndian, data[24:])
     m.data = buf.Bytes()
 
     return m
 }
 
-func GenSetChange() IMessage {
+func GenSetChange(setID uint8) IMessage {
     var m *SetChange
     m = newMessage2(reflect.TypeOf(m)).(*SetChange)
+
+    buf := genHeader(m)
+    binary.Write(buf, binary.LittleEndian, uint32(setID))
+    m.data = buf.Bytes()
+
     return m
 }
 

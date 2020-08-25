@@ -84,7 +84,7 @@ func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
 func (m *Message) SetData(data []byte) { m.data = data }
 
 func (m *Message) Parse(*pod.PedalBoard) (error, int, interface{}) {
-    info := fmt.Sprintf("No defined pase fuction for %s message, mtype: %d, smtype %d",
+    info := fmt.Sprintf("No defined pase fuction for %s message, mtype: 0x%x, smtype 0x%x",
         m.mname, m.mtype, m.smtype)
     return fmt.Errorf(info), ct.StatusWarning(), nil
 }
@@ -252,22 +252,22 @@ func (m *SetupChange) Copy() IMessage {
 }
 
 var messages = []IMessage{
-    &ActiveChange{Message: Message{mtype: 4, smtype: 4864, msize: 20, mname: "Item Active Change"}},
-    &TypeChange{Message: Message{mtype: 4, smtype: 4352, msize: 20, mname: "Item Type Change"}},
-    &PresetChange{Message: Message{mtype: 2, smtype: 9984, msize: 12, mname: "Preset change"}},
-    &PresetChangeAlert{Message: Message{mtype: 1, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
+    &ActiveChange{Message: Message{mtype: 0x0004, smtype: 4864, msize: 20, mname: "Item Active Change"}},
+    &TypeChange{Message: Message{mtype: 0x0004, smtype: 4352, msize: 20, mname: "Item Type Change"}},
+    &PresetChange{Message: Message{mtype: 0x002, smtype: 0x2700, msize: 12, mname: "Preset change"}},
+    &PresetChangeAlert{Message: Message{mtype: 0x0001, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
     &PresetSet{Message: Message{mtype: 1026, smtype: 512, msize: 4108, mname: "Preset Set"}},
-    &PresetQuery{Message: Message{mtype: 2, smtype: 0, msize: 12, mname: "Preset Query"}},
-    &ParameterChange{Message: Message{mtype: 6, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
-    &ParameterChangeMin{Message: Message{mtype: 6, smtype: 11776, msize: 28, mname: "Item Parameter Change Min"}},
-    &ParameterChangeMax{Message: Message{mtype: 6, smtype: 12032, msize: 28, mname: "Item Parameter Change Max"}},
-    &ParameterTempoChange{Message: Message{mtype: 4, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
-    &ParameterTempoChange2{Message: Message{mtype: 4, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
-    &SetChange{Message: Message{mtype: 2, smtype: 11264, msize: 12, mname: "Set Change"}},
-    &SetLoad{Message: Message{mtype: 6, smtype: 10496, msize: 12, mname: "Set Query"}},
-    &SetQuery{Message: Message{mtype: 2, smtype: 10240, msize: 12, mname: "Set Query"}},
-    &SetupChange{Message: Message{mtype: 5, smtype: 5632, msize: 24, mname: "Setup Change"}},
+    &PresetQuery{Message: Message{mtype: 0x0002, smtype: 0, msize: 12, mname: "Preset Query"}},
+    &ParameterChange{Message: Message{mtype: 0x0006, smtype: 11520, msize: 28, mname: "Item Parameter Change"}},
+    &ParameterChangeMin{Message: Message{mtype: 0x0006, smtype: 11776, msize: 28, mname: "Item Parameter Change Min"}},
+    &ParameterChangeMax{Message: Message{mtype: 0x0006, smtype: 12032, msize: 28, mname: "Item Parameter Change Max"}},
+    &ParameterTempoChange{Message: Message{mtype: 0x0004, smtype: 5120, msize: 20, mname: "Item Parameter Tempo Change"}},
+    &ParameterTempoChange2{Message: Message{mtype: 0x0004, smtype: 12544, msize: 20, mname: "Item Parameter Tempo Change"}},
+    &SetChange{Message: Message{mtype: 0x0002, smtype: 0x2C00, msize: 12, mname: "Set Change"}},
+    &SetLoad{Message: Message{mtype: 0x0006, smtype: 10496, msize: 12, mname: "Set Query"}},
+    &SetQuery{Message: Message{mtype: 0x0002, smtype: 10240, msize: 12, mname: "Set Query"}},
+    &SetupChange{Message: Message{mtype: 0x0005, smtype: 5632, msize: 24, mname: "Setup Change"}},
 }
 
 func newMessage(mtype uint16, smtype uint16) IMessage {

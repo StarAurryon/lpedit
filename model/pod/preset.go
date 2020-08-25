@@ -19,6 +19,7 @@
 package pod
 
 import "strconv"
+import "strings"
 
 const (
     NumberSet = 8
@@ -34,7 +35,8 @@ type set struct {
 func newSet(id uint8, name string) *set {
     s := set{id: id, name: name}
     for i := 0; i < PresetPerSet; i++ {
-        s.presetList[i] = &preset{id: uint8(i), name: "New Tone"}
+        s.presetList[i] = &preset{id: uint8(i)}
+        s.presetList[i].SetName2("New Tone")
     }
     return &s
 }
@@ -53,7 +55,7 @@ func (s *set) SetName(name string) {
 
 type preset struct {
     id   uint8
-    name string
+    name [16]byte
 }
 
 func (p *preset) GetID() uint8 {
@@ -67,10 +69,24 @@ func (p *preset) GetID2() string {
     return strconv.Itoa(int(section)) + letter
 }
 
-func (p *preset) GetName() string {
+func (p *preset) GetName() [16]byte {
     return p.name
 }
 
-func (p *preset) SetName(name string) {
+func (p *preset) GetName2() string {
+    ret := string(p.name[:])
+    ret = strings.Trim(ret, " ")
+    return ret
+}
+
+func (p *preset) SetName(name [16]byte) {
     p.name = name
+}
+
+func (p *preset) SetName2(name string) {
+    src := []byte(name)
+    copy(p.name[:], src)
+    for i := len(src); i < len(p.name); i++ {
+        p.name[i] = byte(' ')
+    }
 }

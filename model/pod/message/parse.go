@@ -130,7 +130,7 @@ func (m ParameterTempoChange2) Parse(pb *pod.PedalBoard) (error, int, interface{
 }
 
 func (m PresetChange) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
-    pb.SetCurrentPreset(binary.LittleEndian.Uint32(m.data[8:]))
+    pb.SetCurrentPreset(m.data[8])
     return nil, ct.StatusPresetChange(), pb
 }
 
@@ -140,7 +140,9 @@ func (m PresetChangeAlert) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
 
 func (m PresetLoad) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
     pbiOrder := []uint32{0,2,1,3,4,5,6,7,8,9,10,11}
-    pb.SetCurrentPresetName(string(m.data[8:40]))
+    name := [16]byte{}
+    copy(name[:], m.data[8:24])
+    pb.SetCurrentPresetName(name)
 
     const offset = 48
     var data [256]byte
@@ -311,7 +313,7 @@ func (m PresetLoad) parseParameterNormal(pbi pod.PedalBoardItem, data [20]byte, 
 }
 
 func (m SetChange) Parse(pb *pod.PedalBoard) (error, int, interface{}) {
-    pb.SetCurrentSet(binary.LittleEndian.Uint32(m.data[8:]))
+    pb.SetCurrentSet(m.data[8])
     return nil, ct.StatusSetChange(), pb
 }
 

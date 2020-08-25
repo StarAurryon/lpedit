@@ -216,9 +216,16 @@ func (pb *PedalBoard) GetCurrentPreset() (error, uint8) {
     return fmt.Errorf("Current set is not defined"), 0
 }
 
-func (pb *PedalBoard) GetCurrentPresetName() []string {
+func (pb *PedalBoard) GetCurrentPresetName() [16]byte {
     if p := pb.currentPreset; p != nil {
-        return []string{p.GetID2(), p.GetName()}
+        return p.GetName()
+    }
+    return [16]byte{}
+}
+
+func (pb *PedalBoard) GetCurrentPresetName2() []string {
+    if p := pb.currentPreset; p != nil {
+        return []string{p.GetID2(), p.GetName2()}
     }
     return nil
 }
@@ -231,7 +238,7 @@ func (pb *PedalBoard) GetPresetList(setID int) [][]string {
     ret := make([][]string, PresetPerSet)
     if setID < 0 || NumberSet <= setID { return ret }
     for i, preset := range pb.setList[setID].presetList {
-        ret[i] = []string{preset.GetID2(), preset.GetName()}
+        ret[i] = []string{preset.GetID2(), preset.GetName2()}
     }
     return ret
 }
@@ -248,13 +255,19 @@ func (c *PedalBoard) LockData(){
     c.mux.Lock()
 }
 
-func (pb *PedalBoard) SetCurrentPresetName(name string) {
+func (pb *PedalBoard) SetCurrentPresetName(name [16]byte) {
     if p := pb.currentPreset; p != nil {
         p.SetName(name)
     }
 }
 
-func (pb *PedalBoard) SetCurrentPreset(id uint32) {
+func (pb *PedalBoard) SetCurrentPresetName2(name string) {
+    if p := pb.currentPreset; p != nil {
+        p.SetName2(name)
+    }
+}
+
+func (pb *PedalBoard) SetCurrentPreset(id uint8) {
     if id < PresetPerSet && pb.currentSet != nil {
         pb.currentPreset = pb.currentSet.presetList[id]
     } else {
@@ -262,7 +275,7 @@ func (pb *PedalBoard) SetCurrentPreset(id uint32) {
     }
 }
 
-func (pb *PedalBoard) SetCurrentSet(id uint32) {
+func (pb *PedalBoard) SetCurrentSet(id uint8) {
     if id < NumberSet {
         pb.currentSet = pb.setList[id]
     } else {

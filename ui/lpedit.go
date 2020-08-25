@@ -23,6 +23,8 @@ import "github.com/StarAurryon/qt/gui"
 import "github.com/StarAurryon/qt/widgets"
 
 import "fmt"
+import "log"
+import "io/ioutil"
 import "os"
 
 import "github.com/StarAurryon/lpedit/model/pod"
@@ -49,6 +51,7 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
         value: l.InputSource2, vfunc: l.parameter1Changed}
     l.parameters[2] = Parameter{label: l.GuitarInZLbl,
         value: l.GuitarInZ, vfunc: l.parameter2Changed}
+    log.SetOutput(ioutil.Discard)
     l.init()
     l.initUI()
     return l
@@ -70,9 +73,12 @@ func (l *LPEdit) initUI() {
     //Icon
     ps := string(os.PathSeparator)
     iconPath := "ui" + ps + "knob.png"
-    fmt.Println(iconPath)
     icon := gui.NewQIcon5(iconPath)
     l.SetWindowIcon(icon)
+
+    //PresetList
+    l.PresetList.SetSelectionBehavior(widgets.QAbstractItemView__SelectRows)
+    l.PresetList.SetSelectionMode(widgets.QAbstractItemView__SingleSelection)
 }
 
 func (l *LPEdit) connectSignal() {
@@ -82,6 +88,8 @@ func (l *LPEdit) connectSignal() {
 
     //UI Connections
     l.DiscardChanges.ConnectClicked(l.discardPresetChanges)
+    l.PresetList.ConnectItemChanged(l.updateCurrentPresetName)
+    l.PresetList.ConnectClicked(l.changePreset)
     l.SetList.ConnectCurrentIndexChanged(l.updatePresets)
     l.Save.ConnectClicked(l.savePreset)
     //PedalBoard Connections
@@ -111,6 +119,8 @@ func (l *LPEdit) connectSignal() {
 func (l *LPEdit) disconnectSignal() {
     //UI Connections
     l.DiscardChanges.DisconnectClicked()
+    l.PresetList.DisconnectItemChanged()
+    l.PresetList.DisconnectClicked()
     l.SetList.DisconnectCurrentIndexChanged()
     l.Save.DisconnectClicked()
     //PedalBoard Connections
@@ -200,6 +210,22 @@ func (l *LPEdit) getParameter(id uint32) *Parameter{
     return nil
 }
 
+func (l *LPEdit) changePreset(model *core.QModelIndex) {
+    pb := l.ctrl.GetPedalBoard()
+    pb.LockData()
+    err, currentPreset := pb.GetCurrentPreset()
+    err2, currentSet := pb.GetCurrentSet()
+    pb.UnlockData()
+
+    if err != nil || err2 != nil {
+        return
+    }
+
+    if model.Row() != int(currentPreset) || l.SetList.CurrentIndex() != int(currentSet) {
+        l.ctrl.SetPreset(uint8(model.Row()), uint8(l.SetList.CurrentIndex()))
+    }
+}
+
 func (l *LPEdit) discardPresetChanges(bool) {
     l.ctrl.ReloadPreset()
 }
@@ -238,6 +264,10 @@ func (l *LPEdit) updateActive(pbi pod.PedalBoardItem) {
     case *pod.Pedal:
         l.pedals[p.GetID()-4].setActive(p.GetActive())
     }
+}
+
+func (l *LPEdit) updateCurrentPresetName(item *widgets.QTableWidgetItem) {
+    l.ctrl.SetCurrentPresetName(item.Text())
 }
 
 func (l *LPEdit) updateParameter(param pod.Parameter) {
@@ -325,9 +355,6 @@ func (l *LPEdit) updatePresets(index int) {
 
     l.PresetList.Clear()
 
-    /*for _, c := range l.PresetList.Children() {
-        c.DestroyQObject()
-    }*/
     l.PresetList.HorizontalHeader().SetVisible(false)
     l.PresetList.VerticalHeader().SetVisible(false)
     l.PresetList.SetRowCount(len(presets))

@@ -42,11 +42,11 @@ func (c *Controller) QueryAllPresets(async bool) {
         pb := c.GetPedalBoard()
         for i := 0; i < pod.NumberSet; i++ {
             pb.LockData()
-            pb.SetCurrentSet(uint32(i))
+            pb.SetCurrentSet(uint8(i))
             pb.UnlockData()
             for j := 0; j < pod.PresetPerSet; j++ {
                 pb.LockData()
-                pb.SetCurrentPreset(uint32(j))
+                pb.SetCurrentPreset(uint8(j))
                 pb.UnlockData()
                 c.QueryPreset(false, uint16(j), uint16(i))
                 <- c.syncModeChan
@@ -70,7 +70,7 @@ func (c *Controller) QueryAllSets(async bool) {
         c.syncMode = true
         for i := 0; i < pod.NumberSet; i++ {
             pb.LockData()
-            pb.SetCurrentSet(uint32(i))
+            pb.SetCurrentSet(uint8(i))
             pb.UnlockData()
             m := message.GenSetQuery(uint32(i))
             c.writeMessage(m, 0, 0)
@@ -390,8 +390,7 @@ func (c *Controller) SetPedalBoardItemPosition(id uint32, pos uint16, posType ui
             return
         }
         pbi.SetPos(pos, posType)
-        m := message.GenPresetSet(c.pb, c.lastLoadPreset, message.CurrentPreset, message.CurrentSet)
-        c.writeMessage(m, 0, 0)
+        c.setCurrentPreset(c.pb)
     }
     go f()
 }
@@ -448,6 +447,56 @@ func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel str
     f := func() {
         c.writeMessage(m, 0, 0)
         c.writeMessage(m2, 0, 0)
+    }
+    go f()
+}
+
+func (c *Controller) SetPreset(presetID uint8, setID uint8) {
+    f := func() {
+        if !c.started { return }
+
+        c.pb.LockData()
+        c.pb.SetCurrentSet(setID)
+        c.pb.SetCurrentPreset(presetID)
+        c.pb.UnlockData()
+
+        c.syncMode = true
+        c.QueryPreset(false, uint16(presetID), uint16(setID))
+        <- c.syncModeChan
+        c.syncMode = false
+
+        m := message.GenSetChange(setID)
+        m2 := message.GenPresetChange(presetID)
+        c.writeMessage(m, 0, 0)
+        c.writeMessage(m2, 0, 0)
+
+        c.pb.LockData()
+        c.setCurrentPreset(c.pb)
+        c.pb.UnlockData()
+    }
+    go f()
+}
+
+func (c *Controller) setCurrentPreset(pb *pod.PedalBoard){
+    m := message.GenPresetSet(c.pb, c.lastLoadPreset, message.CurrentPreset, message.CurrentSet)
+    c.writeMessage(m, 0, 0)
+}
+
+func (c *Controller) SetCurrentPresetName(name string) {
+    f := func() {
+        if !c.started { return }
+
+        c.syncMode = true
+        c.QueryCurrentPreset()
+        <- c.syncModeChan
+        c.syncMode = false
+
+        c.pb.LockData()
+        defer c.pb.UnlockData()
+
+        c.pb.SetCurrentPresetName2(name)
+        c.setCurrentPreset(c.pb)
+        c.QueryCurrentPreset()
     }
     go f()
 }

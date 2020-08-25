@@ -23,7 +23,6 @@ import "github.com/StarAurryon/qt/gui"
 import "github.com/StarAurryon/qt/widgets"
 
 import "strconv"
-import "fmt"
 import "unsafe"
 
 import "github.com/StarAurryon/lpedit/model/pod"
@@ -103,8 +102,6 @@ func (l *LPEdit) generatePedalBoardTopology(pb *pod.PedalBoard) (start []pod.Ped
     bEnd := pb.GetItems(pod.PedalPosBEnd)
     end = pb.GetItems(pod.PedalPosEnd)
     posA, _ := ampA.GetPos()
-
-    fmt.Printf("ID %d, PosA %d\n", ampA.GetID(), posA)
 
     if posA == 5 { start = append(start, ampA) }
     if posA == 7 { end = append([]pod.PedalBoardItem{ampA}, end...) }
