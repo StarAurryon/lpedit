@@ -25,6 +25,11 @@ import "reflect"
 
 import "github.com/StarAurryon/lpedit/model/pod"
 
+const (
+    CurrentSet uint16 = 0xFFFF
+    CurrentPreset uint16 = 0xFFFF
+)
+
 func genHeader(m IMessage) *bytes.Buffer {
     buf := new(bytes.Buffer)
     binary.Write(buf, binary.LittleEndian, m.GetType())
@@ -229,7 +234,7 @@ func GenPresetQuery(presetID uint16, setID uint16) IMessage {
 }
 
 //DirtyHack TODO: Cleanup
-func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad) IMessage {
+func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad, presetID uint16, setID uint16) IMessage {
     var m *PresetSet
     m = newMessage2(reflect.TypeOf(m)).(*PresetSet)
 
@@ -252,7 +257,8 @@ func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad) IMessage {
     }
 
     buf := genHeader(m)
-    binary.Write(buf, binary.LittleEndian, uint32(0xffffffff))
+    binary.Write(buf, binary.LittleEndian, presetID)
+    binary.Write(buf, binary.LittleEndian, setID)
     binary.Write(buf, binary.LittleEndian, data[8:])
     m.data = buf.Bytes()
 

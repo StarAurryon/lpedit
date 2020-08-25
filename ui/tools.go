@@ -18,21 +18,6 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/widgets"
-
-func AddWidget(lay widgets.QLayout_ITF, widget widgets.QWidget_ITF, x int, y int,) {
-     switch _lay := lay.(type) {
-     case *widgets.QHBoxLayout:
-         _lay.AddWidget(widget, 0, 0)
-     case *widgets.QVBoxLayout:
-         _lay.AddWidget(widget, 0, 0)
-     case *widgets.QGridLayout:
-         _lay.AddWidget2(widget, y, x, 0)
-     case *widgets.QLayout:
-         _lay.AddWidget(widget)
-    }
- }
-
 func Max(a, b int) int {
     if a > b {
         return a

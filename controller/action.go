@@ -25,12 +25,11 @@ import "fmt"
 import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/model/pod/message"
 
-
-func (c *Controller) QueryCurrentPreset() {
-    if !c.started { return }
+func (c *Controller) InitPOD() {
     f := func() {
-        m := message.GenPresetQuery(uint16(0xFFFF), uint16(0xFFFF))
-        c.writeMessage(m, 0, 0)
+        c.QueryAllSets(false)
+        c.QueryAllPresets(false)
+        c.notify(nil, sg.StatusInitDone(), nil)
     }
     go f()
 }
@@ -49,8 +48,7 @@ func (c *Controller) QueryAllPresets(async bool) {
                 pb.LockData()
                 pb.SetCurrentPreset(uint32(j))
                 pb.UnlockData()
-                m := message.GenPresetQuery(uint16(j), uint16(i))
-                c.writeMessage(m, 0, 0)
+                c.QueryPreset(false, uint16(j), uint16(i))
                 <- c.syncModeChan
                 progress := (((i * pod.PresetPerSet) + (j + 1)) * 100) / max
                 c.notify(nil, sg.StatusProgress(), progress)
@@ -89,11 +87,56 @@ func (c *Controller) QueryAllSets(async bool) {
     }
 }
 
-func (c *Controller) InitPOD() {
+func (c *Controller) QueryCurrentPreset() {
+    if !c.started { return }
+    c.QueryPreset(true, message.CurrentPreset, message.CurrentSet)
+}
+
+func (c *Controller) QueryPreset(async bool, presetID uint16, setID uint16) {
+    if !c.started { return }
     f := func() {
-        c.QueryAllSets(false)
-        c.QueryAllPresets(false)
-        c.notify(nil, sg.StatusInitDone(), nil)
+        m := message.GenPresetQuery(presetID, setID)
+        c.writeMessage(m, 0, 0)
+    }
+    if async {
+        go f()
+    } else {
+        f()
+    }
+}
+
+func (c *Controller) ReloadPreset() {
+    f := func() {
+        if !c.started { return }
+        c.pb.LockData()
+        defer c.pb.UnlockData()
+        err, setID := c.pb.GetCurrentSet()
+        if err != nil { return }
+        err, presetID := c.pb.GetCurrentPreset()
+        if err != nil { return }
+        c.QueryPreset(false, uint16(presetID), uint16(setID))
+    }
+    go f()
+}
+
+func (c *Controller) SavePreset() {
+    f := func() {
+        if !c.started { return }
+
+        c.syncMode = true
+        c.QueryCurrentPreset()
+        <- c.syncModeChan
+        c.syncMode = false
+
+        c.pb.LockData()
+        defer c.pb.UnlockData()
+        err, setID := c.pb.GetCurrentSet()
+        if err != nil { return }
+        err, presetID := c.pb.GetCurrentPreset()
+        if err != nil { return }
+
+        m := message.GenPresetSet(c.pb, c.lastLoadPreset, uint16(presetID), uint16(setID))
+        c.writeMessage(m, 0, 0)
     }
     go f()
 }
@@ -347,7 +390,7 @@ func (c *Controller) SetPedalBoardItemPosition(id uint32, pos uint16, posType ui
             return
         }
         pbi.SetPos(pos, posType)
-        m := message.GenPresetSet(c.pb, c.lastLoadPreset)
+        m := message.GenPresetSet(c.pb, c.lastLoadPreset, message.CurrentPreset, message.CurrentSet)
         c.writeMessage(m, 0, 0)
     }
     go f()

@@ -50,10 +50,11 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
     l.parameters[2] = Parameter{label: l.GuitarInZLbl,
         value: l.GuitarInZ, vfunc: l.parameter2Changed}
     l.init()
+    l.initUI()
     return l
 }
 
-func (l *LPEdit) init() {
+func (l *LPEdit) initUI() {
     //init
     l.initAmpsCabs()
     l.initPedals()
@@ -80,7 +81,9 @@ func (l *LPEdit) connectSignal() {
     l.updatePedalBoard(l.ctrl.GetPedalBoard())
 
     //UI Connections
+    l.DiscardChanges.ConnectClicked(l.discardPresetChanges)
     l.SetList.ConnectCurrentIndexChanged(l.updatePresets)
+    l.Save.ConnectClicked(l.savePreset)
     //PedalBoard Connections
     l.ctrl.ConnectActiveChange(l.updateActive)
     l.ctrl.ConnectParameterChange(l.updateParameter)
@@ -107,7 +110,9 @@ func (l *LPEdit) connectSignal() {
 
 func (l *LPEdit) disconnectSignal() {
     //UI Connections
+    l.DiscardChanges.DisconnectClicked()
     l.SetList.DisconnectCurrentIndexChanged()
+    l.Save.DisconnectClicked()
     //PedalBoard Connections
     l.ctrl.DisconnectActiveChange()
     l.ctrl.DisconnectParameterChange()
@@ -195,6 +200,10 @@ func (l *LPEdit) getParameter(id uint32) *Parameter{
     return nil
 }
 
+func (l *LPEdit) discardPresetChanges(bool) {
+    l.ctrl.ReloadPreset()
+}
+
 func (l *LPEdit) parameter0Changed(val string) { l.parameterChanged(&l.parameters[0], val) }
 func (l *LPEdit) parameter1Changed(val string) { l.parameterChanged(&l.parameters[1], val) }
 func (l *LPEdit) parameter2Changed(val string) { l.parameterChanged(&l.parameters[2], val) }
@@ -214,6 +223,10 @@ func (l *LPEdit) pbSelectorClick(vbo bool) {
     }
     l.pbSelector.Show()
     l.pbSelector.Raise()
+}
+
+func (l *LPEdit) savePreset(bool) {
+    l.ctrl.SavePreset()
 }
 
 func (l *LPEdit) updateActive(pbi pod.PedalBoardItem) {

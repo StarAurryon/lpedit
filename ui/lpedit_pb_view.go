@@ -174,7 +174,7 @@ func (l *LPEdit) updatePedalBoardView(pb *pod.PedalBoard) {
 
     mainMix := widgets.NewQLabel(l.PedalBoardView, core.Qt__Widget)
     mainMix.SetText("Main Mix")
-    AddWidget(layout, mainMix, j, 1)
+    layout.AddWidget2(mainMix, 1, j, 0)
     j++
 
     l.fillPedalBoardView(layout, j, 1, len(end), end, pos, pod.PedalPosEnd)
