@@ -48,7 +48,7 @@ type Parameter interface {
     SetBinValueCurrent([4]byte) error
     SetBinValueMin([4]byte) error
     SetBinValueMax([4]byte) error
-    SetParent(PedalBoardItem)
+    SetParent(LPEObject)
     SetValueCurrent(string) error
     SetValueMin(string) error
     SetValueMax(string) error
@@ -65,7 +65,7 @@ func (p *GenericParameter) GetID() uint32 { return p.id }
 func (p *GenericParameter) GetName() string { return p.name }
 func (p *GenericParameter) GetParent() LPEObject { return p.parent }
 func (p *GenericParameter) LockData() { p.parent.LockData() }
-func (p *GenericParameter) SetParent(parent PedalBoardItem) { p.parent = parent }
+func (p *GenericParameter) SetParent(parent LPEObject) { p.parent = parent }
 func (p *GenericParameter) UnlockData() { p.parent.UnlockData() }
 
 func to4Bytes(obj interface{}) [4]byte {

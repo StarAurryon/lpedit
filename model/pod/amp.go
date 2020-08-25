@@ -736,17 +736,20 @@ func newDisAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Amp {
 }
 
 func newAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard, atype uint32) *Amp {
-    for _, newAmp := range amps {
-        if newAmp.atype == atype {
+    for _, amp := range amps {
+        if amp.atype == atype {
+            newAmp := new(Amp)
+            *newAmp = amp
             newAmp.id = id
             newAmp.pos = pos
             newAmp.posType = posType
             newAmp.pb = pb
+            newAmp.params = make([]Parameter, len(amp.params))
             for i := range newAmp.params {
-                newAmp.params[i] = newAmp.params[i].Copy()
-                newAmp.params[i].SetParent(&newAmp)
+                newAmp.params[i] = amp.params[i].Copy()
+                newAmp.params[i].SetParent(newAmp)
             }
-            return &newAmp
+            return newAmp
         }
     }
     return nil

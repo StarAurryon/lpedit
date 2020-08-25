@@ -231,17 +231,20 @@ func newNoCab(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Cab {
 }
 
 func newCab(id uint32, pos uint16, posType uint8, pb *PedalBoard, ctype uint32) *Cab {
-    for _, newCab := range cabs {
-        if newCab.ctype == ctype {
+    for _, cab := range cabs {
+        if cab.ctype == ctype {
+            newCab := new(Cab)
+            *newCab = cab
             newCab.id = id
             newCab.pos = pos
             newCab.posType = posType
             newCab.pb = pb
+            newCab.params = make([]Parameter, len(cab.params))
             for i := range newCab.params {
-                newCab.params[i] = newCab.params[i].Copy()
-                newCab.params[i].SetParent(&newCab)
+                newCab.params[i] = cab.params[i].Copy()
+                newCab.params[i].SetParent(newCab)
             }
-            return &newCab
+            return newCab
         }
     }
     return nil

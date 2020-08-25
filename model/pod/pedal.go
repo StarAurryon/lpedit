@@ -979,17 +979,20 @@ func newNonePedal(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Pedal{
 }
 
 func newPedal(id uint32, pos uint16, posType uint8, pb *PedalBoard, ptype uint32 ) *Pedal {
-    for _, newPedal := range pedals {
-        if newPedal.ptype == ptype {
+    for _, pedal := range pedals {
+        if pedal.ptype == ptype {
+            newPedal := new(Pedal)
+            *newPedal = pedal
             newPedal.id = id
             newPedal.pos = pos
             newPedal.posType = posType
             newPedal.pb = pb
+            newPedal.params = make([]Parameter, len(pedal.params))
             for i := range newPedal.params {
-                newPedal.params[i] = newPedal.params[i].Copy()
-                newPedal.params[i].SetParent(&newPedal)
+                newPedal.params[i] = pedal.params[i].Copy()
+                newPedal.params[i].SetParent(newPedal)
             }
-            return &newPedal
+            return newPedal
         }
     }
     return nil
