@@ -21,7 +21,7 @@ package pod
 import "fmt"
 
 const (
-    noCab uint32 = 17301503
+    noCab uint32 = 0x0007FFFF
     CabLowCutID uint32 = iota
     CabResLevelID
     CabThumpID

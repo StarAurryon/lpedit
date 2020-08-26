@@ -306,10 +306,16 @@ func GenTypeChange(pbi pod.PedalBoardItem) IMessage {
     var m *TypeChange
     m = newMessage2(reflect.TypeOf(m)).(*TypeChange)
 
+    pbiType := pbi.GetType()
+    //Fix for disabled Amp/Cab/Pedal
+    if pbiType & 0xFFFF == 0xFFFF {
+        pbiType = (pbiType & 0xFFFF) + 0x7FFF0000
+    }
+
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, uint32(0))
     binary.Write(buf, binary.LittleEndian, pbi.GetID())
-    binary.Write(buf, binary.LittleEndian, pbi.GetType())
+    binary.Write(buf, binary.LittleEndian, pbiType)
     m.data = buf.Bytes()
 
     return m

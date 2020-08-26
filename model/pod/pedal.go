@@ -21,7 +21,7 @@ package pod
 import "fmt"
 
 const (
-    nonePedal uint32 = 34471935
+    nonePedal uint32 = 0x020DFFFF
 )
 
 type Pedal struct {

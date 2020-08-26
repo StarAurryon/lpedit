@@ -21,7 +21,7 @@ package pod
 import "fmt"
 
 const (
-    ampDisabled uint32 = 524287
+    ampDisabled uint32 = 0x0007FFFF
 )
 
 type Amp struct {
