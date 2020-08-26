@@ -80,7 +80,7 @@ func (p *PedalView) dragPedal(event *gui.QMouseEvent) {
     mimedata.SetText(strconv.FormatUint(uint64(uintptr(unsafe.Pointer(p))), 16))
 
     painter := gui.NewQPainter2(pixmap)
-    painter.DrawPixmap10(p.Rect(), p.Grab(core.NewQRect()))
+    painter.DrawPixmap10(p.Rect(), p.Grab(p.Rect()))
     painter.End()
 
     drag := gui.NewQDrag(p)
