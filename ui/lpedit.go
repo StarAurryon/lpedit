@@ -53,11 +53,16 @@ func NewLPEdit(c *qtctrl.Controller, p widgets.QWidget_ITF) *LPEdit {
         value: l.GuitarInZ, vfunc: l.parameter2Changed}
     log.SetOutput(ioutil.Discard)
     l.init()
-    l.initUI()
     return l
 }
 
-func (l *LPEdit) initUI() {
+func (l *LPEdit) init() {
+    //Icon
+    ps := string(os.PathSeparator)
+    iconPath := "ui" + ps + "knob.png"
+    icon := gui.NewQIcon5(iconPath)
+    l.SetWindowIcon(icon)
+
     //init
     l.initAmpsCabs()
     l.initPedals()
@@ -70,12 +75,6 @@ func (l *LPEdit) initUI() {
     l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.ctrl.ConnectLoopError(l.loopError)
     l.ctrl.ConnectProgress(l.progress)
-
-    //Icon
-    ps := string(os.PathSeparator)
-    iconPath := "ui" + ps + "knob.png"
-    icon := gui.NewQIcon5(iconPath)
-    l.SetWindowIcon(icon)
 
     //PresetList
     l.PresetList.SetSelectionBehavior(widgets.QAbstractItemView__SelectRows)

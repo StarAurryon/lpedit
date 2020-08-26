@@ -74,19 +74,7 @@
       </item>
       <item>
        <widget class="QWidget" name="param0Mid" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>52</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>52</height>
-         </size>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_4">
+        <layout class="QGridLayout" name="gridLayout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -103,23 +91,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="param0Knob">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Knob</string>
-           </property>
-          </widget>
+          <widget class="QDial" name="param0Knob"/>
          </item>
         </layout>
        </widget>
@@ -182,19 +154,7 @@
       </item>
       <item>
        <widget class="QWidget" name="param1Mid" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>52</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>52</height>
-         </size>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
+        <layout class="QGridLayout" name="gridLayout_4">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -211,23 +171,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="param1Knob">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Knob</string>
-           </property>
-          </widget>
+          <widget class="QDial" name="param1Knob"/>
          </item>
         </layout>
        </widget>
@@ -287,19 +231,7 @@
       </item>
       <item>
        <widget class="QWidget" name="param2Mid" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>52</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>52</height>
-         </size>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_2">
+        <layout class="QGridLayout" name="gridLayout_3">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -316,23 +248,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="param2Knob">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Knob</string>
-           </property>
-          </widget>
+          <widget class="QDial" name="param2Knob"/>
          </item>
         </layout>
        </widget>
@@ -392,19 +308,7 @@
       </item>
       <item>
        <widget class="QWidget" name="param3Mid" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>52</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>52</height>
-         </size>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_3">
+        <layout class="QGridLayout" name="gridLayout_2">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -421,23 +325,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="param3Knob">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Knob</string>
-           </property>
-          </widget>
+          <widget class="QDial" name="param3Knob"/>
          </item>
         </layout>
        </widget>
@@ -497,18 +385,6 @@
       </item>
       <item>
        <widget class="QWidget" name="param4Mid" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>52</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>52</height>
-         </size>
-        </property>
         <layout class="QGridLayout" name="gridLayout_5">
          <property name="leftMargin">
           <number>0</number>
@@ -526,23 +402,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="param4Knob">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>35</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Knob</string>
-           </property>
-          </widget>
+          <widget class="QDial" name="param4Knob"/>
          </item>
         </layout>
        </widget>

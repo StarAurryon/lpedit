@@ -41,8 +41,10 @@ type Parameter interface {
     GetName() string
     GetParent() LPEObject
     GetValueCurrent() string
+    GetValueCurrent2() float32
     GetValueMin() string
     GetValueMax() string
+    GetValueRange() (min int, max int)
     IsAllowingOtherValues() bool
     LockData()
     SetBinValueCurrent([4]byte) error
@@ -117,12 +119,18 @@ func (p *FreqParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *FreqParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *FreqParam) getValue(v float32) string {
-    return fmt.Sprintf("%dHz", int(math.Round(float64((v * (p.max - p.min)) + p.min))))
+    return fmt.Sprintf("%dHz", int(p.getValue2(v)))
+}
+
+func (p *FreqParam) getValue2(v float32) float32 {
+    return float32(math.Round(float64((v * (p.max - p.min)) + p.min)))
 }
 
 func (p *FreqParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *FreqParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *FreqParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *FreqParam) GetValueMax() string { return p.getValue(p.valueMax) }
+func (p *FreqParam) GetValueRange() (int, int) { return int(p.min), int(p.max) }
 
 func (p *FreqParam) setBinValue(dst *float32, value [4]byte) error {
     v := from4BytesToFloat32(value)
@@ -180,12 +188,18 @@ func (p *FreqKParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *FreqKParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *FreqKParam) getValue(v float32) string {
-    return fmt.Sprintf("%.1fKHz", float64((v * (p.max - p.min)) + p.min))
+    return fmt.Sprintf("%.1fKHz", p.getValue2(v))
+}
+
+func (p *FreqKParam) getValue2(v float32) float32 {
+    return (v * (p.max - p.min)) + p.min
 }
 
 func (p *FreqKParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *FreqKParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *FreqKParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *FreqKParam) GetValueMax() string { return p.getValue(p.valueMax) }
+func (p *FreqKParam) GetValueRange() (int, int) { return int(p.min), int(p.max) }
 
 func (p *FreqKParam) setBinValue(dst *float32, value [4]byte) error {
     v := from4BytesToFloat32(value)
@@ -270,8 +284,10 @@ func (p *ListParam) getValue(v interface{}) string {
 }
 
 func (p *ListParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *ListParam) GetValueCurrent2() float32 { return 0 }
 func (p *ListParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *ListParam) GetValueMax() string { return p.getValue(p.valueMax) }
+func (p *ListParam) GetValueRange() (int, int) { return 0, 0 }
 
 func (p *ListParam) setBinValue(dst *interface{}, value [4]byte) error {
     switch p.binValueType {
@@ -350,10 +366,15 @@ func (p *PerCentParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *PerCentParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *PerCentParam) getValue(v float32) string {
-    return fmt.Sprintf("%d%%", int(math.Round(float64(v*100))))
+    return fmt.Sprintf("%d%%", int(p.getValue2(v)))
+}
+
+func (p *PerCentParam) getValue2(v float32) float32 {
+    return float32(math.Round(float64(v*100)))
 }
 
 func (p *PerCentParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *PerCentParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *PerCentParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *PerCentParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
@@ -387,6 +408,7 @@ func (p *PerCentParam) setValue(dst *float32, s string) error {
 func (p *PerCentParam) SetValueCurrent(s string) error { return p.setValue(&p.valueCurrent, s) }
 func (p *PerCentParam) SetValueMin(s string) error { return p.setValue(&p.valueMin, s) }
 func (p *PerCentParam) SetValueMax(s string) error { return p.setValue(&p.valueMax, s) }
+func (p *PerCentParam) GetValueRange() (int, int) { return 0, 100 }
 
 type RangeParam struct {
     GenericParameter
@@ -411,10 +433,15 @@ func (p *RangeParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *RangeParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *RangeParam) getValue(v float32) string {
-    return fmt.Sprintf("%.1f", (v * (p.max - p.min)) + p.min)
+    return fmt.Sprintf("%.1f", p.getValue2(v))
+}
+
+func (p *RangeParam) getValue2(v float32) float32 {
+    return (v * (p.max - p.min)) + p.min
 }
 
 func (p *RangeParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *RangeParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *RangeParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *RangeParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
@@ -430,6 +457,7 @@ func (p *RangeParam) setBinValue(dst *float32, value [4]byte) error {
 func (p *RangeParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
 func (p *RangeParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
 func (p *RangeParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
+func (p *RangeParam) GetValueRange() (int, int) { return int(p.min), int(p.max) }
 
 func (p *RangeParam) setValue(dst *float32, s string) error {
     s = strings.Replace(s, " ", "", -1)
@@ -481,10 +509,19 @@ func (p *TempoParam) getValue(v float32) string {
     if v > 1 {
         return p.GetAllowedValues()[int(v) - 2]
     }
-    return fmt.Sprintf("%.2fHz", (v * (p.max - p.min)) + p.min)
+    return fmt.Sprintf("%.2fHz", p.getValue2(v))
 }
 
+func (p *TempoParam) getValue2(v float32) float32 {
+    if v > 1 {
+        return 0
+    }
+    return (v * (p.max - p.min)) + p.min
+}
+
+
 func (p *TempoParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *TempoParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *TempoParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *TempoParam) GetValueMax() string { return p.getValue(p.valueMax) }
 
@@ -501,6 +538,7 @@ func (p *TempoParam) setBinValue(dst *float32, value [4]byte) error {
 func (p *TempoParam) SetBinValueCurrent(value [4]byte) error { return p.setBinValue(&p.valueCurrent, value) }
 func (p *TempoParam) SetBinValueMin(value [4]byte) error { return p.setBinValue(&p.valueMin, value) }
 func (p *TempoParam) SetBinValueMax(value [4]byte) error { return p.setBinValue(&p.valueMax, value) }
+func (p *TempoParam) GetValueRange() (int, int) { return int(p.min), int(p.max) }
 
 func (p *TempoParam) setValue(dst *float32, s string) error {
     for i, _s := range p.GetAllowedValues() {
@@ -552,12 +590,18 @@ func (p *TimeParam) GetBinValueMax() [4]byte { return to4Bytes(p.valueMax) }
 func (p *TimeParam) GetBinValueType() uint32 { return float32Type }
 
 func (p *TimeParam) getValue(v float32) string {
-    return fmt.Sprintf("%dms", int(v*float32(p.maxMs)))
+    return fmt.Sprintf("%dms", int(p.getValue2(v)))
+}
+
+func (p *TimeParam) getValue2(v float32) float32 {
+    return v*float32(p.maxMs)
 }
 
 func (p *TimeParam) GetValueCurrent() string { return p.getValue(p.valueCurrent) }
+func (p *TimeParam) GetValueCurrent2() float32 { return p.getValue2(p.valueCurrent) }
 func (p *TimeParam) GetValueMin() string { return p.getValue(p.valueMin) }
 func (p *TimeParam) GetValueMax() string { return p.getValue(p.valueMax) }
+func (p *TimeParam) GetValueRange() (int, int) { return 0, p.maxMs }
 
 func (p *TimeParam) setBinValue(dst *float32, value [4]byte) error {
     v := from4BytesToFloat32(value)

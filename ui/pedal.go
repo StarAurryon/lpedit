@@ -22,6 +22,7 @@ import "github.com/StarAurryon/qt/widgets"
 
 import "fmt"
 import "sort"
+import "strconv"
 
 import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
@@ -39,27 +40,22 @@ func NewPedal(parent *LPEdit, w widgets.QWidget_ITF, c *qtctrl.Controller,
         pt map[string][]string, id int) *Pedal {
     p := &Pedal{PedalUI: NewPedalUI(w), ctrl: c, pedalType: pt, id: id}
     p.parameters[0] = Parameter{label: p.Param0Lbl, mid: p.Param0Mid,
-        value: p.Param0Value, knob: p.Param0Knob, vfunc: p.parameter0Changed}
+        value: p.Param0Value, knob: p.Param0Knob, vfunc: p.parameter0Changed,
+        kfunc: p.parameter0Changed2}
     p.parameters[1] = Parameter{label: p.Param1Lbl, mid: p.Param1Mid,
-        value: p.Param1Value, knob: p.Param1Knob, vfunc: p.parameter1Changed}
+        value: p.Param1Value, knob: p.Param1Knob, vfunc: p.parameter1Changed,
+        kfunc: p.parameter1Changed2}
     p.parameters[2] = Parameter{label: p.Param2Lbl, mid: p.Param2Mid,
-        value: p.Param2Value, knob: p.Param2Knob, vfunc: p.parameter2Changed}
+        value: p.Param2Value, knob: p.Param2Knob, vfunc: p.parameter2Changed,
+        kfunc: p.parameter2Changed2}
     p.parameters[3] = Parameter{label: p.Param3Lbl, mid: p.Param3Mid,
-        value: p.Param3Value, knob: p.Param3Knob, vfunc: p.parameter3Changed}
+        value: p.Param3Value, knob: p.Param3Knob, vfunc: p.parameter3Changed,
+        kfunc: p.parameter3Changed2}
     p.parameters[4] = Parameter{label: p.Param4Lbl, mid: p.Param4Mid,
-        value: p.Param4Value, knob: p.Param4Knob, vfunc: p.parameter4Changed}
+        value: p.Param4Value, knob: p.Param4Knob, vfunc: p.parameter4Changed,
+        kfunc: p.parameter4Changed2}
     p.parent = parent
-    p.init()
     return p
-}
-
-func (p *Pedal) init() {
-    for i := range p.parameters {
-        parameter := p.parameters[i]
-        if parameter.mid != nil {
-            parameter.setupKnob()
-        }
-    }
 }
 
 func (p *Pedal) connectSignal() {
@@ -76,6 +72,7 @@ func (p *Pedal) connectSignal() {
     p.FxType.ConnectCurrentTextChanged(p.fxTypeChanged)
     for _, param := range p.parameters {
         param.value.ConnectActivated2(param.vfunc)
+        param.knob.ConnectValueChanged(param.kfunc)
     }
 }
 
@@ -90,6 +87,8 @@ func (p *Pedal) disconnectSignal() {
         param.value.DisconnectActivated2()
         param.value.Clear()
         param.value.SetEditable(false)
+        param.knob.DisconnectValueChanged()
+        param.knob.SetValue(0)
     }
 
     p.FxType.Clear()
@@ -125,8 +124,13 @@ func (p *Pedal) parameter2Changed(v string){ p.parameterChanged(&p.parameters[2]
 func (p *Pedal) parameter3Changed(v string){ p.parameterChanged(&p.parameters[3], v) }
 func (p *Pedal) parameter4Changed(v string){ p.parameterChanged(&p.parameters[4], v) }
 
+func (p *Pedal) parameter0Changed2(v int){ p.parameterChanged(&p.parameters[0], strconv.Itoa(v)) }
+func (p *Pedal) parameter1Changed2(v int){ p.parameterChanged(&p.parameters[1], strconv.Itoa(v)) }
+func (p *Pedal) parameter2Changed2(v int){ p.parameterChanged(&p.parameters[2], strconv.Itoa(v)) }
+func (p *Pedal) parameter3Changed2(v int){ p.parameterChanged(&p.parameters[3], strconv.Itoa(v)) }
+func (p *Pedal) parameter4Changed2(v int){ p.parameterChanged(&p.parameters[4], strconv.Itoa(v)) }
+
 func (p *Pedal) parameterChanged(paramUI *Parameter, v string) {
-    fmt.Println(paramUI.id)
     err := p.ctrl.SetPedalParameterValue(uint32(p.id), paramUI.id, v)
     if err != nil {
         mb := widgets.NewQMessageBox(p)
@@ -160,7 +164,7 @@ func (pUI *Pedal) updatePedal(p *pod.Pedal) {
     }
 }
 
-func (pUI * Pedal) updateParam(p pod.Parameter) {
+func (pUI *Pedal) updateParam(p pod.Parameter) {
     param := pUI.getParameter(p.GetID())
     if param == nil { return }
     values := p.GetAllowedValues()
@@ -186,4 +190,13 @@ func (pUI * Pedal) updateParam(p pod.Parameter) {
     param.setValue(p.GetValueCurrent())
     param.setLabel(p.GetName())
     param.show()
+
+    switch p.(type) {
+    case *pod.ListParam:
+        param.hideKnob()
+    default:
+        min, max := p.GetValueRange()
+        param.setValueKnob(int(p.GetValueCurrent2()), min, max)
+        param.showKnob()
+    }
 }

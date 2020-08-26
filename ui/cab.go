@@ -21,6 +21,7 @@ package ui
 import "github.com/StarAurryon/qt/widgets"
 
 import "sort"
+import "strconv"
 
 import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
@@ -38,15 +39,20 @@ func NewCab(parent *LPEdit, w widgets.QWidget_ITF, ctrl *qtctrl.Controller,
         ct []string, id int) *Cab {
     c := &Cab{CabUI: NewCabUI(w), ctrl: ctrl, cabType: ct, id: id}
     c.parameters[0] = Parameter{label: c.Param0Lbl, mid: c.Param0Mid,
-        value: c.Param0Value, knob: c.Param0Knob, vfunc: c.parameter0Changed}
+        value: c.Param0Value, knob: c.Param0Knob, vfunc: c.parameter0Changed,
+        kfunc: c.parameter0Changed2}
     c.parameters[1] = Parameter{label: c.Param1Lbl, mid: c.Param1Mid,
-        value: c.Param1Value, knob: c.Param1Knob, vfunc: c.parameter1Changed}
+        value: c.Param1Value, knob: c.Param1Knob, vfunc: c.parameter1Changed,
+        kfunc: c.parameter1Changed2}
     c.parameters[2] = Parameter{label: c.Param2Lbl, mid: c.Param2Mid,
-        value: c.Param2Value, knob: c.Param2Knob, vfunc: c.parameter2Changed}
+        value: c.Param2Value, knob: c.Param2Knob, vfunc: c.parameter2Changed,
+        kfunc: c.parameter2Changed2}
     c.parameters[3] = Parameter{label: c.Param3Lbl, mid: c.Param3Mid,
-        value: c.Param3Value, knob: c.Param3Knob, vfunc: c.parameter3Changed}
+        value: c.Param3Value, knob: c.Param3Knob, vfunc: c.parameter3Changed,
+        kfunc: c.parameter3Changed2}
     c.parameters[4] = Parameter{label: c.Param4Lbl, mid: c.Param4Mid,
-        value: c.Param4Value, knob: c.Param4Knob, vfunc: c.parameter4Changed}
+        value: c.Param4Value, knob: c.Param4Knob, vfunc: c.parameter4Changed,
+        kfunc: c.parameter4Changed2}
     c.parameters[5] = Parameter{label: c.MicModelLbl, mid: nil,
         value: c.MicModel, vfunc: c.parameter5Changed}
     c.parent = parent
@@ -62,10 +68,6 @@ func (c *Cab) init() {
     }
     sort.Strings(keys)
     c.CabModel.AddItems(keys)
-
-    for i := range c.parameters {
-        c.parameters[i].setupKnob()
-    }
 }
 
 func (c *Cab) connectSignal() {
@@ -73,6 +75,9 @@ func (c *Cab) connectSignal() {
     for _, p := range c.parameters {
         p.value.ConnectActivated2(p.vfunc)
         p.value.SetEditable(true)
+        if p.knob != nil {
+            p.knob.ConnectValueChanged(p.kfunc)
+        }
     }
 }
 
@@ -81,6 +86,9 @@ func (c *Cab) disconnectSignal() {
     for _, p := range c.parameters {
         p.value.DisconnectActivated2()
         p.value.SetEditable(false)
+        if p.knob != nil {
+            p.knob.DisconnectValueChanged()
+        }
     }
 }
 
@@ -103,6 +111,13 @@ func (c *Cab) parameter2Changed(val string) { c.parameterChanged(&c.parameters[2
 func (c *Cab) parameter3Changed(val string) { c.parameterChanged(&c.parameters[3], val) }
 func (c *Cab) parameter4Changed(val string) { c.parameterChanged(&c.parameters[4], val) }
 func (c *Cab) parameter5Changed(val string) { c.parameterChanged(&c.parameters[5], val) }
+
+func (c *Cab) parameter0Changed2(v int){ c.parameterChanged(&c.parameters[0], strconv.Itoa(v)) }
+func (c *Cab) parameter1Changed2(v int){ c.parameterChanged(&c.parameters[1], strconv.Itoa(v)) }
+func (c *Cab) parameter2Changed2(v int){ c.parameterChanged(&c.parameters[2], strconv.Itoa(v)) }
+func (c *Cab) parameter3Changed2(v int){ c.parameterChanged(&c.parameters[3], strconv.Itoa(v)) }
+func (c *Cab) parameter4Changed2(v int){ c.parameterChanged(&c.parameters[4], strconv.Itoa(v)) }
+func (c *Cab) parameter5Changed2(v int){ c.parameterChanged(&c.parameters[5], strconv.Itoa(v)) }
 
 func (c *Cab) parameterChanged(param *Parameter, val string) {
     c.ctrl.SetCabParameterValue(uint32(c.id), param.id, val)
@@ -148,4 +163,13 @@ func (c *Cab) updateParam(p pod.Parameter) {
     param.setValue(p.GetValueCurrent())
     param.setLabel(p.GetName())
     param.show()
+
+    switch p.(type) {
+    case *pod.ListParam:
+        param.hideKnob()
+    default:
+        min, max := p.GetValueRange()
+        param.setValueKnob(int(p.GetValueCurrent2()), min, max)
+        param.showKnob()
+    }
 }
