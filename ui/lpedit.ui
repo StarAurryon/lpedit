@@ -316,8 +316,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>1087</width>
-               <height>633</height>
+               <width>96</width>
+               <height>26</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_5"/>
@@ -346,7 +346,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>1066</width>
+               <width>434</width>
                <height>648</height>
               </rect>
              </property>
@@ -1067,6 +1067,7 @@
     </property>
     <addaction name="actionSelect_Device"/>
     <addaction name="separator"/>
+    <addaction name="actionDebug"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -1092,6 +1093,14 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionDebug">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug</string>
    </property>
   </action>
  </widget>

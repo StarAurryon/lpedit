@@ -65,6 +65,7 @@ func (l *LPEdit) initUI() {
     //UI Connections
     l.ConnectCloseEvent(l.windowClose)
     l.ActionAbout.ConnectTriggered(l.aboutClick)
+    l.ActionDebug.ConnectTriggered(l.debugChange)
     l.ActionSelect_Device.ConnectTriggered(l.pbSelectorClick)
     l.ActionQuit.ConnectTriggered(func(bool) {l.Close()})
     l.ctrl.ConnectLoopError(l.loopError)
@@ -203,6 +204,14 @@ func (l *LPEdit) aboutClick(vbo bool) {
     }
     l.about.Show()
     l.about.Raise()
+}
+
+func (l *LPEdit) debugChange(status bool) {
+    if status {
+        log.SetOutput(os.Stdout)
+    } else {
+        log.SetOutput(ioutil.Discard)
+    }
 }
 
 func (l *LPEdit) getParameter(id uint32) *Parameter{
