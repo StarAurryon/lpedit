@@ -27,6 +27,7 @@ import "github.com/StarAurryon/lpedit/ui"
 
 func main() {
     app := widgets.NewQApplication(len(os.Args), os.Args)
+    app.SetWheelScrollLines(1)
     c := qtctrl.NewController(app)
     ui.NewLPEdit(c, nil).Show()
     widgets.QApplication_Exec()

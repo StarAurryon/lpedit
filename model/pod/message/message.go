@@ -48,6 +48,7 @@ const (
     setupMessageCab0Decay uint32 = 0x5d
     setupMessageCab1Decay uint32 = 0x5e
 
+    statusSave uint32 = 0x00
     statusIDSet uint32 = 0x09
     statusIDPreset uint32 = 0x08
 )
@@ -278,7 +279,7 @@ var messages = []IMessage{
     &ActiveChange{Message: Message{mtype: 0x0004, smtype: 4864, msize: 20, mname: "Item Active Change"}},
     &TypeChange{Message: Message{mtype: 0x0004, smtype: 0x1100, msize: 20, mname: "Item Type Change"}},
     &PresetChange{Message: Message{mtype: 0x002, smtype: 0x2700, msize: 12, mname: "Preset change"}},
-    &PresetChangeAlert{Message: Message{mtype: 0x0001, smtype: 8960, msize: 8, mname: "Alert Preset Change"}},
+    &PresetChangeAlert{Message: Message{mtype: 0x0001, smtype: 0x2300, msize: 8, mname: "Alert Preset Change"}},
     &PresetLoad{Message: Message{mtype: 1025, smtype: 256, msize: 4104, mname: "Preset Load"}},
     &PresetSet{Message: Message{mtype: 1026, smtype: 512, msize: 4108, mname: "Preset Set"}},
     &PresetQuery{Message: Message{mtype: 0x0002, smtype: 0, msize: 12, mname: "Preset Query"}},

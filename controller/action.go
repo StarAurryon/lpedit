@@ -170,8 +170,10 @@ func (c *Controller) SavePreset() {
         err, presetID := c.pb.GetCurrentPreset()
         if err != nil { return }
 
-        m := message.GenPresetSet(c.pb, c.lastLoadPreset, uint16(presetID), uint16(setID))
+        m := message.GenStatusQuerySave()
+        m2 := message.GenPresetSet(c.pb, c.lastLoadPreset, uint16(presetID), uint16(setID))
         c.writeMessage(m, 0, 0)
+        c.writeMessage(m2, 0, 0)
     }
     go f()
 }

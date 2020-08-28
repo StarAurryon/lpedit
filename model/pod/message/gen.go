@@ -336,6 +336,10 @@ func GenStatusQueryPresetID() IMessage {
     return genStatusQuery(statusIDPreset)
 }
 
+func GenStatusQuerySave() IMessage {
+    return genStatusQuery(statusSave)
+}
+
 func GenStatusQuerySetID() IMessage {
     return genStatusQuery(statusIDSet)
 }
