@@ -204,11 +204,6 @@ func (a *Amp) parameterChanged(paramUI *Parameter, val string) {
         mb := widgets.NewQMessageBox(a)
         mb.Critical(a, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
     }
-    pb := a.ctrl.GetPedalBoard()
-    pb.LockData()
-    param := pb.GetAmp(a.id).GetParam(paramUI.id)
-    a.updateParam(param)
-    pb.UnlockData()
 }
 
 func (a *Amp) updateAmp(amp *pod.Amp) {

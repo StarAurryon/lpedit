@@ -128,7 +128,26 @@
        <item>
         <layout class="QHBoxLayout" name="tempoLayout">
          <item>
-          <widget class="QLineEdit" name="tempo"/>
+          <widget class="QComboBox" name="tempo">
+           <property name="acceptDrops">
+            <bool>false</bool>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QComboBox {
+  drop-down: {
+     border-width: 0px;
+   }
+  down-arrow: {
+     image: url(noimg);
+     border-width: 0px;
+  }
+}
+</string>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="BPMButton">
@@ -247,8 +266,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>1107</width>
-           <height>213</height>
+           <width>1106</width>
+           <height>215</height>
           </rect>
          </property>
         </widget>
@@ -287,8 +306,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>1087</width>
-               <height>633</height>
+               <width>1084</width>
+               <height>636</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -316,8 +335,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>1084</width>
+               <height>636</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_5"/>
@@ -346,8 +365,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>434</width>
-               <height>648</height>
+               <width>1070</width>
+               <height>642</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -1058,7 +1077,7 @@
      <x>0</x>
      <y>0</y>
      <width>1453</width>
-     <height>30</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuHome">

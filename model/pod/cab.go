@@ -38,7 +38,7 @@ type Cab struct {
     params      []Parameter
     pos         uint16
     posType     uint8
-    pb          *PedalBoard
+    preset      *Preset
     hideParams  bool
 }
 
@@ -225,12 +225,12 @@ var cabs = []Cab {
         }},
 }
 
-func newNoCab(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Cab {
-    c := newCab(id, pos, posType, pb, noCab)
+func newNoCab(id uint32, pos uint16, posType uint8, p *Preset) *Cab {
+    c := newCab(id, pos, posType, p, noCab)
     return c
 }
 
-func newCab(id uint32, pos uint16, posType uint8, pb *PedalBoard, ctype uint32) *Cab {
+func newCab(id uint32, pos uint16, posType uint8, p *Preset, ctype uint32) *Cab {
     for _, cab := range cabs {
         if cab.ctype == ctype {
             newCab := new(Cab)
@@ -238,7 +238,7 @@ func newCab(id uint32, pos uint16, posType uint8, pb *PedalBoard, ctype uint32) 
             newCab.id = id
             newCab.pos = pos
             newCab.posType = posType
-            newCab.pb = pb
+            newCab.preset = p
             newCab.params = make([]Parameter, len(cab.params))
             for i := range newCab.params {
                 newCab.params[i] = cab.params[i].Copy()
@@ -302,11 +302,13 @@ func (c *Cab) GetPos() (uint16, uint8) {
     return c.pos, c.posType
 }
 
+func (c *Cab) GetPreset() *Preset { return c.preset }
+
 func (c *Cab) GetType() uint32 {
     return c.ctype
 }
 
-func (c *Cab) LockData() { c.pb.LockData() }
+func (c *Cab) LockData() { c.preset.LockData() }
 
 func (c *Cab) SetActive(active bool){
     c.active = active
@@ -320,7 +322,7 @@ func (c *Cab) SetPosWithoutCheck(pos uint16, posType uint8) {
 }
 
 func (c *Cab) SetType(ctype uint32) error{
-    _c := newCab(c.id, c.pos, c.posType, c.pb, ctype)
+    _c := newCab(c.id, c.pos, c.posType, c.preset, ctype)
     if _c == nil {
         return fmt.Errorf("Cab type not found, code: %d", ctype)
     }
@@ -340,4 +342,4 @@ func (c *Cab) SetType2(name string, none string) {
     }
 }
 
-func (c *Cab) UnlockData() { c.pb.UnlockData() }
+func (c *Cab) UnlockData() { c.preset.UnlockData() }

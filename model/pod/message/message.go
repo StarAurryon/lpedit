@@ -60,7 +60,7 @@ type IMessage interface {
     GetSubType() uint16
     IsOk() bool
     LogInfo()
-    Parse(*pod.PedalBoard) (error, int, interface{})
+    Parse(*pod.Pod) (error, int, interface{})
     SetData([]byte)
 }
 
@@ -87,7 +87,7 @@ func (m *Message) GetSubType() uint16 { return m.smtype }
 func (m *Message) IsOk() bool { return m.msize <= len(m.data) }
 func (m *Message) SetData(data []byte) { m.data = data }
 
-func (m *Message) Parse(*pod.PedalBoard) (error, int, interface{}) {
+func (m *Message) Parse(*pod.Pod) (error, int, interface{}) {
     info := fmt.Sprintf("No defined pase fuction for %s message, mtype: 0x%x, smtype 0x%x",
         m.mname, m.mtype, m.smtype)
     return fmt.Errorf(info), ct.StatusWarning(), nil

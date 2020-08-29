@@ -18,6 +18,15 @@
 
 package pod
 
+type LPEObject interface {
+    GetParam(uint32) Parameter
+    GetParams() []Parameter
+    GetParamLen() uint16
+    GetName() string
+    LockData()
+    UnlockData()
+}
+
 type PedalBoardItem interface {
     LPEObject
     GetActive() bool
@@ -25,6 +34,7 @@ type PedalBoardItem interface {
     GetID() uint32
     GetType() uint32
     GetPos() (uint16, uint8)
+    GetPreset() *Preset
     LockData()
     SetActive(bool)
     SetPos(uint16, uint8)

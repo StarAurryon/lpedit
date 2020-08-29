@@ -23,7 +23,7 @@ import "fmt"
 type DT struct {
     id       int
     ampID    uint32
-    pb       *PedalBoard
+    preset   *Preset
     class    bool
     mode     bool
     topology uint8
@@ -31,11 +31,11 @@ type DT struct {
 
 var allowedTopology = []string{"I", "II", "III", "IV"}
 
-func newDT(id int, ampID uint32, pb *PedalBoard) *DT {
+func newDT(id int, ampID uint32, p *Preset) *DT {
     var dt DT
     dt.id = id
     dt.ampID = ampID
-    dt.pb = pb
+    dt.preset = p
     return &dt
 }
 
@@ -153,5 +153,5 @@ func (dt *DT) SetTopology(s string) error {
     return fmt.Errorf("Value incorrect, received \"%s\"", s)
 }
 
-func (dt *DT) LockData() { dt.pb.LockData() }
-func (dt *DT) UnlockData() { dt.pb.UnlockData() }
+func (dt *DT) LockData() { dt.preset.LockData() }
+func (dt *DT) UnlockData() { dt.preset.UnlockData() }

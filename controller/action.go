@@ -42,15 +42,15 @@ func (c *Controller) QueryAllPresets(async bool) {
     f := func() {
         c.syncMode = true
         max := pod.NumberSet * pod.PresetPerSet
-        pb := c.GetPedalBoard()
+        p := c.GetPod()
         for i := 0; i < pod.NumberSet; i++ {
-            pb.LockData()
-            pb.SetCurrentSet(uint8(i))
-            pb.UnlockData()
+            p.LockData()
+            p.SetCurrentSet(uint8(i))
+            p.UnlockData()
             for j := 0; j < pod.PresetPerSet; j++ {
-                pb.LockData()
-                pb.SetCurrentPreset(uint8(j))
-                pb.UnlockData()
+                p.LockData()
+                p.SetCurrentPreset(uint8(j))
+                p.UnlockData()
                 c.QueryPreset(false, uint16(j), uint16(i))
                 <- c.syncModeChan
                 progress := (((i * pod.PresetPerSet) + (j + 1)) * 100) / max
@@ -69,12 +69,12 @@ func (c *Controller) QueryAllPresets(async bool) {
 func (c *Controller) QueryAllSets(async bool) {
     if !c.started { return }
     f := func() {
-        pb := c.GetPedalBoard()
+        p := c.GetPod()
         c.syncMode = true
         for i := 0; i < pod.NumberSet; i++ {
-            pb.LockData()
-            pb.SetCurrentSet(uint8(i))
-            pb.UnlockData()
+            p.LockData()
+            p.SetCurrentSet(uint8(i))
+            p.UnlockData()
             m := message.GenSetQuery(uint32(i))
             c.writeMessage(m, 0, 0)
             <- c.syncModeChan
@@ -143,13 +143,13 @@ func (c *Controller) QueryPreset(async bool, presetID uint16, setID uint16) {
 func (c *Controller) ReloadPreset() {
     f := func() {
         if !c.started { return }
-        c.pb.LockData()
-        defer c.pb.UnlockData()
-        err, setID := c.pb.GetCurrentSet()
-        if err != nil { return }
-        err, presetID := c.pb.GetCurrentPreset()
-        if err != nil { return }
-        c.QueryPreset(false, uint16(presetID), uint16(setID))
+        c.pod.LockData()
+        defer c.pod.UnlockData()
+        set := c.pod.GetCurrentSet()
+        if set == nil { return }
+        preset := c.pod.GetCurrentPreset()
+        if preset == nil { return }
+        c.QueryPreset(false, uint16(preset.GetID()), uint16(set.GetID()))
     }
     go f()
 }
@@ -163,15 +163,15 @@ func (c *Controller) SavePreset() {
         <- c.syncModeChan
         c.syncMode = false
 
-        c.pb.LockData()
-        defer c.pb.UnlockData()
-        err, setID := c.pb.GetCurrentSet()
-        if err != nil { return }
-        err, presetID := c.pb.GetCurrentPreset()
-        if err != nil { return }
+        c.pod.LockData()
+        defer c.pod.UnlockData()
+        set := c.pod.GetCurrentSet()
+        if set == nil { return }
+        preset := c.pod.GetCurrentPreset()
+        if preset == nil { return }
 
         m := message.GenStatusQuerySave()
-        m2 := message.GenPresetSet(c.pb, c.lastLoadPreset, uint16(presetID), uint16(setID))
+        m2 := message.GenPresetSet(preset, c.lastLoadPreset, uint16(preset.GetID()), uint16(preset.GetSet().GetID()))
         c.writeMessage(m, 0, 0)
         c.writeMessage(m2, 0, 0)
     }
@@ -180,9 +180,9 @@ func (c *Controller) SavePreset() {
 
 func (c *Controller) SetDTClass(dtID int, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT(dtID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT(dtID)
     if dt == nil {
         return fmt.Errorf("DT not found ID:%d", dtID)
     }
@@ -191,9 +191,9 @@ func (c *Controller) SetDTClass(dtID int, value string) error {
 
 func (c *Controller) SetDTClass2(ampID uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT2(ampID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT2(ampID)
     if dt == nil {
         return fmt.Errorf("DT not found AmpID:%d", ampID)
     }
@@ -212,9 +212,9 @@ func (c *Controller) setDTClass(dt *pod.DT, value string) error {
 
 func (c *Controller) SetDTMode(dtID int, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT(dtID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT(dtID)
     if dt == nil {
         return fmt.Errorf("DT not found ID:%d", dtID)
     }
@@ -223,9 +223,9 @@ func (c *Controller) SetDTMode(dtID int, value string) error {
 
 func (c *Controller) SetDTMode2(ampID uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT2(ampID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT2(ampID)
     if dt == nil {
         return fmt.Errorf("DT not found AmpID:%d", ampID)
     }
@@ -244,9 +244,9 @@ func (c *Controller) setDTMode(dt *pod.DT, value string) error {
 
 func (c *Controller) SetDTTopology(dtID int, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT(dtID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT(dtID)
     if dt == nil {
         return fmt.Errorf("DT not found ID:%d", dtID)
     }
@@ -255,9 +255,9 @@ func (c *Controller) SetDTTopology(dtID int, value string) error {
 
 func (c *Controller) SetDTTopology2(ampID uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    dt := c.pb.GetDT2(ampID)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    dt := c.pod.GetCurrentPreset().GetDT2(ampID)
     if dt == nil {
         return fmt.Errorf("DT not found AmpID:%d", ampID)
     }
@@ -280,9 +280,9 @@ func (c *Controller) SetAmpParameterValue(id uint32, pid uint32, value string) e
 
 func (c *Controller) SetCabParameterValue(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    pbi := c.pb.GetItem((id*2) + 1);
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    pbi := c.pod.GetCurrentPreset().GetItem((id*2) + 1);
     if pbi == nil {
         return nil
     }
@@ -306,9 +306,9 @@ func (c *Controller) SetPedalParameterValue(id uint32, pid uint32, value string)
 
 func (c *Controller) SetPedalBoardParameterValue(pid uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    p := c.pb.GetParam(pid)
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    p := c.pod.GetCurrentPreset().GetParam(pid)
     if p == nil {
         return nil
     }
@@ -324,9 +324,9 @@ func (c *Controller) SetPedalBoardParameterValue(pid uint32, value string) error
 
 func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    defer c.pb.UnlockData()
-    pbi := c.pb.GetItem(id);
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    pbi := c.pod.GetCurrentPreset().GetItem(id);
     if pbi == nil {
         return nil
     }
@@ -365,49 +365,43 @@ func (c *Controller) SetPedalBoardItemParameterValue(id uint32, pid uint32, valu
 
 func (c *Controller) SetPedalBoardItemParameterValueMin(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    pbi := c.pb.GetItem(id);
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    pbi := c.pod.GetCurrentPreset().GetItem(id);
     if pbi == nil {
-        c.pb.UnlockData()
         return nil
     }
     p := pbi.GetParam(pid)
     if p == nil {
-        c.pb.UnlockData()
         return nil
     }
     err := p.SetValueMin(value)
     if err != nil {
-        c.pb.UnlockData()
         return err
     }
     m := message.GenParameterChangeMin(p)
     go c.writeMessage(m, 0, 0)
-    c.pb.UnlockData()
     return nil
 }
 
 func (c *Controller) SetPedalBoardItemParameterValueMax(id uint32, pid uint32, value string) error {
     if !c.started { return nil }
-    c.pb.LockData()
-    pbi := c.pb.GetItem(id);
+    c.pod.LockData()
+    defer c.pod.UnlockData()
+    pbi := c.pod.GetCurrentPreset().GetItem(id);
     if pbi == nil {
-        c.pb.UnlockData()
         return nil
     }
     p := pbi.GetParam(pid)
     if p == nil {
-        c.pb.UnlockData()
         return nil
     }
     err := p.SetValueMax(value)
     if err != nil {
-        c.pb.UnlockData()
         return err
     }
     m := message.GenParameterChangeMax(p)
     go c.writeMessage(m, 0, 0)
-    c.pb.UnlockData()
     return nil
 }
 
@@ -420,14 +414,17 @@ func (c *Controller) SetPedalBoardItemPosition(id uint32, pos uint16, posType ui
         <- c.syncModeChan
         c.syncMode = false
 
-        c.pb.LockData()
-        defer c.pb.UnlockData()
-        pbi := c.pb.GetItem(id);
+        c.pod.LockData()
+        defer c.pod.UnlockData()
+        preset := c.pod.GetCurrentPreset()
+        pbi := preset.GetItem(id);
         if pbi == nil {
             return
         }
+        fmt.Println("Setting pos")
         pbi.SetPos(pos, posType)
-        c.setCurrentPreset(c.pb)
+        c.setCurrentPreset(preset)
+        fmt.Println("Setting pos done")
     }
     go f()
 }
@@ -443,15 +440,15 @@ func (c *Controller) SetPedalActive(id uint32, active bool) {
 func (c *Controller) SetPedalBoardItemActive(id uint32, active bool) {
     f := func() {
         if !c.started { return }
-        c.pb.LockData()
-        pbi := c.pb.GetItem(id)
+        c.pod.LockData()
+        pbi := c.pod.GetCurrentPreset().GetItem(id)
         if pbi == nil {
-            c.pb.UnlockData()
+            c.pod.UnlockData()
             return
         }
         pbi.SetActive(active)
         m := message.GenActiveChange(pbi)
-        c.pb.UnlockData()
+        c.pod.UnlockData()
         c.writeMessage(m, 0, 0)
     }
     go f()
@@ -471,16 +468,16 @@ func (c *Controller) SetPedalType(id uint32, fxType string, fxModel string) {
 
 func (c *Controller) SetPedalBoardItemType(id uint32, fxType string, fxModel string) {
     if !c.started { return }
-    c.pb.LockData()
-    pbi := c.pb.GetItem(id)
+    c.pod.LockData()
+    pbi := c.pod.GetCurrentPreset().GetItem(id)
     if pbi == nil {
-        c.pb.UnlockData()
+        c.pod.UnlockData()
         return
     }
     pbi.SetType2(fxType, fxModel)
     m := message.GenTypeChange(pbi)
-    m2 := message.GenPresetQuery(uint16(0xFFFF), uint16(0xFFFF))
-    c.pb.UnlockData()
+    m2 := message.GenPresetQuery(message.CurrentPreset, message.CurrentSet)
+    c.pod.UnlockData()
     f := func() {
         c.writeMessage(m, 0, 0)
         c.writeMessage(m2, 0, 0)
@@ -492,10 +489,10 @@ func (c *Controller) SetPreset(presetID uint8, setID uint8) {
     f := func() {
         if !c.started { return }
 
-        c.pb.LockData()
-        c.pb.SetCurrentSet(setID)
-        c.pb.SetCurrentPreset(presetID)
-        c.pb.UnlockData()
+        c.pod.LockData()
+        c.pod.SetCurrentSet(setID)
+        c.pod.SetCurrentPreset(presetID)
+        c.pod.UnlockData()
 
         c.syncMode = true
         c.QueryPreset(false, uint16(presetID), uint16(setID))
@@ -507,15 +504,15 @@ func (c *Controller) SetPreset(presetID uint8, setID uint8) {
         c.writeMessage(m, 0, 0)
         c.writeMessage(m2, 0, 0)
 
-        c.pb.LockData()
-        c.setCurrentPreset(c.pb)
-        c.pb.UnlockData()
+        c.pod.LockData()
+        c.setCurrentPreset(c.pod.GetCurrentPreset())
+        c.pod.UnlockData()
     }
     go f()
 }
 
-func (c *Controller) setCurrentPreset(pb *pod.PedalBoard){
-    m := message.GenPresetSet(c.pb, c.lastLoadPreset, message.CurrentPreset, message.CurrentSet)
+func (c *Controller) setCurrentPreset(p *pod.Preset) {
+    m := message.GenPresetSet(p, c.lastLoadPreset, message.CurrentPreset, message.CurrentSet)
     c.writeMessage(m, 0, 0)
 }
 
@@ -528,11 +525,12 @@ func (c *Controller) SetCurrentPresetName(name string) {
         <- c.syncModeChan
         c.syncMode = false
 
-        c.pb.LockData()
-        defer c.pb.UnlockData()
+        c.pod.LockData()
+        defer c.pod.UnlockData()
 
-        c.pb.SetCurrentPresetName2(name)
-        c.setCurrentPreset(c.pb)
+        preset := c.pod.GetCurrentPreset()
+        preset.SetName2(name)
+        c.setCurrentPreset(preset)
         c.QueryCurrentPreset(false)
     }
     go f()

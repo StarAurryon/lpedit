@@ -34,11 +34,10 @@ type Controller struct {
     _ func(string) `signal:"LoopError"`
     _ func() `signal:InitDone`
     _ func(pod.Parameter) `signal:ParameterChange`
-    _ func(*pod.PedalBoard) `signal:PresetChange`
-    _ func(*pod.PedalBoard) `signal:PresetLoad`
+    _ func(*pod.Preset) `signal:PresetChange`
+    _ func(*pod.Preset) `signal:PresetLoad`
     _ func(int) `signal:Progress`
-    _ func(*pod.PedalBoard) `signal:SetChange`
-    _ func(*pod.PedalBoard) `signal:TempoChange`
+    _ func(*pod.Set) `signal:SetChange`
     _ func(pod.PedalBoardItem) `signal:TypeChange`
 }
 
@@ -62,16 +61,14 @@ func (c *Controller) notif(err error, n int, obj interface{}) {
     case sg.StatusParameterChange():
         c.ParameterChange(obj.(pod.Parameter))
     case sg.StatusPresetChange():
-        c.PresetChange(obj.(*pod.PedalBoard))
+        c.PresetChange(obj.(*pod.Preset))
     case sg.StatusPresetLoad():
-        c.PresetLoad(obj.(*pod.PedalBoard))
+        c.PresetLoad(obj.(*pod.Preset))
     case sg.StatusProgress():
         c.Progress(obj.(int))
     case sg.StatusSetChange():
-        c.SetChange(obj.(*pod.PedalBoard))
+        c.SetChange(obj.(*pod.Set))
     case sg.StatusTypeChange():
         c.TypeChange(obj.(pod.PedalBoardItem))
-    case sg.StatusTempoChange():
-        c.TempoChange(obj.(*pod.PedalBoard))
     }
 }

@@ -28,7 +28,7 @@ import "github.com/StarAurryon/lpedit/model/pod"
 import "github.com/StarAurryon/lpedit/model/pod/message"
 
 type Controller struct {
-    pb           *pod.PedalBoard
+    pod          *pod.Pod
     dev          string
     hwdep        hw.Hwdep
     notifyCB     func(error, int, interface{}) // notifyCallBack
@@ -50,13 +50,13 @@ type Controller struct {
 }
 
 func NewController() *Controller {
-    c := &Controller{pb: pod.NewPedalBoard(), started: false}
+    c := &Controller{pod: pod.NewPod(), started: false}
     c.syncModeChan = make(chan int, 10)
     return c
 }
 
-func (c *Controller) GetPedalBoard() *pod.PedalBoard {
-    return c.pb
+func (c *Controller) GetPod() *pod.Pod {
+    return c.pod
 }
 
 func (c *Controller) GetCurrentDevice() string { return c.hwdep.GetDevice() }
@@ -153,9 +153,9 @@ func (c *Controller) parseMessage(rm *message.RawMessage) {
         c.lastLoadPreset = pl
     }
     m.LogInfo()
-    c.pb.LockData()
-    err, ct, obj := m.Parse(c.pb)
-    c.pb.UnlockData()
+    c.pod.LockData()
+    err, ct, obj := m.Parse(c.pod)
+    c.pod.UnlockData()
     c.notify(err, ct, obj)
     if c.syncMode {
         c.syncModeChan <- 0

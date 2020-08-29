@@ -136,10 +136,6 @@ func (p *Pedal) parameterChanged(paramUI *Parameter, v string) {
         mb := widgets.NewQMessageBox(p)
         mb.Critical(p, "An error occured", err.Error(), widgets.QMessageBox__Ok, 0)
     }
-    param := p.ctrl.GetPedalBoard().GetPedal2(p.id).GetParam(paramUI.id)
-    param.LockData()
-    p.updateParam(param)
-    param.UnlockData()
 }
 
 func (p *Pedal) onStatusChanged(checked bool) {

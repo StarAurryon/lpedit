@@ -33,7 +33,7 @@ type Pedal struct {
     pos     uint16
     posType uint8
     params  []Parameter
-    pb      *PedalBoard
+    preset  *Preset
 }
 
 var pedals = []Pedal {
@@ -973,12 +973,12 @@ var pedals = []Pedal {
             }},
 }
 
-func newNonePedal(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Pedal{
-    p := newPedal(id, pos, posType, pb, nonePedal)
-    return p
+func newNonePedal(id uint32, pos uint16, posType uint8, p *Preset) *Pedal{
+    newPedal := newPedal(id, pos, posType, p, nonePedal)
+    return newPedal
 }
 
-func newPedal(id uint32, pos uint16, posType uint8, pb *PedalBoard, ptype uint32 ) *Pedal {
+func newPedal(id uint32, pos uint16, posType uint8, p *Preset, ptype uint32 ) *Pedal {
     for _, pedal := range pedals {
         if pedal.ptype == ptype {
             newPedal := new(Pedal)
@@ -986,7 +986,7 @@ func newPedal(id uint32, pos uint16, posType uint8, pb *PedalBoard, ptype uint32
             newPedal.id = id
             newPedal.pos = pos
             newPedal.posType = posType
-            newPedal.pb = pb
+            newPedal.preset = p
             newPedal.params = make([]Parameter, len(pedal.params))
             for i := range newPedal.params {
                 newPedal.params[i] = pedal.params[i].Copy()
@@ -1046,6 +1046,8 @@ func (p *Pedal) GetPos() (uint16, uint8) {
     return p.pos, p.posType
 }
 
+func (p *Pedal) GetPreset() *Preset { return p.preset }
+
 func (p *Pedal) GetType() uint32 {
     return p.ptype
 }
@@ -1054,7 +1056,7 @@ func (p *Pedal) GetSType() string {
     return p.stype
 }
 
-func (p *Pedal) LockData() { p.pb.LockData() }
+func (p *Pedal) LockData() { p.preset.LockData() }
 
 func (p *Pedal) SetPos(pos uint16, posType uint8) {
     if posType == AmpAPos || posType == AmpBPos || pos >= 8 { return }
@@ -1065,7 +1067,7 @@ func (p *Pedal) SetPos(pos uint16, posType uint8) {
         incr = -1
     }
     for i := int(p.pos) + incr; i != int(pos) + incr ; i += incr {
-        p2 := p.pb.GetPedal(uint16(i))
+        p2 := p.preset.GetPedal(uint16(i))
         p2Pos, p2PosType := p2.GetPos()
         p2.SetPosWithoutCheck(uint16(int(p2Pos)-incr), p2PosType)
         p2Pos, _ = p2.GetPos()
@@ -1085,7 +1087,7 @@ func (p *Pedal) SetActive(active bool){
 }
 
 func (p *Pedal) SetType(ptype uint32) error {
-    _p := newPedal(p.id, p.pos, p.posType, p.pb, ptype)
+    _p := newPedal(p.id, p.pos, p.posType, p.preset, ptype)
     if _p == nil {
         return fmt.Errorf("Pedal type not found, code: %d", ptype)
     }
@@ -1105,4 +1107,4 @@ func (p *Pedal) SetType2(stype string, name string) {
     }
 }
 
-func (p *Pedal) UnlockData() { p.pb.UnlockData() }
+func (p *Pedal) UnlockData() { p.preset.UnlockData() }

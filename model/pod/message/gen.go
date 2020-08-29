@@ -140,11 +140,11 @@ func GenParameterPedalBoardChange(p pod.Parameter) IMessage {
     var paramID uint32
 
     switch p.GetID() {
-    case pod.PedalBoardInput1Source:
+    case pod.PresetInput1Source:
         paramID = setupMessageInput1Source
-    case pod.PedalBoardInput2Source:
+    case pod.PresetInput2Source:
         paramID = setupMessageInput2Source
-    case pod.PedalBoardGuitarInZ:
+    case pod.PresetGuitarInZ:
         paramID = setupMessageGuitarInZ
     }
     return genSetupChange(paramID, p.GetBinValueType(), p.GetBinValueCurrent())
@@ -239,7 +239,7 @@ func GenPresetQuery(presetID uint16, setID uint16) IMessage {
 }
 
 //DirtyHack TODO: Cleanup
-func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad, presetID uint16, setID uint16) IMessage {
+func GenPresetSet(p *pod.Preset, oldMsg *PresetLoad, presetID uint16, setID uint16) IMessage {
     var m *PresetSet
     m = newMessage2(reflect.TypeOf(m)).(*PresetSet)
 
@@ -249,7 +249,7 @@ func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad, presetID uint16, setID
     offset := 48
 
     for _, id := range pbiOrder {
-        pbi := pb.GetItem(id)
+        pbi := p.GetItem(id)
         pos, posType := pbi.GetPos()
         bPos := make([]byte, 2)
         binary.LittleEndian.PutUint16(bPos, pos)
@@ -262,7 +262,7 @@ func GenPresetSet(pb *pod.PedalBoard, oldMsg *PresetLoad, presetID uint16, setID
     }
 
     //TODO: FIX
-    name := pb.GetCurrentPresetName()
+    name := p.GetName2()
 
     buf := genHeader(m)
     binary.Write(buf, binary.LittleEndian, presetID)

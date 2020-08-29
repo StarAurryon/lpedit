@@ -90,17 +90,17 @@ func (p *PedalView) dragPedal(event *gui.QMouseEvent) {
     drag.Exec(core.Qt__CopyAction|core.Qt__MoveAction)
 }
 
-func (l *LPEdit) generatePedalBoardTopology(pb *pod.PedalBoard) (start []pod.PedalBoardItem,
+func (l *LPEdit) generatePedalBoardTopology(p *pod.Preset) (start []pod.PedalBoardItem,
     bot []pod.PedalBoardItem, top[]pod.PedalBoardItem, end []pod.PedalBoardItem) {
 
-    start = pb.GetItems(pod.PedalPosStart)
-    ampA := pb.GetItems(pod.AmpAPos)[0]
-    ampB := pb.GetItems(pod.AmpBPos)[0]
-    aStart := pb.GetItems(pod.PedalPosAStart)
-    aEnd := pb.GetItems(pod.PedalPosAEnd)
-    bStart := pb.GetItems(pod.PedalPosBStart)
-    bEnd := pb.GetItems(pod.PedalPosBEnd)
-    end = pb.GetItems(pod.PedalPosEnd)
+    start = p.GetItems(pod.PedalPosStart)
+    ampA := p.GetItems(pod.AmpAPos)[0]
+    ampB := p.GetItems(pod.AmpBPos)[0]
+    aStart := p.GetItems(pod.PedalPosAStart)
+    aEnd := p.GetItems(pod.PedalPosAEnd)
+    bStart := p.GetItems(pod.PedalPosBStart)
+    bEnd := p.GetItems(pod.PedalPosBEnd)
+    end = p.GetItems(pod.PedalPosEnd)
     posA, _ := ampA.GetPos()
 
     if posA == 5 { start = append(start, ampA) }
@@ -154,7 +154,7 @@ func (l *LPEdit) fillPedalBoardView(lay *widgets.QGridLayout, x int, y int, maxX
     return x, pos
 }
 
-func (l *LPEdit) updatePedalBoardView(pb *pod.PedalBoard) {
+func (l *LPEdit) updatePedalBoardView(p *pod.Preset) {
     for _, item := range l.PedalBoardView.Children(){
         item.DestroyQObject()
     }
@@ -162,7 +162,7 @@ func (l *LPEdit) updatePedalBoardView(pb *pod.PedalBoard) {
     layout := widgets.NewQGridLayout(l.PedalBoardView)
     l.PedalBoardView.SetLayout(layout)
 
-    start, bot, top, end := l.generatePedalBoardTopology(pb)
+    start, bot, top, end := l.generatePedalBoardTopology(p)
 
     j, pos := l.fillPedalBoardView(layout, 0, 1, len(start), start, 0, pod.PedalPosStart)
     max := Max(len(bot), len(top))

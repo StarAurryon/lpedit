@@ -33,7 +33,7 @@ type Amp struct {
     pos     uint16
     posType uint8
     params  []Parameter
-    pb      *PedalBoard
+    preset  *Preset
 }
 
 var amps = []Amp {
@@ -730,12 +730,12 @@ var amps = []Amp {
             }},
 }
 
-func newDisAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard) *Amp {
-    a := newAmp(id, pos, posType, pb, ampDisabled)
+func newDisAmp(id uint32, pos uint16, posType uint8, p *Preset) *Amp {
+    a := newAmp(id, pos, posType, p, ampDisabled)
     return a
 }
 
-func newAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard, atype uint32) *Amp {
+func newAmp(id uint32, pos uint16, posType uint8, p *Preset, atype uint32) *Amp {
     for _, amp := range amps {
         if amp.atype == atype {
             newAmp := new(Amp)
@@ -743,7 +743,7 @@ func newAmp(id uint32, pos uint16, posType uint8, pb *PedalBoard, atype uint32) 
             newAmp.id = id
             newAmp.pos = pos
             newAmp.posType = posType
-            newAmp.pb = pb
+            newAmp.preset = p
             newAmp.params = make([]Parameter, len(amp.params))
             for i := range newAmp.params {
                 newAmp.params[i] = amp.params[i].Copy()
@@ -775,7 +775,7 @@ func GetAmpType() []string {
 }
 
 func (a *Amp) GetDT() *DT {
-    return a.pb.GetDT2(a.GetID())
+    return a.preset.GetDT2(a.GetID())
 }
 
 func (a *Amp) GetID() uint32 {
@@ -807,6 +807,8 @@ func (a *Amp) GetPos() (uint16, uint8) {
     return a.pos, a.posType
 }
 
+func (a *Amp) GetPreset() *Preset { return a.preset }
+
 func (a *Amp) GetType() uint32 {
     return a.atype
 }
@@ -815,7 +817,7 @@ func (a *Amp) HasDt() bool {
     return a.hasDt
 }
 
-func (a *Amp) LockData() { a.pb.LockData() }
+func (a *Amp) LockData() { a.preset.LockData() }
 
 func (a *Amp) SetActive(active bool){
     a.active = active
@@ -823,7 +825,7 @@ func (a *Amp) SetActive(active bool){
 
 func (a *Amp) SetPos(pos uint16, posType uint8) {
     if a.id != 0 { return }
-    cabA := a.pb.GetCab(0)
+    cabA := a.preset.GetCab(0)
     pos = 0
     switch posType {
     case PedalPosStart:
@@ -846,7 +848,7 @@ func (a *Amp) SetPosWithoutCheck(pos uint16, posType uint8) {
 }
 
 func (a *Amp) SetType(atype uint32) error{
-    _a := newAmp(a.id, a.pos, a.posType, a.pb, atype)
+    _a := newAmp(a.id, a.pos, a.posType, a.preset, atype)
     if _a == nil {
         return fmt.Errorf("Amp type not found, code: %d", atype)
     }
@@ -866,4 +868,4 @@ func (a *Amp) SetType2(name string, none string) {
     }
 }
 
-func (a *Amp) UnlockData() { a.pb.UnlockData() }
+func (a *Amp) UnlockData() { a.preset.UnlockData() }
