@@ -18,8 +18,8 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/core"
-import "github.com/StarAurryon/qt/widgets"
+import "github.com/therecipe/qt/core"
+import "github.com/therecipe/qt/widgets"
 
 
 func (l *LPEdit) progress(progress int) {

@@ -18,7 +18,7 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/widgets"
+import "github.com/therecipe/qt/widgets"
 
 const (
     minKnobAngle float64 = 45

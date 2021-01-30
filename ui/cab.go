@@ -18,12 +18,12 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/widgets"
+import "github.com/therecipe/qt/widgets"
 
 import "sort"
 import "strconv"
 
-import "github.com/StarAurryon/lpedit/model/pod"
+import "github.com/StarAurryon/lpedit-lib/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type Cab struct {

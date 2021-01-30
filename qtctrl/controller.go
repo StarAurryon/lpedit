@@ -18,10 +18,10 @@
 
 package qtctrl
 
-import "github.com/StarAurryon/qt/core"
+import "github.com/therecipe/qt/core"
 
-import "github.com/StarAurryon/lpedit/controller"
-import "github.com/StarAurryon/lpedit/model/pod"
+import "github.com/StarAurryon/lpedit-lib/controller"
+import "github.com/StarAurryon/lpedit-lib/model/pod"
 
 var sg controller.Signal
 

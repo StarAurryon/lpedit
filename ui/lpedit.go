@@ -18,15 +18,15 @@
 
 package ui
 
-import "github.com/StarAurryon/qt/core"
-import "github.com/StarAurryon/qt/gui"
-import "github.com/StarAurryon/qt/widgets"
+import "github.com/therecipe/qt/core"
+import "github.com/therecipe/qt/gui"
+import "github.com/therecipe/qt/widgets"
 
 import "log"
 import "io/ioutil"
 import "os"
 
-import "github.com/StarAurryon/lpedit/model/pod"
+import "github.com/StarAurryon/lpedit-lib/model/pod"
 import "github.com/StarAurryon/lpedit/qtctrl"
 
 type LPEdit struct {

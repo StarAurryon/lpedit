@@ -20,7 +20,7 @@ package main
 
 import "os"
 
-import "github.com/StarAurryon/qt/widgets"
+import "github.com/therecipe/qt/widgets"
 
 import "github.com/StarAurryon/lpedit/qtctrl"
 import "github.com/StarAurryon/lpedit/ui"
