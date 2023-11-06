@@ -24,8 +24,7 @@ _testmain.go
 *.test
 *.prof
 
-#QT
-deploy/*
-moc*
-rcc*
-uic*
+#Wails
+build/bin
+frontend/node_modules
+frontend/dist

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "LPEdit",
+  "outputfilename": "LPEdit",
+  "frontend:install": "yarn install",
+  "frontend:build": "yarn run build",
+  "frontend:dev:watcher": "yarn run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Nicolas SCHWARTZ",
+    "email": "no@no.no"
+  }
+}

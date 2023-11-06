@@ -1,34 +1,36 @@
-/*
- * Copyright (C) 2020 Nicolas SCHWARTZ
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
- */
-
 package main
 
-import "os"
+import (
+	"embed"
 
-import "github.com/therecipe/qt/widgets"
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
 
-import "github.com/StarAurryon/lpedit/qtctrl"
-import "github.com/StarAurryon/lpedit/ui"
+//go:embed all:frontend/dist
+var assets embed.FS
 
 func main() {
-    app := widgets.NewQApplication(len(os.Args), os.Args)
-    app.SetWheelScrollLines(1)
-    c := qtctrl.NewController(app)
-    ui.NewLPEdit(c, nil).Show()
-    widgets.QApplication_Exec()
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "LPEdit",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
 }
