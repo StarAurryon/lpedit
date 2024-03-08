@@ -2,7 +2,7 @@
 
 LPEdit is a reimplementation of Line6 HD Edit made through usb protocol reverse engineering.
 
-## Supported features
+## Supported features (legacy version)
 
 - Reading the preset info when a preset stomp switch is activated on the POD:
   - Pedals parameters value;
@@ -31,21 +31,21 @@ LPEdit is a reimplementation of Line6 HD Edit made through usb protocol reverse 
 
 ## Manual building
 
-You will need my patched verion of QT bindings for golang available at:
-https://github.com/StarAurryon/qt
+Requirements :
 
-Then run the following commands:
-```
-go get -v github.com/StarAurryon/lpedit (this would not compile as qtdeploy must be run to generate missing go file)
-$(go env GOPATH)/bin/qtdeploy
-```
+- NodeJS v18 minimum
+- Golang 1.22
+- Wails `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+
+Running in dev mode `wails dev`
+
+Building the binary `wails build`
 
 ## Known bugs
 
 - The software may crash when starting to listen to the POD events;
-- I need to kill the software when exiting or stopping the communication with the pod:
-  - You need the kernel 5.8 at least to fix this issue.
+- The software may crash when stopping a POD and restarting it;
 
-## Screenshots
+## Screenshots (legacy version)
 
 ![Alt text](/screenshots/Preset.png?raw=true "Preset management")

@@ -1,25 +1,17 @@
-import {useState} from 'react';
-import {Greet} from "../wailsjs/go/main/App";
+import { PanelLeft, PanelRight } from '@/views';
+import { PodProvider } from './provider/pod-provider';
+import ProgressModal from './views/modal/progress-modal';
 
-function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+const App = () => {
+  return (
+    <PodProvider>
+      <ProgressModal />
+      <div id="App" className="flex flex-row">
+        <PanelLeft></PanelLeft>
+        <PanelRight></PanelRight>
+      </div>
+    </PodProvider>
+  );
+};
 
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
-
-    return (
-        <div id="App">
-            <div id="result" className="text-3xl font-bold underline">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
-}
-
-export default App
+export default App;
